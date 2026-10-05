@@ -17,13 +17,16 @@ import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
+import { useMemories } from '../../src/store/MemoriesStore';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, pair, sendWarmth, warmthPulse, setMood } = useApp();
+  const { items: memories } = useMemories();
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
+  const lastMemory = memories[0];
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -81,6 +84,11 @@ export default function HomeScreen() {
               Два телефона: Profile → Realtime URL = ws://IP_ПК:8787 (одна Wi‑Fi).
             </Text>
           )}
+          {lastMemory ? (
+            <Text style={styles.memory}>
+              Последнее: {lastMemory.title} — {lastMemory.detail}
+            </Text>
+          ) : null}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>
@@ -194,5 +202,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     color: colors.textMuted,
+  },
+  memory: {
+    marginTop: 4,
+    fontFamily: fonts.ui,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.accentMist,
   },
 });

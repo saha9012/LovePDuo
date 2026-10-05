@@ -25,7 +25,7 @@ const CANDLE_SEC = 120;
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, sendWarmth, notes, addNote, receiveNote } = useApp();
-  const { items: memories } = useMemories();
+  const { items: memories, clearMemories } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -188,6 +188,14 @@ export default function TogetherScreen() {
                 {m.title} — {m.detail}
               </Text>
             ))}
+            <LpdButton
+              label="Очистить memories"
+              variant="ghost"
+              onPress={() => {
+                clearMemories();
+                void juice.miss();
+              }}
+            />
           </View>
         ) : null}
       </ScrollView>

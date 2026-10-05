@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { BrandMark } from '../../src/components/BrandMark';
 import { LpdButton } from '../../src/components/LpdButton';
 import { CodeInput } from '../../src/components/CodeInput';
-import { colors, fonts, spacing } from '../../src/theme/tokens';
+import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
@@ -17,6 +17,7 @@ export default function JoinPairScreen() {
   const insets = useSafeAreaInsets();
   const { joinPair, user, signIn } = useApp();
   const [code, setCode] = useState('');
+  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,9 +25,10 @@ export default function JoinPairScreen() {
     setLoading(true);
     setError('');
     try {
-      if (!user) await signIn('Партнёр');
+      await signIn(displayName || 'Партнёр');
       await joinPair(code);
       track('pair_joined');
+      void juice.postMatch();
       router.replace('/pair/success');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не вышло войти');
@@ -42,6 +44,15 @@ export default function JoinPairScreen() {
         <View style={styles.block}>
           <Text style={typography.headline}>Код пары</Text>
           <Text style={typography.body}>Шесть символов — и вы в одной комнате LovePDuo.</Text>
+          <Text style={styles.label}>Твоё имя</Text>
+          <TextInput
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="Как тебя зовут"
+            placeholderTextColor={colors.textMuted}
+            style={styles.input}
+          />
+          <Text style={styles.label}>Код</Text>
           <CodeInput value={code} onChange={setCode} />
           {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
@@ -70,7 +81,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   block: {
-    gap: spacing.lg,
+    gap: spacing.md,
+  },
+  label: {
+    marginTop: spacing.sm,
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  input: {
+    minHeight: 52,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.7)',
+    paddingHorizontal: spacing.lg,
+    color: colors.textPrimary,
+    fontFamily: fonts.ui,
+    fontSize: 16,
   },
   error: {
     fontFamily: fonts.ui,
