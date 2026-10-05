@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Lobby «Оба готовы» · HB sync · Orbit sync  
 - [x] HB «оба sync» · Orbit sync · Draw кисть  
 - [x] Orbit «оба sync» · Draw кисть escalate · ToS мимо карт  
-- [x] Draw кисть/чисто/назад escalate · ToS мимо карт · miss мимо  
 
 ## Catalog
 

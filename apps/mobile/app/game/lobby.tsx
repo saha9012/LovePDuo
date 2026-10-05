@@ -176,7 +176,14 @@ export default function GameLobbyScreen() {
           if (payload.ready) {
             const both = readyMeRef.current;
             void (both ? juice.perfect() : juice.sync());
-            showCancelToast(both ? 'Оба READY' : 'Партнёр READY');
+            showCancelToast(
+              both
+                ? cancelToastRef.current === 'Оба READY' ||
+                  cancelToastRef.current === 'Оба готовы'
+                  ? 'Оба готовы'
+                  : 'Оба READY'
+                : 'Партнёр READY',
+            );
           } else {
             const wasCounting = countdownRef.current != null;
             const both = !readyMeRef.current;
@@ -302,7 +309,12 @@ export default function GameLobbyScreen() {
     juice.hit();
     pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
     if (readyPeer) {
-      showCancelToast('Оба READY');
+      showCancelToast(
+        cancelToastRef.current === 'Оба READY' ||
+          cancelToastRef.current === 'Оба готовы'
+          ? 'Оба готовы'
+          : 'Оба READY',
+      );
       void juice.perfect();
     }
   };
