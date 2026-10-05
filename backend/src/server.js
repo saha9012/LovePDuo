@@ -91,7 +91,28 @@ wss.on('connection', (socket) => {
 
     if (!socket.lpd.code) return;
 
-    if (msg.type === 'presence' || msg.type === 'game' || msg.type === 'warmth') {
+    if (msg.type === 'presence') {
+      if (typeof msg.name === 'string' && msg.name.trim()) {
+        socket.lpd.name = msg.name.trim();
+      }
+      if (typeof msg.status === 'string') {
+        socket.lpd.status = msg.status;
+      }
+      broadcast(
+        socket.lpd.code,
+        {
+          type: 'presence',
+          from: socket.lpd.userId,
+          name: socket.lpd.name,
+          status: msg.status || 'online',
+          size: roomOf(socket.lpd.code).size,
+        },
+        socket,
+      );
+      return;
+    }
+
+    if (msg.type === 'game' || msg.type === 'warmth') {
       broadcast(socket.lpd.code, { ...msg, from: socket.lpd.userId }, socket);
     }
   });

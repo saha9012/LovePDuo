@@ -18,6 +18,7 @@ import { useApp, TrackItem } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
+import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
 
 export default function MusicScreen() {
   const insets = useSafeAreaInsets();
@@ -142,7 +143,11 @@ export default function MusicScreen() {
       playbackMode: 'spotify',
       addedBy: user?.displayName ?? 'Ты',
     });
-    setNote('Spotify: метаданные сохранены. Стрим — через Spotify (OAuth в Phase 3).');
+    setNote(
+      spotifyConfigured()
+        ? 'Spotify: метаданные сохранены. Keys есть — стрим через App Remote / OAuth следующий шаг.'
+        : spotifyStatusLabel(),
+    );
   };
 
   const addVkStub = () => {
@@ -225,6 +230,7 @@ export default function MusicScreen() {
           <LpdButton label="Добавить из Spotify (мета)" variant="ghost" onPress={addSpotifyStub} />
           <LpdButton label="Импорт VK (fallback)" variant="ghost" onPress={addVkStub} />
         </View>
+        <Text style={styles.spotifyHint}>{spotifyStatusLabel()}</Text>
         {note ? <Text style={styles.note}>{note}</Text> : null}
 
         <View style={styles.list}>
@@ -344,6 +350,12 @@ const styles = StyleSheet.create({
     color: colors.accentRose,
     fontSize: 13,
     lineHeight: 18,
+  },
+  spotifyHint: {
+    fontFamily: fonts.ui,
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
   },
   list: {
     marginTop: spacing.sm,

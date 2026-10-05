@@ -1,5 +1,8 @@
 import * as Haptics from 'expo-haptics';
 import { Audio, AVPlaybackSource } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const MUTE_KEY = 'lovepduo.sfx_muted';
 
 const sources = {
   catch: require('../../assets/sfx/catch.wav'),
@@ -18,6 +21,7 @@ type SfxKey = keyof typeof sources;
 
 let muted = false;
 let ready = false;
+let hydrated = false;
 
 async function ensureAudio() {
   if (ready) return;
@@ -47,18 +51,38 @@ async function play(key: SfxKey, vol = 0.7) {
       }
     });
   } catch {
-    // silent fail — haptics still fire
+    // silent fail — haptics still fire when unmuted
   }
 }
 
 function haptic(fn: () => Promise<unknown>) {
+  if (muted) return;
   void fn().catch(() => undefined);
 }
 
 /** Haptics + procedural WAV juice. */
 export const juice = {
-  setMuted(v: boolean) {
+  async hydrateMuted() {
+    if (hydrated) return muted;
+    try {
+      const raw = await AsyncStorage.getItem(MUTE_KEY);
+      muted = raw === '1';
+    } catch {
+      // ignore
+    }
+    hydrated = true;
+    return muted;
+  },
+  isMuted() {
+    return muted;
+  },
+  async setMuted(v: boolean) {
     muted = v;
+    try {
+      await AsyncStorage.setItem(MUTE_KEY, v ? '1' : '0');
+    } catch {
+      // ignore
+    }
   },
   hit: () => {
     haptic(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));

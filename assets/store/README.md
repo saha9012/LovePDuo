@@ -16,8 +16,10 @@ Generated procedurally (dark romantic amber/rose) — replace with live device c
 
 Regenerate:
 
-```bash
-python -c "# see agent scripts / prior session generator"
+```powershell
+python scripts\gen_store_frames.py
 ```
 
-See also `docs/STORE_LISTING.md`.
+Preview board: open `capture.html` in a browser.
+
+See `docs/STORE_SHOTS.md` and `docs/STORE_LISTING.md`.

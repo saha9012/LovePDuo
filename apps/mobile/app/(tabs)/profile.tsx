@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   }, [pair?.name]);
 
   useEffect(() => {
+    void juice.hydrateMuted().then(setSfxMuted);
     hydrateWsUrl().then((url) => {
       setWsDraft(url);
       setWsSaved(url);
@@ -158,12 +159,12 @@ export default function ProfileScreen() {
 
         <View style={styles.actions}>
           <LpdButton
-            label={sfxMuted ? 'SFX: выкл (включить)' : 'SFX: вкл (выключить)'}
+            label={sfxMuted ? 'SFX + haptics: выкл' : 'SFX + haptics: вкл'}
             variant="ghost"
-            onPress={() => {
+            onPress={async () => {
               const next = !sfxMuted;
               setSfxMuted(next);
-              juice.setMuted(next);
+              await juice.setMuted(next);
             }}
           />
           <LpdButton

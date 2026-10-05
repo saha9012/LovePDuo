@@ -27,6 +27,10 @@ export class PairRealtime {
       this.joinPayload?.userId === userId &&
       this.ws?.readyState === WebSocket.OPEN
     ) {
+      if (this.joinPayload.name !== name) {
+        this.joinPayload = { code, userId, name };
+        this.send({ type: 'presence', status: 'online', name });
+      }
       return;
     }
     this.disconnect(false);

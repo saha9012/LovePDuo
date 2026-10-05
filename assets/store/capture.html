@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>LovePDuo — store capture board</title>
+    <style>
+      :root {
+        --bg: #0a080c;
+        --ink: #f7ede3;
+        --amber: #e2b07a;
+        --rose: #e39aa0;
+        --muted: #c9b6a8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(ellipse at 20% 0%, #2a1620 0%, var(--bg) 55%);
+        color: var(--ink);
+        padding: 32px;
+      }
+      h1 { font-weight: 600; letter-spacing: 0.02em; margin: 0 0 8px; }
+      p { color: var(--muted); max-width: 56ch; line-height: 1.45; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 18px;
+        margin-top: 28px;
+      }
+      figure {
+        margin: 0;
+        background: rgba(20, 14, 28, 0.7);
+        border: 1px solid rgba(226, 176, 122, 0.22);
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 9 / 16;
+        object-fit: cover;
+        background: #111;
+      }
+      figcaption {
+        padding: 10px 12px 14px;
+        font-size: 13px;
+      }
+      .name { color: var(--amber); font-weight: 600; }
+      .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+      code { color: var(--rose); }
+    </style>
+  </head>
+  <body>
+    <h1>LovePDuo store frames</h1>
+    <p>
+      Preview of <code>assets/store/*.png</code>. Replace with live device shots —
+      see <code>docs/STORE_SHOTS.md</code>. Regenerate drafts:
+      <code>python scripts/gen_store_frames.py</code>
+    </p>
+    <div class="grid" id="grid"></div>
+    <script>
+      const slots = [
+        ["01_welcome.png", "Welcome / brand"],
+        ["02_pair.png", "Pair link"],
+        ["03_home.png", "Home room"],
+        ["04_sky_claim.png", "Sky Claim"],
+        ["05_heartbeat.png", "Heartbeat"],
+        ["06_music.png", "Music shelf"],
+        ["07_candle.png", "Together / candle"],
+      ];
+      const grid = document.getElementById("grid");
+      for (const [file, label] of slots) {
+        const fig = document.createElement("figure");
+        fig.innerHTML = `
+          <img src="./${file}" alt="${label}" />
+          <figcaption>
+            <div class="name">${label}</div>
+            <div class="hint">${file}</div>
+          </figcaption>`;
+        grid.appendChild(fig);
+      }
+    </script>
+  </body>
+</html>

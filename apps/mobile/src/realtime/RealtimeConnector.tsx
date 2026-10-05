@@ -1,10 +1,17 @@
 import { useEffect } from 'react';
 import { useApp } from '../store/AppStore';
 import { pairRealtime } from './PairRealtime';
+import { juice } from '../audio/juice';
+
+const PING_MS = 18000;
 
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
   const { user, pair, sendWarmth, setPartnerInfo, setRoomSize } = useApp();
+
+  useEffect(() => {
+    void juice.hydrateMuted();
+  }, []);
 
   useEffect(() => {
     if (!user || !pair) return;
@@ -15,6 +22,16 @@ export function RealtimeConnector() {
       }
       if (msg.type === 'warmth') {
         sendWarmth();
+      }
+      if (msg.type === 'presence') {
+        if (msg.from && msg.from !== user.id) {
+          const status = msg.status === 'away' ? 'away' : 'online';
+          const name =
+            typeof msg.name === 'string' && msg.name
+              ? msg.name
+              : pair.partnerName || 'Партнёр';
+          setPartnerInfo(name, status);
+        }
       }
       if (msg.type === 'joined') {
         const peers = msg.peers as { userId?: string; name?: string }[] | undefined;
@@ -34,8 +51,23 @@ export function RealtimeConnector() {
         setPartnerInfo(pair.partnerName || 'Партнёр', 'away');
       }
     });
+
+    const ping = setInterval(() => {
+      pairRealtime.send({
+        type: 'presence',
+        status: 'online',
+        name: user.displayName,
+      });
+    }, PING_MS);
+    pairRealtime.send({
+      type: 'presence',
+      status: 'online',
+      name: user.displayName,
+    });
+
     return () => {
       off();
+      clearInterval(ping);
     };
   }, [
     user?.id,

@@ -8,51 +8,81 @@ W, H = 1080, 1920
 BG = (7, 6, 10, 255)
 AMBER = (226, 176, 122, 255)
 ROSE = (227, 154, 160, 255)
+MIST = (156, 196, 196, 255)
 TEXT = (247, 237, 227, 255)
 MUTED = (201, 182, 168, 255)
 
 try:
-    f_big = ImageFont.truetype("arial.ttf", 92)
-    f_mid = ImageFont.truetype("arial.ttf", 48)
-    f_sm = ImageFont.truetype("arial.ttf", 34)
+    f_brand = ImageFont.truetype("arial.ttf", 108)
+    f_big = ImageFont.truetype("arial.ttf", 56)
+    f_mid = ImageFont.truetype("arial.ttf", 40)
+    f_sm = ImageFont.truetype("arial.ttf", 30)
 except Exception:
-    f_big = f_mid = f_sm = ImageFont.load_default()
+    f_brand = f_big = f_mid = f_sm = ImageFont.load_default()
 
 
-def base(title: str, sub: str, accent=AMBER):
+def vignette(d: ImageDraw.ImageDraw, accent):
+    for i in range(18, 0, -1):
+        r = 60 + i * 48
+        d.ellipse(
+            [W // 2 - r - 60, 380 - r, W // 2 + r - 60, 380 + r],
+            fill=(accent[0], accent[1], accent[2], 3 + i * 2),
+        )
+        d.ellipse(
+            [W // 2 - r + 140, 980 - r, W // 2 + r + 140, 980 + r],
+            fill=(ROSE[0], ROSE[1], ROSE[2], 2 + i * 2),
+        )
+
+
+def phone_frame(d: ImageDraw.ImageDraw, x, y, w, h, glow=AMBER):
+    d.rounded_rectangle([x - 8, y - 8, x + w + 8, y + h + 8], radius=48, fill=(glow[0], glow[1], glow[2], 28))
+    d.rounded_rectangle([x, y, x + w, y + h], radius=42, fill=(18, 14, 24, 255), outline=(glow[0], glow[1], glow[2], 90), width=3)
+    d.rounded_rectangle([x + 18, y + 48, x + w - 18, y + h - 36], radius=12, fill=(12, 10, 16, 255))
+    d.ellipse([x + w // 2 - 28, y + 16, x + w // 2 + 28, y + 34], fill=(40, 34, 48, 255))
+
+
+def base(title: str, sub: str, accent=AMBER, show_phones=False):
     img = Image.new("RGBA", (W, H), BG)
     d = ImageDraw.Draw(img)
-    for i in range(14, 0, -1):
-        r = 80 + i * 55
-        d.ellipse(
-            [W // 2 - r - 40, 420 - r, W // 2 + r - 40, 420 + r],
-            fill=(accent[0], accent[1], accent[2], 4 + i * 3),
-        )
-        d.ellipse(
-            [W // 2 - r + 120, 900 - r, W // 2 + r + 120, 900 + r],
-            fill=(ROSE[0], ROSE[1], ROSE[2], 3 + i * 2),
-        )
-    d.text((72, 160), "LovePDuo", fill=TEXT, font=f_big)
-    d.text((76, 270), "Love Play Duo", fill=AMBER, font=f_sm)
-    d.text((72, 420), title, fill=TEXT, font=f_mid)
-    d.text((72, 500), sub, fill=MUTED, font=f_sm)
-    d.rectangle([72, 360, 120, 366], fill=ROSE)
-    d.rectangle([132, 360, 220, 366], fill=AMBER)
+    vignette(d, accent)
+    d.text((72, 140), "LovePDuo", fill=TEXT, font=f_brand)
+    d.text((76, 268), "Love Play Duo", fill=accent, font=f_sm)
+    d.rectangle([72, 320, 118, 326], fill=ROSE)
+    d.rectangle([130, 320, 220, 326], fill=accent)
+    d.text((72, 360), title, fill=TEXT, font=f_big)
+    d.text((72, 440), sub, fill=MUTED, font=f_sm)
+    if show_phones:
+        phone_frame(d, 180, 620, 300, 540, accent)
+        phone_frame(d, 560, 700, 300, 540, ROSE)
+        d.text((210, 900), "YOU", fill=MIST, font=f_sm)
+        d.text((590, 980), "PAIR", fill=ROSE, font=f_sm)
     return img, d
 
 
 frames = [
-    ("01_welcome.png", "Тёмная зона для двоих", "Янтарь · пыльная роза · два телефона", AMBER),
-    ("02_pair.png", "Пара связана", "Код комнаты · cinematic pair link", ROSE),
-    ("03_home.png", "Комната пары", "Presence · тепло · mood ночи", AMBER),
-    ("04_sky_claim.png", "Sky Claim", "Лови огни. Комбо. Реванш.", AMBER),
-    ("05_heartbeat.png", "Heartbeat Tap", "Ритм вдвоём · sync bonus", ROSE),
-    ("06_music.png", "Полка пары", "Upload остаётся в LPD", AMBER),
-    ("07_candle.png", "Together", "Свеча · заметки · искры", ROSE),
+    ("01_welcome.png", "Тёмная зона для двоих", "Янтарь · пыльная роза · два телефона", AMBER, True),
+    ("02_pair.png", "Пара связана", "Код комнаты · cinematic pair link", ROSE, True),
+    ("03_home.png", "Комната пары", "Presence heartbeat · тепло · mood ночи", AMBER, False),
+    ("04_sky_claim.png", "Sky Claim", "Лови огни. Комбо. Реванш вдвоём.", AMBER, False),
+    ("05_heartbeat.png", "Heartbeat Tap", "Ритм вдвоём · sync bonus", ROSE, False),
+    ("06_music.png", "Полка пары", "Upload остаётся в LPD · Spotify meta", AMBER, False),
+    ("07_candle.png", "Together", "Свеча · заметки · искры", ROSE, False),
 ]
 
-for name, title, sub, acc in frames:
-    img, d = base(title, sub, acc)
+for name, title, sub, acc, phones in frames:
+    img, d = base(title, sub, acc, phones)
+    if not phones:
+        # soft UI plate
+        d.rounded_rectangle(
+            [90, 640, W - 90, 1280],
+            radius=36,
+            fill=(22, 16, 30, 210),
+            outline=(acc[0], acc[1], acc[2], 70),
+            width=2,
+        )
+        d.text((130, 720), "LIVE PREVIEW FRAME", fill=MIST, font=f_sm)
+        d.text((130, 800), title, fill=TEXT, font=f_mid)
+        d.text((130, 880), "Replace with device capture", fill=MUTED, font=f_sm)
     d.rounded_rectangle(
         [120, H - 280, W - 120, H - 180],
         radius=28,
@@ -60,6 +90,8 @@ for name, title, sub, acc in frames:
         outline=(226, 176, 122, 120),
         width=2,
     )
-    d.text((W // 2 - 140, H - 250), "Играть вдвоём", fill=TEXT, font=f_mid)
+    d.text((W // 2 - 160, H - 248), "Играть вдвоём", fill=TEXT, font=f_mid)
     img.convert("RGB").save(out / name, quality=92)
     print("wrote", name)
+
+print("ok ->", out)
