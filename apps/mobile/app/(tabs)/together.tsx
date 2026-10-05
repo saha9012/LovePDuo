@@ -53,6 +53,7 @@ export default function TogetherScreen() {
   const peerToastRef = useRef<string | null>(null);
   const warmthSeen = useRef(0);
   const warmthSentAt = useRef(0);
+  const lastWarmthMemAt = useRef(0);
 
   useEffect(() => {
     candleLitRef.current = lit;
@@ -78,7 +79,16 @@ export default function TogetherScreen() {
         peerToastRef.current === 'Оба в тепле');
     showPeer(racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло от партнёра');
     void (meet ? juice.perfect() : juice.warmth());
-  }, [warmthPulse]);
+    if (meet && Date.now() - lastWarmthMemAt.current > 8000) {
+      lastWarmthMemAt.current = Date.now();
+      const mem = addMemory({
+        kind: 'spark',
+        title: 'Warmth',
+        detail: racing ? 'Оба в тепле — одновременно.' : 'Тепло встречное.',
+      });
+      broadcastMemory(mem, user);
+    }
+  }, [warmthPulse, addMemory, user]);
 
   useEffect(() => {
     if (!lit) {
