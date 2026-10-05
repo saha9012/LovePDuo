@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft grade escalate ритм/темп/такт · Оба наравне · names  
 - [x] Soft «Оба наравне» · Home/Profile names · Play ждут  
 - [x] Home/Profile room+name dual · Play ждут игру · finish финише  
-- [x] Play «Оба ждут игру» · finish на финише · warmth  
 
 ## Catalog
 

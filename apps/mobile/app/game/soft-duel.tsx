@@ -241,16 +241,40 @@ export default function SoftDuelScreen() {
               : grade === 'GOOD'
                 ? 'Партнёр GOOD'
                 : 'Партнёр OK';
-          const bothPerfect = grade === 'PERFECT' && flashRef.current === 'PERFECT';
-          const bothGood = grade === 'GOOD' && flashRef.current === 'GOOD';
-          const bothOk = grade === 'OK' && flashRef.current === 'OK';
+          const bothPerfect =
+            grade === 'PERFECT' &&
+            (flashRef.current === 'PERFECT' ||
+              flashRef.current === 'Оба PERFECT' ||
+              flashRef.current === 'Оба в ритме');
+          const bothGood =
+            grade === 'GOOD' &&
+            (flashRef.current === 'GOOD' ||
+              flashRef.current === 'Оба GOOD' ||
+              flashRef.current === 'Оба в темпе');
+          const bothOk =
+            grade === 'OK' &&
+            (flashRef.current === 'OK' ||
+              flashRef.current === 'Оба OK' ||
+              flashRef.current === 'Оба в такте');
+          const racePerfect =
+            flashRef.current === 'Оба PERFECT' || flashRef.current === 'Оба в ритме';
+          const raceGood =
+            flashRef.current === 'Оба GOOD' || flashRef.current === 'Оба в темпе';
+          const raceOk =
+            flashRef.current === 'Оба OK' || flashRef.current === 'Оба в такте';
           setFlash(
             bothPerfect
-              ? 'Оба PERFECT'
+              ? racePerfect
+                ? 'Оба в ритме'
+                : 'Оба PERFECT'
               : bothGood
-                ? 'Оба GOOD'
+                ? raceGood
+                  ? 'Оба в темпе'
+                  : 'Оба GOOD'
                 : bothOk
-                  ? 'Оба OK'
+                  ? raceOk
+                    ? 'Оба в такте'
+                    : 'Оба OK'
                   : label,
           );
           flashScale.value = withSpring(1.16, { damping: 10 });
