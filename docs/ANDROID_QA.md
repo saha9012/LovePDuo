@@ -58,7 +58,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Signal Draw: first stroke · рисуем вместе · brush · 5s · sync-finish · rematch · peer_left  
 - [ ] Orbit Catch: miss/align · sync-align · оба catch · оба miss · sync-finish · rematch · peer_left  
 - [ ] Soft Duel: tap grade · оба PERFECT/GOOD/OK · оба рано · arm · sync-finish · rematch · late-start · peer_left  
-- [ ] Word Veil: typing · пишем вместе · lock clear · match juice · finish sync · rematch · peer_left  
+- [ ] Word Veil: typing · пишем вместе · оба закрыли · lock clear · match juice · finish sync · rematch · peer_left  
 - [ ] Lobby: Ready toast · cancel mid-count · peer leave/rejoin · Ready rebroadcast · late-start «догоняем» · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast  
 - [ ] Music: now-playing · stop · shelf · reaction sync · reaction match · leave/rejoin  
