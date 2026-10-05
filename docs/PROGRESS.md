@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Live miss/decoy flashes: Orbit · Heartbeat · Sky Claim · Soft Duel  
-- [x] Home room-rename toast · join deep-link · Music reaction sync  
-- [x] Lobby/Together/mood/rematch (prior)  
+- [x] Truth Or Spark turn toast · Signal Draw brush juice · Profile scroll + invite  
+- [x] Live miss flashes · Word Veil typing · room rename toast  
+- [x] Join/Music/lobby/Together sync (prior)  
 
 ## Catalog
 

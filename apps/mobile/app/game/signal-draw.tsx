@@ -367,13 +367,19 @@ export default function SignalDrawScreen() {
             {toast ? <Text style={styles.toast}>{toast}</Text> : null}
             <View style={styles.tools}>
               <Text
-                onPress={() => setBrush('fine')}
+                onPress={() => {
+                  setBrush('fine');
+                  void juice.hit();
+                }}
                 style={[styles.tool, brush === 'fine' && styles.toolOn]}
               >
                 тонкий
               </Text>
               <Text
-                onPress={() => setBrush('bold')}
+                onPress={() => {
+                  setBrush('bold');
+                  void juice.beat();
+                }}
                 style={[styles.tool, brush === 'bold' && styles.toolOn]}
               >
                 жирный

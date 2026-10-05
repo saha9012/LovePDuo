@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -12,6 +12,7 @@ import { juice } from '../../src/audio/juice';
 import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime/wsConfig';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const [nameSaved, setNameSaved] = useState(false);
   const [roomSaved, setRoomSaved] = useState(false);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   useEffect(() => {
     setNameDraft(user?.displayName ?? '');
@@ -46,7 +48,13 @@ export default function ProfileScreen() {
 
   return (
     <LpdBackground mood="night">
-      <View style={[styles.root, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 28 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.kicker}>Profile</Text>
         <Text style={typography.headline}>Пара и настройки</Text>
 
@@ -108,6 +116,21 @@ export default function ProfileScreen() {
               void juice.card();
             }}
           />
+          {pair?.code ? (
+            <LpdButton
+              label={inviteCopied ? 'Invite скопирован' : 'Скопировать invite + deep link'}
+              variant="ghost"
+              onPress={() => {
+                void copyText(pairInviteMessage(pair.code)).then((ok) => {
+                  if (ok) {
+                    setInviteCopied(true);
+                    setTimeout(() => setInviteCopied(false), 1600);
+                    void juice.warmth();
+                  }
+                });
+              }}
+            />
+          ) : null}
         </View>
 
         <View style={styles.wsBox}>
@@ -192,14 +215,13 @@ export default function ProfileScreen() {
             }}
           />
         </View>
-      </View>
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
     paddingHorizontal: spacing.xl,
     gap: spacing.lg,
   },
@@ -290,7 +312,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   actions: {
-    marginTop: 'auto',
     gap: spacing.sm,
+    marginTop: spacing.sm,
   },
 });

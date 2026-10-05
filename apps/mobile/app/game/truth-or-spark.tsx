@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -61,6 +61,8 @@ export default function TruthOrSparkScreen() {
   const [peerName, setPeerName] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [turnMine, setTurnMine] = useState(true);
+  const [turnToast, setTurnToast] = useState<string | null>(null);
+  const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
   const card = deck[index % deck.length];
@@ -68,6 +70,12 @@ export default function TruthOrSparkScreen() {
   const cardScale = useSharedValue(1);
   const cardOpacity = useSharedValue(1);
   const cardTilt = useSharedValue(0);
+
+  const showTurnToast = (text: string) => {
+    setTurnToast(text);
+    if (turnToastTimer.current) clearTimeout(turnToastTimer.current);
+    turnToastTimer.current = setTimeout(() => setTurnToast(null), 1600);
+  };
 
   const flipIn = () => {
     cardOpacity.value = 0.35;
@@ -105,6 +113,7 @@ export default function TruthOrSparkScreen() {
         setIndex(0);
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
+        showTurnToast('Новая колода — твой ход');
         void juice.sync();
         return;
       }
@@ -114,6 +123,8 @@ export default function TruthOrSparkScreen() {
       if (payload.fromName) setPeerName(payload.fromName);
       if (payload.fromId && payload.fromId !== user.id) {
         setTurnMine(true);
+        showTurnToast('Твой ход');
+        void juice.hit();
       }
     });
     return () => {
@@ -202,6 +213,7 @@ export default function TruthOrSparkScreen() {
           seed {matchSeed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
           {isHost ? ' · host' : ''} · ход: {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
+        {turnToast ? <Text style={styles.turnToast}>{turnToast}</Text> : null}
 
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
@@ -274,6 +286,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     fontSize: 12,
     color: colors.textMuted,
+  },
+  turnToast: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.accentRose,
   },
   progressTrack: {
     height: 3,
