@@ -384,10 +384,34 @@ export default function SoftDuelScreen() {
     setArmed(false);
     const wait = 600 + ((seedRef.current + r * 97) % 900);
     armAt.current = Date.now() + wait;
-    setFlash('Жди…');
+    const waitDual =
+      flashRef.current === 'Партнёр ЖМИ' ||
+      flashRef.current === 'Оба ЖМИ' ||
+      flashRef.current === 'Оба жмут' ||
+      flashRef.current === 'Оба ждут' ||
+      flashRef.current === 'Оба ждут вместе';
+    setFlash(
+      waitDual
+        ? flashRef.current === 'Оба ждут' || flashRef.current === 'Оба ждут вместе'
+          ? 'Оба ждут вместе'
+          : 'Оба ждут'
+        : 'Жди…',
+    );
     flashScale.value = withTiming(0.92, { duration: 120 });
     setTimeout(() => {
-      setFlash('ЖМИ');
+      const pressDual =
+        flashRef.current === 'Партнёр ЖМИ' ||
+        flashRef.current === 'Оба ЖМИ' ||
+        flashRef.current === 'Оба жмут' ||
+        flashRef.current === 'Оба ждут' ||
+        flashRef.current === 'Оба ждут вместе';
+      setFlash(
+        pressDual
+          ? flashRef.current === 'Оба ЖМИ' || flashRef.current === 'Оба жмут'
+            ? 'Оба жмут'
+            : 'Оба ЖМИ'
+          : 'ЖМИ',
+      );
       setArmed(true);
       flashScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
       void juice.beat();
