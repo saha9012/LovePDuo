@@ -81,6 +81,8 @@ export default function SignalDrawScreen() {
   );
   const [canvasSize, setCanvasSize] = useState({ w: 1, h: 1 });
   const size = useRef({ w: 1, h: 1 });
+  const canvasOrigin = useRef({ x: 0, y: 0 });
+  const canvasRef = useRef<View>(null);
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
   const peerCount = useRef(0);
@@ -476,6 +478,27 @@ export default function SignalDrawScreen() {
     return () => clearInterval(id);
   }, [phase, addMemory]);
 
+  const applyCanvasFrame = (x: number, y: number, w: number, h: number) => {
+    if (w < 2 || h < 2) return false;
+    canvasOrigin.current = { x, y };
+    const next = { w, h };
+    size.current = next;
+    setCanvasSize(next);
+    return true;
+  };
+
+  const syncCanvasFrame = (cb?: () => void) => {
+    const node = canvasRef.current;
+    if (!node?.measureInWindow) {
+      cb?.();
+      return;
+    }
+    node.measureInWindow((x, y, w, h) => {
+      applyCanvasFrame(x, y, w, h);
+      cb?.();
+    });
+  };
+
   const onLayout = (e: LayoutChangeEvent) => {
     const next = {
       w: Math.max(1, e.nativeEvent.layout.width),
@@ -483,12 +506,17 @@ export default function SignalDrawScreen() {
     };
     size.current = next;
     setCanvasSize(next);
+    requestAnimationFrame(() => syncCanvasFrame());
   };
 
-  const toNorm = (x: number, y: number): Pt => ({
-    x: Math.max(0, Math.min(1, x / size.current.w)),
-    y: Math.max(0, Math.min(1, y / size.current.h)),
-  });
+  const toNormPage = (pageX: number, pageY: number): Pt | null => {
+    const { w, h } = size.current;
+    if (w < 2 || h < 2) return null;
+    return {
+      x: Math.max(0, Math.min(1, (pageX - canvasOrigin.current.x) / w)),
+      y: Math.max(0, Math.min(1, (pageY - canvasOrigin.current.y) / h)),
+    };
+  };
 
   const clearMine = () => {
     setStrokes((prev) => prev.filter((s) => s.by !== 'me'));
@@ -516,49 +544,57 @@ export default function SignalDrawScreen() {
       PanResponder.create({
         onStartShouldSetPanResponder: () => phase === 'playing',
         onMoveShouldSetPanResponder: () => phase === 'playing',
+        onPanResponderTerminationRequest: () => false,
         onPanResponderGrant: (evt) => {
-          const p = toNorm(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
-          const stroke: Stroke = {
-            id: `s_${user?.id ?? 'me'}_${Date.now()}`,
-            color: myColor,
-            points: [p],
-            by: 'me',
-            width: brushW,
+          const { pageX, pageY } = evt.nativeEvent;
+          const begin = () => {
+            const p = toNormPage(pageX, pageY);
+            if (!p) return;
+            const stroke: Stroke = {
+              id: `s_${user?.id ?? 'me'}_${Date.now()}`,
+              color: myColor,
+              points: [p],
+              by: 'me',
+              width: brushW,
+            };
+            current.current = stroke;
+            setStrokes((prev) => [...prev, stroke]);
+            myCount.current += 1;
+            pairRealtime.sendGame('signal-draw', {
+              stroke: { ...stroke, by: 'peer' },
+              count: myCount.current,
+            });
+            void juice.hit();
+            if (myCount.current === peerCount.current && myCount.current > 0) {
+              setTimeout(() => {
+                showToast('Оба на штрихах');
+                void juice.sync();
+              }, 320);
+            } else if (myCount.current > peerCount.current + 1) {
+              setTimeout(() => {
+                const racing =
+                  toastRef.current === 'Я впереди' ||
+                  toastRef.current === 'Гонка' ||
+                  toastRef.current === 'Оба в гонке';
+                showToast(
+                  toastRef.current === 'Гонка' || toastRef.current === 'Оба в гонке'
+                    ? 'Оба в гонке'
+                    : racing
+                      ? 'Гонка'
+                      : 'Я впереди',
+                );
+                void (racing ? juice.sync() : juice.hit());
+              }, 320);
+            }
           };
-          current.current = stroke;
-          setStrokes((prev) => [...prev, stroke]);
-          myCount.current += 1;
-          pairRealtime.sendGame('signal-draw', {
-            stroke: { ...stroke, by: 'peer' },
-            count: myCount.current,
-          });
-          void juice.hit();
-          if (myCount.current === peerCount.current && myCount.current > 0) {
-            setTimeout(() => {
-              showToast('Оба на штрихах');
-              void juice.sync();
-            }, 320);
-          } else if (myCount.current > peerCount.current + 1) {
-            setTimeout(() => {
-              const racing =
-                toastRef.current === 'Я впереди' ||
-                toastRef.current === 'Гонка' ||
-                toastRef.current === 'Оба в гонке';
-              showToast(
-                toastRef.current === 'Гонка' || toastRef.current === 'Оба в гонке'
-                  ? 'Оба в гонке'
-                  : racing
-                    ? 'Гонка'
-                    : 'Я впереди',
-              );
-              void (racing ? juice.sync() : juice.hit());
-            }, 320);
-          }
+          // Measure first — locationY often maps wrong vs flex canvas height (ink stuck at top)
+          syncCanvasFrame(begin);
         },
         onPanResponderMove: (evt) => {
           const cur = current.current;
           if (!cur) return;
-          const p = toNorm(evt.nativeEvent.locationX, evt.nativeEvent.locationY);
+          const p = toNormPage(evt.nativeEvent.pageX, evt.nativeEvent.pageY);
+          if (!p) return;
           const last = cur.points[cur.points.length - 1];
           if (last && Math.hypot(p.x - last.x, p.y - last.y) < 0.004) return;
           cur.points.push(p);
@@ -696,7 +732,13 @@ export default function SignalDrawScreen() {
                 стереть моё
               </Text>
             </View>
-            <View style={[styles.canvas, peerPulse && styles.canvasLive]} onLayout={onLayout} {...pan.panHandlers}>
+            <View
+              ref={canvasRef}
+              collapsable={false}
+              style={[styles.canvas, peerPulse && styles.canvasLive]}
+              onLayout={onLayout}
+              {...pan.panHandlers}
+            >
               <View style={styles.grid} pointerEvents="none" />
               <Svg
                 pointerEvents="none"

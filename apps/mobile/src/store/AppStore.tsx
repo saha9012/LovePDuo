@@ -28,6 +28,8 @@ export type PairState = {
   partnerPresence: Presence;
   mood: 'night' | 'warm' | 'rain';
   roomSize?: number;
+  /** When this device first bound the pair — for “days together” stats */
+  pairedAt?: number;
 };
 
 export type TrackItem = {
@@ -158,9 +160,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           };
           setUser(parsed.user ?? null);
           if (parsed.pair) {
-            const p = parsed.pair as PairState;
+            const p = { ...parsed.pair } as PairState;
             if (!p.hostUserId && parsed.user?.id) {
               p.hostUserId = parsed.user.id;
+            }
+            if (!p.pairedAt) {
+              p.pairedAt = Date.now();
             }
             setPair(p);
           } else {
@@ -221,6 +226,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       partnerName: 'Ожидание партнёра',
       partnerPresence: 'offline',
       mood: 'night',
+      pairedAt: Date.now(),
     };
     setPair(next);
     return next;
@@ -239,6 +245,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       partnerName: 'Партнёр',
       partnerPresence: 'online',
       mood: 'warm',
+      pairedAt: Date.now(),
     };
     setPair(next);
     return next;

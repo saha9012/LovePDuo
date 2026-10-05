@@ -10,6 +10,7 @@ import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useApp } from '../../src/store/AppStore';
+import { useMemories } from '../../src/store/MemoriesStore';
 
 type GameTag = 'mvp' | 'new';
 type Filter = 'all' | GameTag;
@@ -106,6 +107,7 @@ export default function PlayScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { pair, user } = useApp();
+  const { items: memories } = useMemories();
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [lastGame, setLastGame] = useState<string | null>(null);
@@ -232,6 +234,19 @@ export default function PlayScreen() {
     [lastGame],
   );
 
+  const playStats = useMemo(() => {
+    const byKind: Record<string, number> = {};
+    for (const m of memories) {
+      byKind[m.kind] = (byKind[m.kind] ?? 0) + 1;
+    }
+    const played = memories.filter((m) =>
+      ['sky', 'heartbeat', 'spark', 'draw', 'orbit', 'duel', 'veil'].includes(m.kind),
+    ).length;
+    const mvp = CATALOG.filter((g) => g.tag === 'mvp').length;
+    const neu = CATALOG.filter((g) => g.tag === 'new').length;
+    return { played, catalog: CATALOG.length, mvp, neu, byKind };
+  }, [memories]);
+
   const games = useMemo(() => {
     const query = q.trim().toLowerCase();
     return CATALOG.filter((g) => {
@@ -269,8 +284,27 @@ export default function PlayScreen() {
         <Text style={styles.kicker}>Play</Text>
         <Text style={typography.headline}>Миниигры для двоих</Text>
         <Text style={[typography.body, styles.sub]}>
-          MVP + расширения. Два телефона. Живой post-match.
+          {playStats.catalog} в каталоге · сыграно {playStats.played} · MVP {playStats.mvp} · new{' '}
+          {playStats.neu}
         </Text>
+        <View style={styles.statStrip}>
+          {(
+            [
+              ['sky', 'Sky'],
+              ['heartbeat', 'Beat'],
+              ['spark', 'ToS'],
+              ['draw', 'Draw'],
+              ['orbit', 'Orbit'],
+              ['duel', 'Duel'],
+              ['veil', 'Veil'],
+            ] as const
+          ).map(([kind, label]) => (
+            <View key={kind} style={styles.statPill}>
+              <Text style={styles.statPillNum}>{playStats.byKind[kind] ?? 0}</Text>
+              <Text style={styles.statPillLabel}>{label}</Text>
+            </View>
+          ))}
+        </View>
         {peekToast ? <Text style={styles.peekToast}>{peekToast}</Text> : null}
 
         {peerLobby ? (
@@ -360,7 +394,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   sub: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  statPill: {
+    minWidth: 44,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  statPillNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  statPillLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
   },
   peekToast: {
     fontFamily: fonts.uiMedium,

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
@@ -23,7 +23,7 @@ import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, warmthPulse, setMood, notes } = useApp();
+  const { user, pair, warmthPulse, setMood, notes, tracks, playlists } = useApp();
   const { items: memories } = useMemories();
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
@@ -328,6 +328,58 @@ export default function HomeScreen() {
     transform: [{ scale: pulse.value }],
   }));
 
+  const stats = useMemo(() => {
+    const pairedAt = pair?.pairedAt;
+    const daysTogether = pairedAt
+      ? Math.max(1, Math.floor((Date.now() - pairedAt) / 86_400_000) + 1)
+      : 0;
+    const gameMems = memories.filter((m) =>
+      ['sky', 'heartbeat', 'spark', 'draw', 'orbit', 'duel', 'veil'].includes(m.kind),
+    );
+    const shelfTracks = playlists.reduce((n, pl) => n + pl.trackIds.length, 0);
+    const reactions = tracks.filter((t) => t.reaction).length;
+    return {
+      daysTogether,
+      games: gameMems.length,
+      memories: memories.length,
+      notes: notes.length,
+      tracks: tracks.length,
+      shelfTracks,
+      warmth: warmthPulse,
+      reactions,
+      online: pair?.partnerPresence === 'online' ? 1 : 0,
+      room: typeof pair?.roomSize === 'number' ? pair.roomSize : wsOnline ? 1 : 0,
+    };
+  }, [
+    pair?.pairedAt,
+    pair?.partnerPresence,
+    pair?.roomSize,
+    memories,
+    notes.length,
+    tracks,
+    playlists,
+    warmthPulse,
+    wsOnline,
+  ]);
+
+  const recentFeed = useMemo(() => {
+    const memRows = memories.slice(0, 8).map((m) => ({
+      id: `m_${m.id}`,
+      kind: 'memory' as const,
+      title: m.title,
+      detail: m.detail,
+      at: m.at,
+    }));
+    const noteRows = notes.slice(0, 6).map((n) => ({
+      id: `n_${n.id}`,
+      kind: 'note' as const,
+      title: n.from,
+      detail: n.text,
+      at: n.at,
+    }));
+    return [...memRows, ...noteRows].sort((a, b) => b.at - a.at).slice(0, 10);
+  }, [memories, notes]);
+
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
     const same = pair?.mood === m;
     const again =
@@ -359,8 +411,22 @@ export default function HomeScreen() {
 
   return (
     <LpdBackground mood={pair?.mood ?? 'night'}>
-      <View style={[styles.root, { paddingTop: insets.top + 16 }]}>
-        <BrandMark size="nav" />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 14, paddingBottom: insets.bottom + 28 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.topRow}>
+          <BrandMark size="nav" />
+          <Text style={styles.liveDot}>
+            {wsOnline ? '· live' : '· …'}
+            {stats.room >= 2 ? ` · ${stats.room}` : ''}
+          </Text>
+        </View>
+
         <View style={styles.room}>
           <Text style={styles.roomName}>{pair?.name ?? 'Комната'}</Text>
           <View style={styles.pairRow}>
@@ -368,7 +434,11 @@ export default function HomeScreen() {
               <PairAvatar name={user?.displayName ?? 'Ты'} presence="online" />
               <Text style={styles.personName}>{user?.displayName ?? 'Ты'}</Text>
             </View>
-            <View style={styles.linkLine} />
+            <View style={styles.linkLine}>
+              <View style={styles.linkDash} />
+              <Text style={styles.linkNum}>{stats.daysTogether || '—'}</Text>
+              <View style={styles.linkDash} />
+            </View>
             <View style={styles.person}>
               <PairAvatar
                 name={pair?.partnerName ?? 'Партнёр'}
@@ -383,72 +453,112 @@ export default function HomeScreen() {
               : 'Ждём пульс партнёра. Можно греть комнату заранее.'}
           </Text>
           <Text style={styles.meta}>
-            Код пары: {pair?.code ?? '—'} · Realtime:{' '}
-            {wsOnline ? 'online' : 'переподключение…'}
-            {typeof pair?.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''}
+            Код {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
+            {typeof pair?.roomSize === 'number' ? ` · комната ${pair.roomSize}` : ''}
           </Text>
-          {Platform.OS === 'web' ? (
-            <Text style={styles.hint}>
-              Тест вдвоём: окно 1 создаёт пару, окно 2 (инкognito) → «есть код». Один backend :8787.
-            </Text>
-          ) : (
-            <Text style={styles.hint}>
-              Два телефона: Profile → Realtime URL = ws://IP_ПК:8787 (одна Wi‑Fi).
-            </Text>
-          )}
-          {lastMemory ? (
-            <Text style={styles.memory}>
-              Последнее: {lastMemory.title} — {lastMemory.detail}
-            </Text>
-          ) : null}
-          {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
-          {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
-          {peerLobby ? (
-            <Text
-              style={styles.peerLobby}
-              onPress={() =>
-                router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
-              }
-            >
-              Партнёр ждёт в {peerLobby.title} — тапни
-            </Text>
-          ) : null}
         </View>
 
-        <Animated.View style={[styles.ctaBlock, warmthStyle]}>
-          <LpdButton
-            label={peerLobby ? `К партнёру · ${peerLobby.title}` : 'Играть вдвоём'}
-            onPress={() =>
-              peerLobby
-                ? router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
-                : router.push('/(tabs)/play')
-            }
-          />
-          <LpdButton
-            label="Отправить тепло"
-            variant="ghost"
-            onPress={() => {
-              warmthSentAt.current = Date.now();
-              pairRealtime.sendWarmth();
-              setWarmthToast('Тепло ушло');
-              void juice.warmth();
-              setTimeout(() => setWarmthToast(null), 1400);
-            }}
-          />
-          <LpdButton
-            label={copied ? 'Код скопирован' : 'Скопировать / поделиться кодом'}
-            variant="ghost"
-            onPress={() => {
-              const code = pair?.code ?? '';
-              void copyText(pairInviteMessage(code)).then((ok) => {
-                if (ok) {
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 1600);
+        <View style={styles.statGrid}>
+          {(
+            [
+              { n: stats.daysTogether, l: 'дней' },
+              { n: stats.games, l: 'игр' },
+              { n: stats.warmth, l: 'тепла' },
+              { n: stats.tracks, l: 'треков' },
+              { n: stats.notes, l: 'заметок' },
+              { n: stats.memories, l: 'memory' },
+              { n: stats.shelfTracks, l: 'на полках' },
+              { n: stats.reactions, l: 'реакций' },
+            ] as const
+          ).map((s) => (
+            <View key={s.l} style={styles.statCell}>
+              <Text style={styles.statNum}>{s.n}</Text>
+              <Text style={styles.statLabel}>{s.l}</Text>
+            </View>
+          ))}
+        </View>
+
+        {(warmthToast || roomToast || peerLobby) && (
+          <View style={styles.toastBlock}>
+            {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
+            {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
+            {peerLobby ? (
+              <Text
+                style={styles.peerLobby}
+                onPress={() =>
+                  router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
                 }
-              });
-              void juice.hit();
-            }}
-          />
+              >
+                Партнёр ждёт в {peerLobby.title} — тапни
+              </Text>
+            ) : null}
+          </View>
+        )}
+
+        <Animated.View style={[styles.ctaBlock, warmthStyle]}>
+          <View style={styles.ctaRow}>
+            <View style={styles.ctaGrow}>
+              <LpdButton
+                label={peerLobby ? `К партнёру` : 'Играть'}
+                onPress={() =>
+                  peerLobby
+                    ? router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
+                    : router.push('/(tabs)/play')
+                }
+              />
+            </View>
+            <View style={styles.ctaGrow}>
+              <LpdButton
+                label={`Тепло · ${stats.warmth}`}
+                variant="ghost"
+                onPress={() => {
+                  warmthSentAt.current = Date.now();
+                  pairRealtime.sendWarmth();
+                  setWarmthToast('Тепло ушло');
+                  void juice.warmth();
+                  setTimeout(() => setWarmthToast(null), 1400);
+                }}
+              />
+            </View>
+          </View>
+          <View style={styles.quickRow}>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => router.push('/(tabs)/music')}
+            >
+              <Text style={styles.quickNum}>{stats.tracks}</Text>
+              <Text style={styles.quickLabel}>музыка</Text>
+            </Pressable>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => router.push('/(tabs)/together')}
+            >
+              <Text style={styles.quickNum}>{stats.notes}</Text>
+              <Text style={styles.quickLabel}>together</Text>
+            </Pressable>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => router.push('/(tabs)/play')}
+            >
+              <Text style={styles.quickNum}>{stats.games}</Text>
+              <Text style={styles.quickLabel}>каталог</Text>
+            </Pressable>
+            <Pressable
+              style={styles.quickChip}
+              onPress={() => {
+                void copyText(pairInviteMessage(pair?.code ?? '')).then((ok) => {
+                  if (ok) {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1600);
+                  }
+                });
+                void juice.hit();
+              }}
+            >
+              <Text style={styles.quickNum}>{copied ? 'ok' : pair?.code?.slice(0, 3) ?? '—'}</Text>
+              <Text style={styles.quickLabel}>{copied ? 'скопировано' : 'код'}</Text>
+            </Pressable>
+          </View>
           <View style={styles.moodRow}>
             {(['night', 'warm', 'rain'] as const).map((m) => (
               <Text
@@ -456,30 +566,82 @@ export default function HomeScreen() {
                 onPress={() => pickMood(m)}
                 style={[styles.moodChip, pair?.mood === m && styles.moodActive]}
               >
-                {m === 'night' ? 'Ночь' : m === 'warm' ? 'Тёплый свет' : 'Дождь'}
+                {m === 'night' ? 'Ночь' : m === 'warm' ? 'Тёплый' : 'Дождь'}
               </Text>
             ))}
           </View>
         </Animated.View>
-      </View>
+
+        <View style={styles.section}>
+          <View style={styles.sectionHead}>
+            <Text style={styles.sectionTitle}>Лента пары</Text>
+            <Text style={styles.sectionMeta}>{recentFeed.length} событий</Text>
+          </View>
+          {recentFeed.length === 0 ? (
+            <Text style={styles.emptyFeed}>
+              Пока пусто — сыграйте раунд, киньте заметку или трек. Цифры сверху оживут.
+            </Text>
+          ) : (
+            recentFeed.map((row) => (
+              <View key={row.id} style={styles.feedRow}>
+                <Text style={styles.feedKind}>{row.kind === 'note' ? 'note' : 'mem'}</Text>
+                <View style={styles.feedBody}>
+                  <Text style={styles.feedTitle} numberOfLines={1}>
+                    {row.title}
+                  </Text>
+                  <Text style={styles.feedDetail} numberOfLines={2}>
+                    {row.detail}
+                  </Text>
+                </View>
+                <Text style={styles.feedWhen}>
+                  {new Date(row.at).toLocaleTimeString('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </Text>
+              </View>
+            ))
+          )}
+        </View>
+
+        {Platform.OS === 'web' ? (
+          <Text style={styles.hint}>
+            Тест вдвоём: окно 1 создаёт пару, окно 2 (incognito) → «есть код». Backend :8787.
+          </Text>
+        ) : (
+          <Text style={styles.hint}>
+            Два телефона: Profile → Realtime URL = ws://IP_ПК:8787 (одна Wi‑Fi).
+          </Text>
+        )}
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1 },
   root: {
-    flex: 1,
     paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xl,
+    gap: spacing.md,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
+  liveDot: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.accentMist,
+    letterSpacing: 0.5,
+  },
   room: {
-    gap: spacing.lg,
-    marginTop: spacing.xxl,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   roomName: {
     fontFamily: fonts.display,
-    fontSize: 34,
+    fontSize: 32,
     color: colors.textPrimary,
   },
   pairRow: {
@@ -500,17 +662,91 @@ const styles = StyleSheet.create({
   },
   linkLine: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  linkDash: {
+    flex: 1,
     height: 1,
     backgroundColor: 'rgba(226,176,122,0.35)',
   },
+  linkNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+    minWidth: 18,
+    textAlign: 'center',
+  },
+  statGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  statCell: {
+    width: '23%',
+    flexGrow: 1,
+    minWidth: 72,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+    gap: 2,
+  },
+  statNum: {
+    fontFamily: fonts.mono,
+    fontSize: 20,
+    color: colors.accentAmber,
+  },
+  statLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
+    textTransform: 'lowercase',
+  },
+  toastBlock: { gap: 4 },
   ctaBlock: {
     gap: spacing.sm,
-    marginBottom: spacing.lg,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  ctaGrow: { flex: 1 },
+  quickRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  quickChip: {
+    flexGrow: 1,
+    minWidth: '22%',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.18)',
+    backgroundColor: 'rgba(255,214,186,0.05)',
+    alignItems: 'center',
+    gap: 2,
+  },
+  quickNum: {
+    fontFamily: fonts.mono,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  quickLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
   },
   moodRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-    marginTop: spacing.sm,
   },
   moodChip: {
     fontFamily: fonts.uiMedium,
@@ -518,51 +754,108 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     borderWidth: 1,
     borderColor: colors.stroke,
+    backgroundColor: 'rgba(255,214,186,0.04)',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: radii.sm,
     overflow: 'hidden',
   },
   moodActive: {
     color: colors.accentAmber,
     borderColor: 'rgba(226,176,122,0.45)',
+    backgroundColor: 'rgba(226,176,122,0.1)',
   },
   meta: {
     fontFamily: fonts.mono,
-    fontSize: 13,
+    fontSize: 12,
     color: colors.accentAmber,
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
   hint: {
     fontFamily: fonts.ui,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 16,
     color: colors.textMuted,
-  },
-  memory: {
     marginTop: 4,
-    fontFamily: fonts.ui,
-    fontSize: 13,
-    lineHeight: 18,
-    color: colors.accentMist,
   },
   warmthToast: {
-    marginTop: 8,
     fontFamily: fonts.uiSemi,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.accentRose,
   },
   roomToast: {
-    marginTop: 4,
     fontFamily: fonts.uiMedium,
     fontSize: 13,
     color: colors.accentAmber,
   },
   peerLobby: {
-    marginTop: 10,
     fontFamily: fonts.uiSemi,
-    fontSize: 14,
+    fontSize: 13,
     color: colors.accentAmber,
     textDecorationLine: 'underline',
+  },
+  section: {
+    gap: 8,
+    marginTop: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,214,186,0.1)',
+  },
+  sectionHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  sectionTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  sectionMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textMuted,
+  },
+  emptyFeed: {
+    fontFamily: fonts.ui,
+    fontSize: 13,
+    lineHeight: 19,
+    color: colors.textMuted,
+  },
+  feedRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.1)',
+    backgroundColor: 'rgba(18,16,24,0.45)',
+  },
+  feedKind: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    color: colors.accentMist,
+    marginTop: 3,
+    width: 28,
+  },
+  feedBody: { flex: 1, gap: 2 },
+  feedTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.textPrimary,
+  },
+  feedDetail: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
+  },
+  feedWhen: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 3,
   },
 });

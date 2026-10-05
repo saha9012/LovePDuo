@@ -422,18 +422,60 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     if (phase !== 'playing') return;
     let spawnTimer: ReturnType<typeof setInterval> | null = null;
+    const endAt = Date.now() + skyClaimConfig.durationSec * 1000;
+    let lastShownSec = skyClaimConfig.durationSec;
+    let lastSyncElapsed = -1;
+    let finished = false;
 
     const scheduleSpawn = (progress: number) => {
       if (spawnTimer) clearInterval(spawnTimer);
       spawnTimer = setInterval(() => {
-        const p =
-          1 - timeLeftRef.current / skyClaimConfig.durationSec;
+        const p = 1 - timeLeftRef.current / skyClaimConfig.durationSec;
         setObjects((prev) => [...prev, spawner(p)].slice(-18));
       }, spawnIntervalMs(progress));
     };
 
     scheduleSpawn(0);
 
+    const finishRound = () => {
+      if (finished) return;
+      finished = true;
+      if (spawnTimer) clearInterval(spawnTimer);
+      pairRealtime.sendGame('sky-claim', {
+        phase: 'finished',
+        score: scoreRef.current,
+      });
+      if (!partnerLiveRef.current) {
+        const partner = Math.max(
+          0,
+          Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
+        );
+        setPartnerScore(partner);
+      }
+      if (partnerFinishedRef.current) {
+        setSyncFinish(true);
+        const racing =
+          peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+        const dual = racing ? 'Оба на финише' : 'Оба финиш';
+        setFinishDualLabel(dual);
+        bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
+        void juice.perfect();
+      }
+      setPhase('finished');
+      void juice.postMatch();
+      const mem = addMemory({
+        kind: 'sky',
+        title: 'Sky Claim',
+        detail: partnerFinishedRef.current
+          ? `Оба финиш · ты ${scoreRef.current}`
+          : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+      });
+      broadcastMemory(mem, user);
+      setTimeLeft(0);
+      timeLeftRef.current = 0;
+    };
+
+    // 50ms = physics only; wall-clock drives the real seconds HUD
     const tick = setInterval(() => {
       setObjects((prev) => {
         const next: SkyObject[] = [];
@@ -450,59 +492,33 @@ export default function SkyClaimScreen() {
         }
         return next;
       });
-      setTimeLeft((t) => {
-        timeLeftRef.current = t - 1;
-        if (t <= 1) {
-          if (spawnTimer) clearInterval(spawnTimer);
-          clearInterval(tick);
-          pairRealtime.sendGame('sky-claim', {
-            phase: 'finished',
-            score: scoreRef.current,
-          });
-          if (!partnerLiveRef.current) {
-            const partner = Math.max(
-              0,
-              Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
-            );
-            setPartnerScore(partner);
-          }
-          if (partnerFinishedRef.current) {
-            setSyncFinish(true);
-            const racing =
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
-            const dual = racing ? 'Оба на финише' : 'Оба финиш';
-            setFinishDualLabel(dual);
-            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
-            void juice.perfect();
-          }
-          setPhase('finished');
-          void juice.postMatch();
-          const mem = addMemory({
-            kind: 'sky',
-            title: 'Sky Claim',
-            detail: partnerFinishedRef.current
-              ? `Оба финиш · ты ${scoreRef.current}`
-              : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
-          });
-          broadcastMemory(mem, user);
-          return 0;
-        }
-        if (t % 5 === 0) {
+
+      const remaining = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      if (remaining !== lastShownSec) {
+        lastShownSec = remaining;
+        timeLeftRef.current = remaining;
+        setTimeLeft(remaining);
+        const elapsed = skyClaimConfig.durationSec - remaining;
+        if (elapsed > 0 && elapsed % 5 === 0 && elapsed !== lastSyncElapsed) {
+          lastSyncElapsed = elapsed;
           pairRealtime.sendGame('sky-claim', {
             phase: 'playing',
             score: scoreRef.current,
           });
-          scheduleSpawn(1 - (t - 1) / skyClaimConfig.durationSec);
+          scheduleSpawn(1 - remaining / skyClaimConfig.durationSec);
         }
-        return t - 1;
-      });
+      }
+      if (remaining <= 0) {
+        clearInterval(tick);
+        finishRound();
+      }
     }, 50);
 
     return () => {
       if (spawnTimer) clearInterval(spawnTimer);
       clearInterval(tick);
     };
-  }, [phase, spawner]);
+  }, [phase, spawner, addMemory, user]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     size.current = {

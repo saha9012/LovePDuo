@@ -6,9 +6,11 @@
 
 ## Latest
 
-- [x] Music seek on progress · Lobby leave confirm · Soft solo after peer leave  
-- [x] Music playback progress bar · Prev/Next · peer-delete stop · Profile WS ping  
-- [x] Backend: rate limit · max payload · reconnect replaces stale socket  
+- [x] Home density: scroll + pair stats grid + feed + quick chips (numbers first)  
+- [x] Fix Sky Claim / Orbit Catch timers (wall-clock seconds; 50ms was eating the round)  
+- [x] Signal Draw: measureInWindow touch map (ink no longer stuck at top)  
+- [x] Play catalog per-game play counts · LpdButton denser ghost fill  
+- [x] Music/Together delete via confirmDestructive (web window.confirm)  
 
 ## Catalog
 

@@ -360,45 +360,56 @@ export default function OrbitCatchScreen() {
 
   useEffect(() => {
     if (phase !== 'playing') return;
+    const ROUND_SEC = 35;
+    const endAt = Date.now() + ROUND_SEC * 1000;
+    let finished = false;
+    setTimeLeft(ROUND_SEC);
+
+    const finishRound = () => {
+      if (finished) return;
+      finished = true;
+      if (partnerFinishedRef.current) {
+        const racing =
+          peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+        const dual = racing ? 'Оба на финише' : 'Оба финиш';
+        setFinishDualLabel(dual);
+        setSyncFinish(true);
+        bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
+        void juice.perfect();
+      }
+      setPhase('finished');
+      void juice.postMatch();
+      pairRealtime.sendGame('orbit-catch', {
+        phase: 'finished',
+        caught: caughtRef.current,
+      });
+      if (partnerRef.current === 0) {
+        setPartnerCaught(Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3)));
+      }
+      const mem = addMemory({
+        kind: 'orbit',
+        title: 'Orbit Catch',
+        detail: partnerFinishedRef.current
+          ? `Оба финиш · co-op ${caughtRef.current + partnerRef.current}`
+          : `Co-op ${caughtRef.current + partnerRef.current} catches`,
+      });
+      broadcastMemory(mem, user);
+      setTimeLeft(0);
+    };
+
+    // 50ms = orbit motion; wall-clock = real seconds
     const tick = setInterval(() => {
       setAngle((a) => a + speed);
       setOrbAngle((oa) => oa + speed * 1.35);
-      setTimeLeft((t) => {
-        if (t <= 1) {
-          clearInterval(tick);
-          if (partnerFinishedRef.current) {
-            const racing =
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
-            const dual = racing ? 'Оба на финише' : 'Оба финиш';
-            setFinishDualLabel(dual);
-            setSyncFinish(true);
-            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
-            void juice.perfect();
-          }
-          setPhase('finished');
-          void juice.postMatch();
-          pairRealtime.sendGame('orbit-catch', {
-            phase: 'finished',
-            caught: caughtRef.current,
-          });
-          if (partnerRef.current === 0) {
-            setPartnerCaught(Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3)));
-          }
-          const mem = addMemory({
-            kind: 'orbit',
-            title: 'Orbit Catch',
-            detail: partnerFinishedRef.current
-              ? `Оба финиш · co-op ${caughtRef.current + partnerRef.current}`
-              : `Co-op ${caughtRef.current + partnerRef.current} catches`,
-          });
-          broadcastMemory(mem, user);
-          return 0;
-        }
-        return t - 1;
-      });
+      const remaining = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(tick);
+        finishRound();
+      }
     }, 50);
     return () => clearInterval(tick);
-  }, [phase, speed, addMemory]);
+  }, [phase, speed, addMemory, user]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
