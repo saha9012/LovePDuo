@@ -58,10 +58,11 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Signal Draw: чужие штрихи видны · rematch blank  
 - [ ] Orbit Catch: co-op счёт · rematch  
 - [ ] Soft Duel / Word Veil: live + rematch  
-- [ ] Lobby: Ready / Снять Ready · peer_left clears  
-- [ ] Music: now-playing у партнёра  
-- [ ] Together: candle sync · spark sync · tiny note  
-- [ ] Home: warmth toast · room size 2  
+- [ ] Lobby: Ready / Снять Ready · peer_left clears · room size  
+- [ ] Welcome reconnect · Profile invite deep link  
+- [ ] Music: now-playing · reaction sync  
+- [ ] Together: candle sync · spark sync · tiny note snippet  
+- [ ] Home: warmth toast · room size 2 · mood sync  
 
 ## Web dual (без телефонов)
 

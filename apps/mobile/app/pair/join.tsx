@@ -15,12 +15,16 @@ import { track } from '../../src/analytics/track';
 export default function JoinPairScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { joinPair, user, signIn } = useApp();
+  const { joinPair, user, signIn, pair } = useApp();
   const [code, setCode] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const autoTried = useRef('');
+
+  useEffect(() => {
+    setDisplayName(user?.displayName ?? '');
+  }, [user?.displayName]);
 
   const onJoin = async (nextCode = code) => {
     if (loading) return;
@@ -40,6 +44,7 @@ export default function JoinPairScreen() {
   };
 
   useEffect(() => {
+    if (pair?.code && !code) return;
     if (code.length === 6 && autoTried.current !== code && !loading) {
       autoTried.current = code;
       void onJoin(code);
@@ -54,6 +59,11 @@ export default function JoinPairScreen() {
         <View style={styles.block}>
           <Text style={typography.headline}>Код пары</Text>
           <Text style={typography.body}>Шесть символов — и вы в одной комнате LovePDuo.</Text>
+          {pair?.code ? (
+            <Text style={styles.linked}>
+              Уже в паре {pair.code}. Можно сменить код или вернуться в комнату.
+            </Text>
+          ) : null}
           <Text style={styles.label}>Твоё имя</Text>
           <TextInput
             value={displayName}
@@ -68,8 +78,11 @@ export default function JoinPairScreen() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
         <View style={styles.actions}>
+          {pair?.code ? (
+            <LpdButton label="В комнату" onPress={() => router.replace('/(tabs)/home')} />
+          ) : null}
           <LpdButton
-            label="Войти"
+            label={pair?.code ? 'Сменить пару по коду' : 'Войти'}
             loading={loading}
             disabled={code.length < 6}
             onPress={() => void onJoin()}
@@ -93,6 +106,12 @@ const styles = StyleSheet.create({
   },
   block: {
     gap: spacing.md,
+  },
+  linked: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.accentRose,
   },
   label: {
     marginTop: spacing.sm,

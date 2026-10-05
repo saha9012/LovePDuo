@@ -49,6 +49,7 @@ export default function OrbitCatchScreen() {
   const flash = useSharedValue(0);
   const ringPulse = useSharedValue(1);
   const partnerScale = useSharedValue(1);
+  const lastAlignSend = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -65,6 +66,7 @@ export default function OrbitCatchScreen() {
           rematch?: boolean;
           seed?: number;
           miss?: boolean;
+          align?: boolean;
         } | undefined;
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
@@ -82,6 +84,14 @@ export default function OrbitCatchScreen() {
           void juice.miss();
           return;
         }
+        if (payload?.align) {
+          ringPulse.value = withSequence(
+            withTiming(1.08, { duration: 90 }),
+            withTiming(1, { duration: 220 }),
+          );
+          void juice.hit();
+          return;
+        }
         if (typeof payload?.caught === 'number') {
           partnerRef.current = payload.caught;
           setPartnerCaught(payload.caught);
@@ -97,7 +107,7 @@ export default function OrbitCatchScreen() {
     return () => {
       off();
     };
-  }, [pair?.code, user?.id, partnerScale]);
+  }, [pair?.code, user?.id, partnerScale, ringPulse]);
 
   const start = () => {
     caughtRef.current = 0;
@@ -164,7 +174,14 @@ export default function OrbitCatchScreen() {
 
   useEffect(() => {
     ringPulse.value = withTiming(aligned ? 1.04 : 1, { duration: 120 });
-  }, [aligned, ringPulse]);
+    if (aligned && phase === 'playing') {
+      const now = Date.now();
+      if (now - lastAlignSend.current > 700) {
+        lastAlignSend.current = now;
+        pairRealtime.sendGame('orbit-catch', { align: true });
+      }
+    }
+  }, [aligned, ringPulse, phase]);
 
   const onCatch = () => {
     if (phase !== 'playing') return;

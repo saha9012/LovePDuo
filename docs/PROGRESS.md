@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Welcome reconnect CTAs · create-pair guard · Soft Duel partner round HUD  
-- [x] Together note snippet toast · ToS turn toast · Profile invite  
-- [x] Live miss flashes · Word Veil typing · rematch sync (prior)  
+- [x] Orbit align pulse sync · Sky Claim combo x5 partner flash  
+- [x] Join already-paired guard · Welcome/Play reconnect CTAs  
+- [x] Soft Duel round HUD · Heartbeat perfect mirror · note snippets  
 
 ## Catalog
 
