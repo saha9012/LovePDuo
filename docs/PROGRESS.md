@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Together «Оба на Together» · Music dual hello · Soft «Наравне»  
 - [x] Music «Оба на Music» · dual add track · Soft «Наравне»  
 - [x] Music dual add track · Soft «Наравне» · Welcome/Home оба в комнате  
-- [x] Soft «Наравне» race · Welcome/Home оба в комнате · Music dual play  
 
 ## Catalog
 

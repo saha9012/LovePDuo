@@ -38,6 +38,7 @@ export default function TogetherScreen() {
   const candleLitRef = useRef(false);
   const lastBlowAt = useRef(0);
   const lastSparkAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
@@ -118,6 +119,7 @@ export default function TogetherScreen() {
       if (msg.type === 'peer_joined') {
         showPeer('Партнёр снова рядом');
         void juice.warmth();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('together-hello', {
           from: user.displayName,
           fromId: user.id,
@@ -127,8 +129,9 @@ export default function TogetherScreen() {
       if (msg.type === 'game' && msg.gameId === 'together-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId === user.id) return;
-        showPeer(`${payload?.from ?? 'Партнёр'} на Together`);
-        void juice.warmth();
+        const both = Date.now() - lastHelloAt.current < 2500;
+        showPeer(both ? 'Оба на Together' : `${payload?.from ?? 'Партнёр'} на Together`);
+        void (both ? juice.perfect() : juice.warmth());
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'candle') {
@@ -200,6 +203,7 @@ export default function TogetherScreen() {
 
   useEffect(() => {
     if (!pair || !user) return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('together-hello', {
       from: user.displayName,
       fromId: user.id,
