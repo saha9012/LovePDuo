@@ -66,6 +66,7 @@ export default function TruthOrSparkScreen() {
   const lastSkipAt = useRef(0);
   const lastFilterAt = useRef(0);
   const lastFilterChoice = useRef<SparkFilter>('soft');
+  const lastRematchAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
@@ -157,8 +158,11 @@ export default function TruthOrSparkScreen() {
         setIndex(0);
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
-        showTurnToast('Партнёр: новая колода — твой ход');
-        void juice.sync();
+        const both = Date.now() - lastRematchAt.current < 2500;
+        showTurnToast(
+          both ? 'Оба: новая колода' : 'Партнёр: новая колода — твой ход',
+        );
+        void (both ? juice.perfect() : juice.sync());
         return;
       }
       if (payload.filterChange && (payload.filter === 'soft' || payload.filter === 'spicy')) {
@@ -278,6 +282,7 @@ export default function TruthOrSparkScreen() {
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame(GAME_ID, {
       rematch: true,
       seed: next,

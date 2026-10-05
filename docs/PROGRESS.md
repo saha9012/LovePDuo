@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ToS dual reshuffle · dual rematch catalog-wide · Play dual filter  
 - [x] Dual rematch across Orbit/HB/Draw/Veil · Soft/Sky rematch  
 - [x] Soft/Sky dual rematch · Together dual spark · Music dual shelf  
-- [x] Together dual spark · Music dual shelf · Play dual filter  
 
 ## Catalog
 
