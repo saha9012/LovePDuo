@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Word Veil «Оба: одно слово» · Soft Наравне · Lobby оба в лобби  
 - [x] Soft local «Наравне» catch-up · Lobby оба в лобби · Profile SFX  
 - [x] Lobby «Оба в этом лобби» · Profile SFX toast · Together dual hello  
-- [x] Profile SFX mute toast · Together dual hello · Music dual hello  
 
 ## Catalog
 

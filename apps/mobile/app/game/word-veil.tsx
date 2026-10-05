@@ -123,11 +123,11 @@ export default function WordVeilScreen() {
     revealOp.value = withTiming(1, { duration: 280 });
     veil.value = withDelay(80, withTiming(1, { duration: 320 }));
     if (pts >= 5) {
-      setPresenceHint('Одно слово!');
+      setPresenceHint('Оба: одно слово');
       void juice.perfect();
       setTimeout(() => setPresenceHint(null), 1800);
     } else if (pts >= 3) {
-      setPresenceHint('Почти одно…');
+      setPresenceHint('Почти наравне…');
       void juice.sync();
       setTimeout(() => setPresenceHint(null), 1600);
     } else {
