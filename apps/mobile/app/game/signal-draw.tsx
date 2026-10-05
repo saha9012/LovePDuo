@@ -333,6 +333,7 @@ export default function SignalDrawScreen() {
           clearInterval(id);
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
+            showToast('Оба финиш');
             void juice.perfect();
           }
           setPhase('finished');
