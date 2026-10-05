@@ -253,7 +253,10 @@ export default function WordVeilScreen() {
         setPartnerWord(payload.word);
         setPeerTyping(false);
         if (lockedRef.current) {
-          setPresenceHint('Оба закрыли');
+          const racing =
+            hintRef.current === 'Оба закрыли' ||
+            hintRef.current === 'Оба завесили';
+          setPresenceHint(racing ? 'Оба завесили' : 'Оба закрыли');
           setTimeout(() => setPresenceHint(null), 1400);
           void juice.perfect();
         } else {

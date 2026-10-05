@@ -56,11 +56,16 @@ export default function GameLobbyScreen() {
   );
 
   const peerReadyScale = useSharedValue(1);
+  const cancelToastRef = useRef<string | null>(null);
 
   const showCancelToast = (text: string) => {
+    cancelToastRef.current = text;
     setCancelToast(text);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setCancelToast(null), 1800);
+    toastTimer.current = setTimeout(() => {
+      cancelToastRef.current = null;
+      setCancelToast(null);
+    }, 1800);
   };
 
   useEffect(() => {
@@ -182,7 +187,10 @@ export default function GameLobbyScreen() {
             startSent.current = false;
             showCancelToast(
               both
-                ? 'Оба сняли Ready'
+                ? cancelToastRef.current === 'Оба сняли Ready' ||
+                  cancelToastRef.current === 'Оба не готовы'
+                  ? 'Оба не готовы'
+                  : 'Оба сняли Ready'
                 : wasCounting
                   ? 'Партнёр снял Ready — старт отменён'
                   : 'Партнёр снял Ready',
