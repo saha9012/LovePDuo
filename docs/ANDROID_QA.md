@@ -52,13 +52,16 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 ## 5. Smoke checklist
 
-- [ ] Sky Claim: очки партнёра двигаются  
-- [ ] Heartbeat: sync bonus  
-- [ ] Truth Or Spark: ход переключается  
-- [ ] Signal Draw: чужие штрихи видны  
-- [ ] Orbit Catch: co-op счёт  
+- [ ] Sky Claim: очки партнёра двигаются · rematch sync  
+- [ ] Heartbeat: sync bonus · rematch seed  
+- [ ] Truth Or Spark: ход переключается · Перетасовать sync  
+- [ ] Signal Draw: чужие штрихи видны · rematch blank  
+- [ ] Orbit Catch: co-op счёт · rematch  
+- [ ] Soft Duel / Word Veil: live + rematch  
+- [ ] Lobby: Ready / Снять Ready · peer_left clears  
 - [ ] Music: now-playing у партнёра  
-- [ ] Together: candle + tiny note  
+- [ ] Together: candle sync · spark sync · tiny note  
+- [ ] Home: warmth toast · room size 2  
 
 ## Web dual (без телефонов)
 

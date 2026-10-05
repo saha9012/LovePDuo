@@ -14,6 +14,7 @@ type Filter = 'all' | GameTag;
 type Cover = 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit' | 'duel' | 'veil';
 
 const FILTER_KEY = 'lovepduo.play_filter';
+const LAST_GAME_KEY = 'lovepduo.last_game';
 
 type CatalogItem = {
   id: string;
@@ -104,16 +105,25 @@ export default function PlayScreen() {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
+  const [lastGame, setLastGame] = useState<string | null>(null);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
       if (raw === 'all' || raw === 'mvp' || raw === 'new') setFilter(raw);
+    });
+    void AsyncStorage.getItem(LAST_GAME_KEY).then((raw) => {
+      if (raw) setLastGame(raw);
     });
   }, []);
 
   useEffect(() => {
     void AsyncStorage.setItem(FILTER_KEY, filter);
   }, [filter]);
+
+  const recent = useMemo(
+    () => (lastGame ? CATALOG.find((g) => g.game === lastGame) ?? null : null),
+    [lastGame],
+  );
 
   const games = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -126,6 +136,13 @@ export default function PlayScreen() {
       );
     });
   }, [filter, q]);
+
+  const openGame = (game: string) => {
+    setLastGame(game);
+    void AsyncStorage.setItem(LAST_GAME_KEY, game);
+    void juice.hit();
+    router.push({ pathname: '/game/lobby', params: { game } });
+  };
 
   return (
     <LpdBackground mood="night">
@@ -169,6 +186,14 @@ export default function PlayScreen() {
           ))}
         </View>
 
+        {recent ? (
+          <Pressable onPress={() => openGame(recent.game)} style={styles.recent}>
+            <Text style={styles.recentKicker}>Снова</Text>
+            <Text style={styles.recentTitle}>{recent.title}</Text>
+            <Text style={styles.recentSub}>{recent.subtitle}</Text>
+          </Pressable>
+        ) : null}
+
         <View style={styles.list}>
           {games.length === 0 ? (
             <Text style={styles.empty}>Ничего не нашлось. Сбрось фильтр.</Text>
@@ -181,9 +206,7 @@ export default function PlayScreen() {
                 accent={g.accent}
                 cover={g.cover}
                 badge={g.badge}
-                onPress={() =>
-                  router.push({ pathname: '/game/lobby', params: { game: g.game } })
-                }
+                onPress={() => openGame(g.game)}
               />
             ))
           )}
@@ -246,6 +269,32 @@ const styles = StyleSheet.create({
   list: {
     gap: spacing.md,
     marginTop: spacing.sm,
+  },
+  recent: {
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.35)',
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    gap: 4,
+    backgroundColor: 'rgba(196,92,110,0.12)',
+  },
+  recentKicker: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: colors.accentRose,
+  },
+  recentTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 18,
+    color: colors.textPrimary,
+  },
+  recentSub: {
+    fontFamily: fonts.ui,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textMuted,
   },
   empty: {
     fontFamily: fonts.ui,
