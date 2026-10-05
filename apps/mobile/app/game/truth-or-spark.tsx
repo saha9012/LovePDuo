@@ -238,7 +238,17 @@ export default function TruthOrSparkScreen() {
           void (both ? juice.perfect() : juice.sync());
         } else if (payload.skipped) {
           const both = Date.now() - lastSkipAt.current < 2200;
-          showTurnToast(both ? 'Оба скипнули' : `${who} скипнул — твой ход`);
+          const racing =
+            both &&
+            (turnToastRef.current === 'Оба скипнули' ||
+              turnToastRef.current === 'Оба мимо карт');
+          showTurnToast(
+            racing
+              ? 'Оба мимо карт'
+              : both
+                ? 'Оба скипнули'
+                : `${who} скипнул — твой ход`,
+          );
           void (both ? juice.sync() : juice.miss());
         } else {
           const both = Date.now() - lastNextAt.current < 2200;
