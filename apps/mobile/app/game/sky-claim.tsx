@@ -74,6 +74,7 @@ export default function SkyClaimScreen() {
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export default function SkyClaimScreen() {
         partnerLiveRef.current = true;
         bumpPeerNote('вернулся');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
         return;
       }
@@ -143,8 +145,9 @@ export default function SkyClaimScreen() {
         if (payload?.hello) {
           setPartnerLive(true);
           partnerLiveRef.current = true;
-          bumpPeerNote('в игре');
-          void juice.sync();
+          const both = Date.now() - lastHelloAt.current < 2500;
+          bumpPeerNote(both ? 'оба в игре' : 'в игре');
+          void (both ? juice.perfect() : juice.sync());
           return;
         }
         if (payload?.phase === 'start') {
@@ -224,6 +227,7 @@ export default function SkyClaimScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 

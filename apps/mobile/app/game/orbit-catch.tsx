@@ -61,6 +61,7 @@ export default function OrbitCatchScreen() {
   const lastCatchAt = useRef(0);
   const lastMissAt = useRef(0);
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -108,6 +109,7 @@ export default function OrbitCatchScreen() {
         setPeerSeen(true);
         bumpPeerNote('вернулся');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });
         return;
       }
@@ -124,8 +126,9 @@ export default function OrbitCatchScreen() {
         if (payload?.hello || payload?.phase === 'start') {
           setPeerSeen(true);
           if (payload?.hello) {
-            bumpPeerNote('в игре');
-            void juice.sync();
+            const both = Date.now() - lastHelloAt.current < 2500;
+            bumpPeerNote(both ? 'оба в игре' : 'в игре');
+            void (both ? juice.perfect() : juice.sync());
             return;
           }
         }
@@ -199,6 +202,7 @@ export default function OrbitCatchScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 

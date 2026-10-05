@@ -53,6 +53,7 @@ export default function SoftDuelScreen() {
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const padScale = useSharedValue(1);
   const flashScale = useSharedValue(1);
@@ -102,6 +103,7 @@ export default function SoftDuelScreen() {
         partnerLiveRef.current = true;
         setFlash('Партнёр снова в комнате');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
         return;
       }
@@ -120,8 +122,9 @@ export default function SoftDuelScreen() {
       if (payload?.hello) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setFlash('Партнёр в игре');
-        void juice.sync();
+        const both = Date.now() - lastHelloAt.current < 2500;
+        setFlash(both ? 'Оба в игре' : 'Партнёр в игре');
+        void (both ? juice.perfect() : juice.sync());
         return;
       }
       if (payload?.arm) {
@@ -231,6 +234,7 @@ export default function SoftDuelScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 
