@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -41,6 +42,20 @@ function densify(points: Pt[], step = 0.012): Pt[] {
   return out;
 }
 
+/** Normalized 0..1 points → SVG path in the same unit space. */
+function pointsToPath(points: Pt[]): string {
+  if (points.length === 0) return '';
+  if (points.length === 1) {
+    const p = points[0];
+    return `M ${p.x} ${p.y} L ${p.x + 0.0001} ${p.y}`;
+  }
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i += 1) {
+    d += ` L ${points[i].x} ${points[i].y}`;
+  }
+  return d;
+}
+
 export default function SignalDrawScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -61,6 +76,7 @@ export default function SignalDrawScreen() {
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,
   );
+  const [canvasSize, setCanvasSize] = useState({ w: 1, h: 1 });
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
@@ -457,10 +473,12 @@ export default function SignalDrawScreen() {
   }, [phase, addMemory]);
 
   const onLayout = (e: LayoutChangeEvent) => {
-    size.current = {
-      w: e.nativeEvent.layout.width,
-      h: e.nativeEvent.layout.height,
+    const next = {
+      w: Math.max(1, e.nativeEvent.layout.width),
+      h: Math.max(1, e.nativeEvent.layout.height),
     };
+    size.current = next;
+    setCanvasSize(next);
   };
 
   const toNorm = (x: number, y: number): Pt => ({
@@ -569,34 +587,26 @@ export default function SignalDrawScreen() {
   const theirScore = (partnerStrokes || peerCount.current) * 10;
   const line = pickPostMatchLine(myScore, theirScore || 1, seed);
 
-  const renderStroke = useCallback((stroke: Stroke) => {
-    const pts = stroke.points;
-    const w = stroke.width || 4;
-    return (
-      <View key={stroke.id} pointerEvents="none">
-        {pts.map((p, i) => (
-          <View
-            key={`${stroke.id}_${i}`}
-            style={{
-              position: 'absolute',
-              left: `${p.x * 100}%`,
-              top: `${p.y * 100}%`,
-              width: w,
-              height: w,
-              marginLeft: -w / 2,
-              marginTop: -w / 2,
-              borderRadius: w / 2,
-              backgroundColor: stroke.color,
-              opacity: stroke.by === 'peer' ? 0.92 : 0.95,
-              shadowColor: stroke.color,
-              shadowOpacity: stroke.by === 'peer' ? 0.85 : 0.55,
-              shadowRadius: stroke.by === 'peer' ? 8 : 4,
-            }}
-          />
-        ))}
-      </View>
-    );
-  }, []);
+  const renderStroke = useCallback(
+    (stroke: Stroke) => {
+      const d = pointsToPath(stroke.points);
+      if (!d) return null;
+      const sw = (stroke.width || 4) / canvasSize.w;
+      return (
+        <Path
+          key={stroke.id}
+          d={d}
+          stroke={stroke.color}
+          strokeWidth={sw}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          opacity={stroke.by === 'peer' ? 0.9 : 0.96}
+        />
+      );
+    },
+    [canvasSize.w],
+  );
 
   if (phase === 'finished') {
     return (
@@ -627,7 +637,7 @@ export default function SignalDrawScreen() {
           <View style={styles.ready}>
             <Text style={styles.hero}>Рисуйте сигнал</Text>
             <Text style={styles.body}>
-              Общий холст. Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
+              Общий холст (Svg). Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
               {params.solo !== '1' && !peerSeen ? ' Ждём партнёра на холсте…' : ''}
             </Text>
             <LpdButton label="Старт" onPress={start} />
@@ -673,7 +683,16 @@ export default function SignalDrawScreen() {
             </View>
             <View style={[styles.canvas, peerPulse && styles.canvasLive]} onLayout={onLayout} {...pan.panHandlers}>
               <View style={styles.grid} pointerEvents="none" />
-              {strokes.map(renderStroke)}
+              <Svg
+                pointerEvents="none"
+                style={StyleSheet.absoluteFill}
+                width="100%"
+                height="100%"
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+              >
+                {strokes.map(renderStroke)}
+              </Svg>
             </View>
           </>
         )}

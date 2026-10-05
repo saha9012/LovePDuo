@@ -181,7 +181,11 @@ export default function SoftDuelScreen() {
       if (payload?.phase === 'start') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        if (flashRef.current === 'Догоняем старт') {
+        const late =
+          flashRef.current === 'Догоняем старт' ||
+          flashRef.current === 'Оба догоняют' ||
+          flashRef.current === 'Оба в старте';
+        if (late) {
           setFlash(
             flashRef.current === 'Оба догоняют' || flashRef.current === 'Оба в старте'
               ? 'Оба в старте'
