@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,11 +45,43 @@ export default function WordVeilScreen() {
   const [mine, setMine] = useState('');
   const [partnerWord, setPartnerWord] = useState('');
   const [locked, setLocked] = useState(false);
+  const [waitingPeer, setWaitingPeer] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
   const veil = useSharedValue(1);
   const revealY = useSharedValue(24);
   const revealOp = useSharedValue(0);
+  const mineRef = useRef(mine);
+
+  useEffect(() => {
+    mineRef.current = mine;
+  }, [mine]);
+
+  const scoreWords = (a: string, b: string) => {
+    const x = a.trim().toLowerCase();
+    const y = b.trim().toLowerCase();
+    if (!x || !y) return 0;
+    if (x === y) return 5;
+    if (x.includes(y) || y.includes(x)) return 3;
+    const setA = new Set(x);
+    let overlap = 0;
+    for (const ch of y) if (setA.has(ch)) overlap += 1;
+    return Math.min(2, Math.floor(overlap / 3));
+  };
+
+  const doReveal = (peer: string) => {
+    const pts = scoreWords(mineRef.current, peer);
+    setMyScore(pts);
+    setTheirScore(Math.max(0, pts - (peer === mineRef.current ? 0 : 1)));
+    setWaitingPeer(false);
+    setPhase('reveal');
+    revealY.value = 28;
+    revealOp.value = 0;
+    revealY.value = withSpring(0, { damping: 14, stiffness: 160 });
+    revealOp.value = withTiming(1, { duration: 280 });
+    veil.value = withDelay(80, withTiming(1, { duration: 320 }));
+    void juice.sync();
+  };
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -74,17 +106,11 @@ export default function WordVeilScreen() {
     return () => clearTimeout(id);
   }, [params.startAt, params.solo]);
 
-  const scoreWords = (a: string, b: string) => {
-    const x = a.trim().toLowerCase();
-    const y = b.trim().toLowerCase();
-    if (!x || !y) return 0;
-    if (x === y) return 5;
-    if (x.includes(y) || y.includes(x)) return 3;
-    const setA = new Set(x);
-    let overlap = 0;
-    for (const ch of y) if (setA.has(ch)) overlap += 1;
-    return Math.min(2, Math.floor(overlap / 3));
-  };
+  useEffect(() => {
+    if (!locked || phase !== 'playing' || !partnerWord) return;
+    doReveal(partnerWord);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locked, partnerWord, phase]);
 
   const lock = () => {
     if (!mine.trim() || locked) return;
@@ -92,25 +118,21 @@ export default function WordVeilScreen() {
     veil.value = withTiming(0.35, { duration: 400 });
     pairRealtime.sendGame('word-veil', { word: mine.trim() });
     void juice.card();
-    const demo =
-      partnerWord ||
-      (params.solo === '1' || !pair
-        ? SEEDS[(seed + 3) % SEEDS.length]
-        : '');
-    setTimeout(() => {
-      const peer = partnerWord || demo;
-      if (!partnerWord && demo) setPartnerWord(demo);
-      const pts = scoreWords(mine, peer || demo);
-      setMyScore(pts);
-      setTheirScore(partnerWord ? scoreWords(peer, mine) : Math.max(0, pts - 1));
-      setPhase('reveal');
-      revealY.value = 28;
-      revealOp.value = 0;
-      revealY.value = withSpring(0, { damping: 14, stiffness: 160 });
-      revealOp.value = withTiming(1, { duration: 280 });
-      veil.value = withDelay(80, withTiming(1, { duration: 320 }));
-      void juice.sync();
-    }, 900);
+
+    const useDemo = params.solo === '1' || !pair;
+    if (partnerWord) {
+      doReveal(partnerWord);
+      return;
+    }
+    if (useDemo) {
+      const demo = SEEDS[(seed + 3) % SEEDS.length];
+      setTimeout(() => {
+        setPartnerWord(demo);
+        doReveal(demo);
+      }, 700);
+      return;
+    }
+    setWaitingPeer(true);
   };
 
   const finish = () => {
@@ -151,6 +173,7 @@ export default function WordVeilScreen() {
               setMine('');
               setPartnerWord('');
               setLocked(false);
+              setWaitingPeer(false);
               setMyScore(0);
               setTheirScore(0);
               veil.value = 1;
@@ -195,12 +218,19 @@ export default function WordVeilScreen() {
                 <LpdButton label="Закрыть раунд" onPress={finish} />
               </Animated.View>
             ) : (
-              <Pressable
-                onPress={lock}
-                style={[styles.lockBtn, (!mine.trim() || locked) && styles.lockDisabled]}
-              >
-                <Text style={styles.lockLabel}>{locked ? 'Ждём…' : 'Закрыть слово'}</Text>
-              </Pressable>
+              <>
+                <Pressable
+                  onPress={lock}
+                  style={[styles.lockBtn, (!mine.trim() || locked) && styles.lockDisabled]}
+                >
+                  <Text style={styles.lockLabel}>
+                    {waitingPeer ? 'Ждём слово партнёра…' : locked ? 'Ждём…' : 'Закрыть слово'}
+                  </Text>
+                </Pressable>
+                {waitingPeer ? (
+                  <Text style={styles.waitHint}>Твоё слово закрыто. Партнёр ещё пишет.</Text>
+                ) : null}
+              </>
             )}
           </>
         )}
@@ -248,6 +278,12 @@ const styles = StyleSheet.create({
   },
   lockDisabled: { opacity: 0.45 },
   lockLabel: { fontFamily: fonts.uiSemi, color: colors.textPrimary },
+  waitHint: {
+    fontFamily: fonts.ui,
+    color: colors.accentMist,
+    fontSize: 13,
+    marginTop: spacing.sm,
+  },
   reveal: { gap: spacing.sm, marginTop: spacing.md },
   revealLine: { fontFamily: fonts.uiMedium, color: colors.textPrimary, fontSize: 18 },
   score: { fontFamily: fonts.mono, color: colors.accentRose, fontSize: 20, marginVertical: spacing.sm },
