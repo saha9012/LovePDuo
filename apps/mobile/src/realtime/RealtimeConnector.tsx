@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useApp } from '../store/AppStore';
+import { useApp, TinyNote } from '../store/AppStore';
 import { useMemories, MemoryItem } from '../store/MemoriesStore';
 import { pairRealtime } from './PairRealtime';
 import { juice } from '../audio/juice';
@@ -8,7 +8,16 @@ const PING_MS = 18000;
 
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
-  const { user, pair, sendWarmth, setPartnerInfo, setRoomSize, setPairName } = useApp();
+  const {
+    user,
+    pair,
+    sendWarmth,
+    setPartnerInfo,
+    setRoomSize,
+    setPairName,
+    receiveNote,
+    removeNote,
+  } = useApp();
   const { receiveMemory, removeMemory, clearMemories } = useMemories();
 
   useEffect(() => {
@@ -54,6 +63,18 @@ export function RealtimeConnector() {
         ) {
           setPartnerInfo(payload.name.trim(), 'online');
           void juice.card();
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'tiny-note') {
+        const payload = msg.payload as TinyNote | undefined;
+        if (payload?.id && payload.text) {
+          receiveNote(payload);
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'tiny-note-remove') {
+        const payload = msg.payload as { id?: string; fromId?: string } | undefined;
+        if (payload?.id && payload.fromId !== user.id) {
+          removeNote(payload.id);
         }
       }
       if (msg.type === 'game' && msg.gameId === 'memory-add') {
@@ -125,6 +146,8 @@ export function RealtimeConnector() {
     setRoomSize,
     setPairName,
     user?.displayName,
+    receiveNote,
+    removeNote,
     receiveMemory,
     removeMemory,
     clearMemories,
