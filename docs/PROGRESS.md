@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Word Veil «Оба догоняют» · HB/Draw late-start · ANDROID_QA догоняют  
 - [x] ANDROID_QA оба догоняют · HB/Draw late-start · Sky/Orbit late-start  
 - [x] HB/Draw «оба догоняют» · Sky/Orbit dual late-start · Soft late-start  
-- [x] Sky/Orbit «оба догоняют» · Soft dual late-start · ANDROID_QA leave  
 
 ## Catalog
 

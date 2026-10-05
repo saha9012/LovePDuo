@@ -59,6 +59,7 @@ export default function WordVeilScreen() {
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lateStartAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
 
@@ -177,8 +178,15 @@ export default function WordVeilScreen() {
       } | undefined;
       if (payload?.hello) {
         const both = Date.now() - lastHelloAt.current < 2500;
-        setPresenceHint(both ? 'Оба в игре' : 'Партнёр в игре');
-        void (both ? juice.perfect() : juice.sync());
+        const late = Date.now() - lateStartAt.current < 2500;
+        setPresenceHint(
+          late
+            ? 'Оба догоняют'
+            : both
+              ? 'Оба в игре'
+              : 'Партнёр в игре',
+        );
+        void (late || both ? juice.perfect() : juice.sync());
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
@@ -251,6 +259,7 @@ export default function WordVeilScreen() {
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
+      lateStartAt.current = Date.now();
       setPresenceHint('Догоняем старт');
       void juice.hit();
       setTimeout(() => setPresenceHint(null), 1400);
