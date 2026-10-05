@@ -40,11 +40,13 @@ export default function OrbitCatchScreen() {
   const [partnerCaught, setPartnerCaught] = useState(0);
   const [timeLeft, setTimeLeft] = useState(35);
   const [aligned, setAligned] = useState(false);
+  const [partnerFlash, setPartnerFlash] = useState(false);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
   const flash = useSharedValue(0);
   const ringPulse = useSharedValue(1);
+  const partnerScale = useSharedValue(1);
 
   const speed = useMemo(() => 0.045 + (seed % 7) * 0.004, [seed]);
 
@@ -56,13 +58,19 @@ export default function OrbitCatchScreen() {
         if (typeof payload?.caught === 'number') {
           partnerRef.current = payload.caught;
           setPartnerCaught(payload.caught);
+          setPartnerFlash(true);
+          partnerScale.value = withSequence(
+            withSpring(1.12, { damping: 10 }),
+            withTiming(1, { duration: 200 }),
+          );
+          setTimeout(() => setPartnerFlash(false), 400);
         }
       }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, partnerScale]);
 
   const start = () => {
     caughtRef.current = 0;
@@ -157,6 +165,9 @@ export default function OrbitCatchScreen() {
     transform: [{ scale: ringPulse.value }],
     borderColor: aligned ? 'rgba(226,176,122,0.7)' : 'rgba(226,176,122,0.22)',
   }));
+  const partnerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: partnerScale.value }],
+  }));
 
   if (phase === 'finished') {
     return (
@@ -197,7 +208,11 @@ export default function OrbitCatchScreen() {
             <View style={styles.hud}>
               <Text style={styles.stat}>{timeLeft}s</Text>
               <Text style={styles.stat}>ты {caught}</Text>
-              <Text style={styles.stat}>партнёр {partnerCaught}</Text>
+              <Animated.Text
+                style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
+              >
+                партнёр {partnerCaught}
+              </Animated.Text>
             </View>
             <Pressable style={styles.stage} onPress={onCatch}>
               <View style={styles.board}>
@@ -247,6 +262,7 @@ const styles = StyleSheet.create({
   btnLabel: { fontFamily: fonts.uiSemi, color: colors.textPrimary },
   hud: { flexDirection: 'row', justifyContent: 'space-between' },
   stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary },
+  partnerHot: { color: colors.accentRose, fontFamily: fonts.uiSemi },
   stage: {
     flex: 1,
     alignItems: 'center',
