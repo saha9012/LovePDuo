@@ -152,6 +152,9 @@ export default function HomeScreen() {
         if (!payload || payload.fromId === user?.id) return;
         if (payload.leave) {
           setPeerLobby(null);
+          setRoomToast('Партнёр ушёл из лобби');
+          void juice.miss();
+          setTimeout(() => setRoomToast(null), 1600);
           return;
         }
         if (payload.game && payload.title) {

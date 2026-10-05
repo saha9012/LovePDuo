@@ -60,7 +60,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Soft Duel: tap grade mirror · round-ahead · arm ЖМИ · partner finish juice · rematch hello · presence  
 - [ ] Word Veil: typing juice · peer-locked hint · start hello · presence · rematch hello  
 - [ ] Lobby: Ready toast · cancel mid-count · peer_left · peek «партнёр тоже здесь»  
-- [ ] Play: peer-lobby banner → one-tap join  
+- [ ] Play: peer-lobby banner → one-tap join · leave toast  
 - [ ] Welcome reconnect · Profile invite deep link · partner rename toast  
 - [ ] Music: now-playing juice · stop toast · playlist switch · shelf + sync · reaction sync  
 - [ ] Together: candle start/blow/end · spark · note · warmth receive toast  

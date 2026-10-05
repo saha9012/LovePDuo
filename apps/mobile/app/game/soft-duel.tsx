@@ -44,6 +44,7 @@ export default function SoftDuelScreen() {
   const [matchSeed, setMatchSeed] = useState(seed);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const partnerFinishedRef = useRef(false);
   const roundRef = useRef(0);
   const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(seed);
@@ -119,6 +120,7 @@ export default function SoftDuelScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        partnerFinishedRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setPartnerRound(0);
@@ -154,7 +156,11 @@ export default function SoftDuelScreen() {
         );
         setTimeout(() => setPartnerFlash(false), 450);
         if (payload.phase === 'finished' && phaseRef.current === 'playing') {
+          partnerFinishedRef.current = true;
           setFlash('Партнёр финиш');
+          void juice.sync();
+        } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
+          partnerFinishedRef.current = true;
           void juice.sync();
         } else if (typeof payload.tap === 'number') {
           const label =
@@ -191,8 +197,13 @@ export default function SoftDuelScreen() {
       addMemory({
         kind: 'duel',
         title: 'Soft Duel',
-        detail: `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+        detail: partnerFinishedRef.current
+          ? `Синхрон финиш · ты ${myScoreRef.current}`
+          : `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
       });
+      if (partnerFinishedRef.current) {
+        setFlash('Синхрон финиш');
+      }
       if (!partnerLiveRef.current) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
       }
@@ -217,6 +228,7 @@ export default function SoftDuelScreen() {
 
   const start = () => {
     myScoreRef.current = 0;
+    partnerFinishedRef.current = false;
     setMyScore(0);
     setPartnerScore(0);
     setPartnerRound(0);

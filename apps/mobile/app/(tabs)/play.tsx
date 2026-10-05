@@ -110,6 +110,7 @@ export default function PlayScreen() {
   const [q, setQ] = useState('');
   const [lastGame, setLastGame] = useState<string | null>(null);
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
+  const [peekToast, setPeekToast] = useState<string | null>(null);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -137,11 +138,16 @@ export default function PlayScreen() {
       if (!payload || payload.fromId === user.id) return;
       if (payload.leave) {
         setPeerLobby(null);
+        setPeekToast('Партнёр ушёл из лобби');
+        void juice.miss();
+        setTimeout(() => setPeekToast(null), 1600);
         return;
       }
       if (payload.game && payload.title) {
         setPeerLobby({ game: payload.game, title: payload.title });
+        setPeekToast(`Партнёр в лобби: ${payload.title}`);
         void juice.hit();
+        setTimeout(() => setPeekToast(null), 1600);
       }
     });
     return () => {
@@ -193,6 +199,7 @@ export default function PlayScreen() {
         <Text style={[typography.body, styles.sub]}>
           MVP + расширения. Два телефона. Живой post-match.
         </Text>
+        {peekToast ? <Text style={styles.peekToast}>{peekToast}</Text> : null}
 
         {peerLobby ? (
           <Pressable onPress={() => openGame(peerLobby.game)} style={styles.peerLobby}>
@@ -273,6 +280,11 @@ const styles = StyleSheet.create({
   },
   sub: {
     marginBottom: spacing.sm,
+  },
+  peekToast: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    color: colors.accentAmber,
   },
   peerLobby: {
     borderRadius: radii.md,
