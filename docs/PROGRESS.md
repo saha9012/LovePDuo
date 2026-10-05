@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Welcome «Оба в комнате» · Home room dual · Music dual now-playing  
 - [x] Home «Оба в комнате» · Music dual now-playing · dual hello catalog  
 - [x] Music dual now-playing · dual hello catalog · dual rematch catalog  
-- [x] Dual hello catalog-wide (HB/Draw/Veil/ToS) · Soft/Sky/Orbit  
 
 ## Catalog
 

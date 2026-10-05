@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
@@ -23,9 +23,24 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, signIn } = useApp();
   const [name, setName] = useState(user?.displayName ?? '');
+  const [roomToast, setRoomToast] = useState<string | null>(null);
+  const roomSizeSeen = useRef(pair?.roomSize ?? 0);
   const veil = useSharedValue(0);
   const rise = useSharedValue(28);
   const orbit = useSharedValue(0);
+
+  useEffect(() => {
+    const size = typeof pair?.roomSize === 'number' ? pair.roomSize : 0;
+    const prev = roomSizeSeen.current;
+    if (prev > 0 && prev < 2 && size >= 2) {
+      setRoomToast('Оба в комнате');
+      void juice.perfect();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      roomSizeSeen.current = size;
+      return () => clearTimeout(t);
+    }
+    roomSizeSeen.current = size;
+  }, [pair?.roomSize]);
 
   useEffect(() => {
     veil.value = withTiming(1, { duration: 1000, easing: Easing.out(Easing.cubic) });
@@ -130,6 +145,7 @@ export default function WelcomeScreen() {
                 }. Можно жечь дальше.`
               : 'Создай пару или войди по коду — два телефона, одна комната.'}
           </Text>
+          {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
         </Animated.View>
       </View>
     </LpdBackground>
@@ -189,5 +205,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     fontSize: 13,
     color: colors.textMuted,
+  },
+  roomToast: {
+    textAlign: 'center',
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.accentRose,
   },
 });
