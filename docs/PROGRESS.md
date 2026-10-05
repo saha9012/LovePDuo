@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] QA dual hello Music/Together · Lobby оба догоняют · Word Veil late-start  
 - [x] Lobby «Оба догоняют» · Word Veil late-start · ANDROID_QA догоняют  
 - [x] Word Veil «Оба догоняют» · HB/Draw late-start · ANDROID_QA догоняют  
-- [x] ANDROID_QA оба догоняют · HB/Draw late-start · Sky/Orbit late-start  
 
 ## Catalog
 
