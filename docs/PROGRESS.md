@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ANDROID_QA leave toasts · Catalog memory Оба финиш · Play dual peek  
 - [x] Catalog memory «Оба финиш» · Soft memory · Play dual peek  
 - [x] Soft memory «Оба финиш» · Play dual peek · Home dual mood  
-- [x] Play dual peek same game · Home dual mood · Sky/Orbit/HB local finish  
 
 ## Catalog
 
