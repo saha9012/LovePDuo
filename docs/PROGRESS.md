@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Orbit dual miss · Sky dual miss/decoy · Soft dual OK  
 - [x] Sky dual miss/decoy · Soft dual OK · Profile WS presets  
 - [x] Soft dual OK · Profile WS presets · Soft dual GOOD  
-- [x] Profile WS preset toasts · Soft dual GOOD · Warmth встречное  
 
 ## Catalog
 

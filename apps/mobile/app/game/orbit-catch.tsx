@@ -59,6 +59,7 @@ export default function OrbitCatchScreen() {
   const lastAlignSend = useRef(0);
   const alignedRef = useRef(false);
   const lastCatchAt = useRef(0);
+  const lastMissAt = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -152,14 +153,15 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (payload?.miss) {
-          bumpPeerNote('промах');
+          const both = Date.now() - lastMissAt.current < 900;
+          bumpPeerNote(both ? 'оба miss' : 'промах');
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),
             withTiming(1, { duration: 200 }),
           );
           setTimeout(() => setPartnerFlash(false), 400);
-          void juice.miss();
+          void (both ? juice.sync() : juice.miss());
           return;
         }
         if (payload?.align) {
@@ -329,6 +331,7 @@ export default function OrbitCatchScreen() {
       setOrbAngle(orbAngle + Math.PI * (0.6 + (seedRef.current % 5) * 0.08));
       setAligned(false);
     } else {
+      lastMissAt.current = Date.now();
       void juice.miss();
       pairRealtime.sendGame('orbit-catch', { miss: true });
       flash.value = withSpring(0);
