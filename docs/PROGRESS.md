@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Heartbeat «оба miss» · Orbit оба catch · Sky оба ловят  
 - [x] Orbit «оба catch» · Sky оба ловят · Soft dual PERFECT  
 - [x] Sky «оба ловят» · Soft dual PERFECT · Play filter toast  
-- [x] Soft dual PERFECT flash · Play filter toast · Lobby both-READY  
 
 ## Catalog
 

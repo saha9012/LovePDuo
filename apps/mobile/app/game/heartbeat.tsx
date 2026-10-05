@@ -50,6 +50,7 @@ export default function HeartbeatScreen() {
   const [score, setScore] = useState(0);
   const [syncBonus, setSyncBonus] = useState(0);
   const [last, setLast] = useState<BeatJudgement | null>(null);
+  const lastRef = useRef<BeatJudgement | null>(null);
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
   const startAt = useRef(0);
@@ -74,6 +75,10 @@ export default function HeartbeatScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    lastRef.current = last;
+  }, [last]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -177,8 +182,9 @@ export default function HeartbeatScreen() {
         return;
       }
       if (payload?.miss) {
+        const both = lastRef.current === 'miss';
         setPartnerFlash(true);
-        setPeerNote('промах');
+        setPeerNote(both ? 'оба miss' : 'промах');
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
         partnerScale.value = withSequence(
@@ -186,7 +192,7 @@ export default function HeartbeatScreen() {
           withTiming(1, { duration: 200 }),
         );
         setTimeout(() => setPartnerFlash(false), 400);
-        void juice.miss();
+        void (both ? juice.sync() : juice.miss());
         return;
       }
       if (payload?.phase === 'finished') {
