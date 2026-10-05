@@ -10,6 +10,10 @@
 - [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
 - [x] Mid-match peer_left / peer_joined rejoin hello across games  
 
+## Catalog
+
+Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft Duel · Word Veil
+
 ## Still open (Ideal Bar not closed)
 
 Code dual-feel layer is saturated. Remaining blockers need external input:

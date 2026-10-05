@@ -275,6 +275,7 @@ export default function SignalDrawScreen() {
         }
         if (t <= 1) {
           clearInterval(id);
+          if (partnerFinishedRef.current) setSyncFinish(true);
           setPhase('finished');
           void juice.postMatch();
           pairRealtime.sendGame('signal-draw', {
@@ -284,7 +285,9 @@ export default function SignalDrawScreen() {
           addMemory({
             kind: 'draw',
             title: 'Signal Draw',
-            detail: `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
+            detail: partnerFinishedRef.current
+              ? `Синхрон финиш · штрихи ${myCount.current}`
+              : `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
           });
           if (peerCount.current === 0) {
             setPartnerStrokes(Math.max(1, Math.round(myCount.current * 0.85)));
