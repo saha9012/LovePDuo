@@ -152,6 +152,10 @@ export default function SoftDuelScreen() {
       if (payload?.phase === 'start') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        if (flashRef.current === 'Догоняем старт') {
+          setFlash('Оба догоняют');
+          void juice.perfect();
+        }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setPartnerLive(true);
