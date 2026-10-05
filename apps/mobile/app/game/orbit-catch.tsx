@@ -41,20 +41,32 @@ export default function OrbitCatchScreen() {
   const [timeLeft, setTimeLeft] = useState(35);
   const [aligned, setAligned] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [matchSeed, setMatchSeed] = useState(seed);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
+  const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const flash = useSharedValue(0);
   const ringPulse = useSharedValue(1);
   const partnerScale = useSharedValue(1);
 
-  const speed = useMemo(() => 0.045 + (seed % 7) * 0.004, [seed]);
+  const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
+
+  useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
 
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'game' && msg.gameId === 'orbit-catch') {
-        const payload = msg.payload as { caught?: number } | undefined;
+        const payload = msg.payload as { caught?: number; rematch?: boolean; seed?: number } | undefined;
+        if (payload?.rematch && typeof payload.seed === 'number') {
+          setMatchSeed(payload.seed);
+          seedRef.current = payload.seed;
+          startRef.current();
+          return;
+        }
         if (typeof payload?.caught === 'number') {
           partnerRef.current = payload.caught;
           setPartnerCaught(payload.caught);
@@ -79,13 +91,21 @@ export default function OrbitCatchScreen() {
     setPartnerCaught(0);
     setTimeLeft(35);
     setAngle(0);
-    setOrbAngle((seed % 360) * (Math.PI / 180));
+    setOrbAngle((seedRef.current % 360) * (Math.PI / 180));
     setAligned(false);
     setPhase('playing');
-    pairRealtime.sendGame('orbit-catch', { phase: 'start', seed });
+    pairRealtime.sendGame('orbit-catch', { phase: 'start', seed: seedRef.current });
     void juice.beat();
   };
   startRef.current = start;
+
+  const rematch = () => {
+    const next = Math.floor(Math.random() * 100000);
+    setMatchSeed(next);
+    seedRef.current = next;
+    pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next });
+    start();
+  };
 
   useEffect(() => {
     if (params.solo === '1') return;
@@ -152,7 +172,7 @@ export default function OrbitCatchScreen() {
   };
 
   const team = caught + partnerCaught;
-  const line = pickPostMatchLine(caught, partnerCaught || 1, seed);
+  const line = pickPostMatchLine(caught, partnerCaught || 1, matchSeed);
   const px = CX + Math.cos(angle) * R;
   const py = CY + Math.sin(angle) * R;
   const ox = CX + Math.cos(orbAngle) * (R * 0.72);
@@ -181,7 +201,7 @@ export default function OrbitCatchScreen() {
             title="Орбита закрыта"
             gameId="orbit-catch"
             line={line.text}
-            onRematch={start}
+            onRematch={rematch}
             onHome={() => router.replace('/(tabs)/play')}
           />
         </View>

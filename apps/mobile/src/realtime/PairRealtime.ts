@@ -165,6 +165,9 @@ export class PairRealtime {
       this.ws.send(JSON.stringify(payload));
       return;
     }
+    if (this.queue.length >= 40) {
+      this.queue.shift();
+    }
     this.queue.push(payload);
   }
 

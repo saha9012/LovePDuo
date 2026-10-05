@@ -35,7 +35,7 @@ export default function HeartbeatScreen() {
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
 
-  const seed = useMemo(() => {
+  const initialSeed = useMemo(() => {
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
     const session = consumeMatchSession('heartbeat');
@@ -43,7 +43,8 @@ export default function HeartbeatScreen() {
     return 3;
   }, [params.seed]);
 
-  const chart = useMemo(() => buildHeartbeatChart(seed), [seed]);
+  const [matchSeed, setMatchSeed] = useState(initialSeed);
+  const chart = useMemo(() => buildHeartbeatChart(matchSeed), [matchSeed]);
   const [phase, setPhase] = useState<Phase>('ready');
   const [elapsed, setElapsed] = useState(0);
   const [score, setScore] = useState(0);
@@ -57,11 +58,16 @@ export default function HeartbeatScreen() {
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
+  const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const padScale = useSharedValue(1);
   const syncGlow = useSharedValue(0);
   const partnerScale = useSharedValue(1);
   const [partnerFlash, setPartnerFlash] = useState(false);
+
+  useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -71,7 +77,16 @@ export default function HeartbeatScreen() {
         total?: number;
         tapAt?: number;
         phase?: string;
+        rematch?: boolean;
+        seed?: number;
       } | undefined;
+      if (payload?.rematch && typeof payload.seed === 'number') {
+        setMatchSeed(payload.seed);
+        seedRef.current = payload.seed;
+        // delay start until chart memo updates
+        setTimeout(() => startRef.current(), 0);
+        return;
+      }
       if (typeof payload?.total === 'number') {
         setPartnerScore(payload.total);
         setPartnerLive(true);
@@ -105,11 +120,19 @@ export default function HeartbeatScreen() {
     setPartnerLive(false);
     lastPartnerTapMs.current = null;
     startAt.current = Date.now();
-    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0, seed });
+    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0, seed: seedRef.current });
     void juice.beat();
   };
 
   startRef.current = start;
+
+  const rematch = () => {
+    const next = Math.floor(Math.random() * 100000);
+    setMatchSeed(next);
+    seedRef.current = next;
+    pairRealtime.sendGame('heartbeat', { rematch: true, seed: next });
+    setTimeout(() => startRef.current(), 0);
+  };
 
   useEffect(() => {
     if (params.solo === '1') return;
@@ -211,7 +234,7 @@ export default function HeartbeatScreen() {
   };
 
   const total = score + syncBonus;
-  const line = pickPostMatchLine(total, partnerScore, seed + (elapsed || 1));
+  const line = pickPostMatchLine(total, partnerScore, matchSeed + (elapsed || 1));
   const beatPulse = Math.sin((elapsed / (60000 / heartbeatConfig.bpm)) * Math.PI * 2);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],
@@ -236,7 +259,7 @@ export default function HeartbeatScreen() {
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
             gameId="heartbeat"
             line={line.text}
-            onRematch={start}
+            onRematch={rematch}
             onHome={() => router.replace('/(tabs)/play')}
           />
         </View>
@@ -247,7 +270,7 @@ export default function HeartbeatScreen() {
   return (
     <LpdBackground mood="rain">
       <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-        <Text style={styles.title}>Heartbeat Tap · seed {seed}</Text>
+        <Text style={styles.title}>Heartbeat Tap · seed {matchSeed}</Text>
         {phase === 'ready' ? (
           <View style={styles.ready}>
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>

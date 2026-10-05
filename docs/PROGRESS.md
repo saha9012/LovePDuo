@@ -6,10 +6,9 @@
 
 ## Latest
 
-- [x] Soft Duel shared rematch seed · Home warmth toast  
-- [x] WS auto-reconnect (backoff) + AppState presence away/online  
-- [x] SFX + haptics mute persist · presence heartbeat ping  
-- [x] Store frames + capture.html + STORE_SHOTS · Spotify env stub  
+- [x] Shared rematch seed: Soft Duel · Orbit Catch · Heartbeat  
+- [x] Warmth toast · WS reconnect backoff · AppState away  
+- [x] SFX mute persist · presence ping · store capture helpers  
 
 ## Catalog
 
