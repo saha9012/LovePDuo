@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music dual playlist shelf · Play dual filter · Sky dual combo  
 - [x] Play dual filter sync · Sky dual combo · Lobby dual unready  
 - [x] Sky dual combo · Lobby dual unready · Soft dual ЖМИ  
-- [x] Lobby dual unready · Soft dual ЖМИ · Music stop · candle blow  
 
 ## Catalog
 

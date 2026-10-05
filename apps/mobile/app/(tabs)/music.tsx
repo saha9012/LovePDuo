@@ -200,18 +200,27 @@ export default function MusicScreen() {
           mood?: 'night' | 'warm' | 'rain' | 'pulse';
         } | undefined;
         if (payload?.playlistId) {
+          const both = activePlaylistId === payload.playlistId;
           setActivePlaylist(payload.playlistId);
           if (payload.mood && payload.mood !== 'pulse') setMood(payload.mood);
           const name = playlists.find((p) => p.id === payload.playlistId)?.name;
-          showNote(name ? `Партнёр переключил «${name}»` : 'Партнёр сменил плейлист');
-          void juice.hit();
+          showNote(
+            both
+              ? name
+                ? `Оба на «${name}»`
+                : 'Оба на одной полке'
+              : name
+                ? `Партнёр переключил «${name}»`
+                : 'Партнёр сменил плейлист',
+          );
+          void (both ? juice.perfect() : juice.hit());
         }
       }
     });
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId]);
 
   useEffect(() => {
     if (!pair || !user) return;
