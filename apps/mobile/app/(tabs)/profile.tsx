@@ -53,10 +53,18 @@ export default function ProfileScreen() {
     return pairRealtime.onStatus((online) => {
       setWsOnline(online);
       if (online && !wasOnline.current) {
-        setWsToast('Realtime online');
+        const toast =
+          wsToastRef.current === 'Realtime offline — переподключение…' ||
+          wsToastRef.current === 'Realtime online' ||
+          wsToastRef.current === 'Оба на realtime'
+            ? 'Оба на realtime'
+            : 'Realtime online';
+        wsToastRef.current = toast;
+        setWsToast(toast);
         void juice.sync();
         setTimeout(() => setWsToast(null), 1600);
       } else if (!online && wasOnline.current) {
+        wsToastRef.current = 'Realtime offline — переподключение…';
         setWsToast('Realtime offline — переподключение…');
         void juice.miss();
         setTimeout(() => setWsToast(null), 1800);

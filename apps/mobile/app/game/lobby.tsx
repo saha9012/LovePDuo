@@ -80,7 +80,13 @@ export default function GameLobbyScreen() {
     return pairRealtime.onStatus((online) => {
       setWsOnline(online);
       if (online && !wasWsOnline.current) {
-        showCancelToast('WS online');
+        showCancelToast(
+          cancelToastRef.current === 'WS offline…' ||
+            cancelToastRef.current === 'WS online' ||
+            cancelToastRef.current === 'Оба на WS'
+            ? 'Оба на WS'
+            : 'WS online',
+        );
         void juice.sync();
         if (readyMeRef.current && user?.id) {
           pairRealtime.sendGame(gameId, { ready: true, userId: user.id });

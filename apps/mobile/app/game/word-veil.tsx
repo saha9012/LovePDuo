@@ -155,9 +155,11 @@ export default function WordVeilScreen() {
       setTimeout(() => setPresenceHint(null), 1600);
     } else if (pts >= 3) {
       setPresenceHint(
-        hintRef.current === 'Почти наравне…' || hintRef.current === 'Оба почти'
-          ? 'Оба почти'
-          : 'Почти наравне…',
+        hintRef.current === 'Оба почти' || hintRef.current === 'Оба на грани'
+          ? 'Оба на грани'
+          : hintRef.current === 'Почти наравне…'
+            ? 'Оба почти'
+            : 'Почти наравне…',
       );
       void juice.sync();
       setTimeout(() => setPresenceHint(null), 1600);
