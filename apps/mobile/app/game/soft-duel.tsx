@@ -310,8 +310,17 @@ export default function SoftDuelScreen() {
             }, 380);
           }
         } else if (ahead) {
-          const racing = flashRef.current === 'Партнёр впереди';
-          setFlash(racing ? 'Гонка' : 'Партнёр впереди');
+          const racing =
+            flashRef.current === 'Партнёр впереди' ||
+            flashRef.current === 'Гонка' ||
+            flashRef.current === 'Оба в гонке';
+          setFlash(
+            flashRef.current === 'Гонка' || flashRef.current === 'Оба в гонке'
+              ? 'Оба в гонке'
+              : racing
+                ? 'Гонка'
+                : 'Партнёр впереди',
+          );
           flashScale.value = withSpring(1.14, { damping: 10 });
           void (racing ? juice.sync() : juice.hit());
         } else if (
@@ -509,8 +518,17 @@ export default function SoftDuelScreen() {
       }, 320);
     } else if (partnerLiveRef.current && myScoreRef.current > partnerScore + 2) {
       setTimeout(() => {
-        const racing = flashRef.current === 'Я впереди' || flashRef.current === 'Гонка';
-        setFlash(racing ? 'Гонка' : 'Я впереди');
+        const racing =
+          flashRef.current === 'Я впереди' ||
+          flashRef.current === 'Гонка' ||
+          flashRef.current === 'Оба в гонке';
+        setFlash(
+          flashRef.current === 'Гонка' || flashRef.current === 'Оба в гонке'
+            ? 'Оба в гонке'
+            : racing
+              ? 'Гонка'
+              : 'Я впереди',
+        );
         flashScale.value = withSpring(1.14, { damping: 10 });
         void (racing ? juice.sync() : juice.hit());
       }, 320);
