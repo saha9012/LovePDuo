@@ -278,6 +278,7 @@ export default function OrbitCatchScreen() {
           clearInterval(tick);
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
+            bumpPeerNote('оба финиш');
             void juice.perfect();
           }
           setPhase('finished');

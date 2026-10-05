@@ -347,6 +347,9 @@ export default function HeartbeatScreen() {
         }
         if (partnerFinishedRef.current) {
           setSyncFinish(true);
+          setPeerNote('оба финиш');
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
           void juice.perfect();
         }
         setPhase('finished');

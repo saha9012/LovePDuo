@@ -343,6 +343,7 @@ export default function SkyClaimScreen() {
           }
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
+            bumpPeerNote('оба финиш');
             void juice.perfect();
           }
           setPhase('finished');

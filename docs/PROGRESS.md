@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky/Orbit/HB local «оба финиш» · Draw dual finish · Music shelf-add  
 - [x] Draw local «Оба финиш» · Music dual shelf-add · Soft «Оба ждут»  
 - [x] Music dual shelf-add · Soft «Оба ждут» · Sky/Orbit/HB оба финиш  
-- [x] Soft «Оба ждут» arm · Sky/Orbit/HB оба финиш · Soft «Гонка»  
 
 ## Catalog
 
