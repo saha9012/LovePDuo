@@ -178,7 +178,10 @@ export default function SoftDuelScreen() {
         setPartnerRound(0);
         partnerRoundRef.current = 0;
         const both = Date.now() - lastRematchAt.current < 2500;
-        setFlash(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
+        const racing =
+          both &&
+          (flashRef.current === 'Оба: ещё раунд' || flashRef.current === 'Оба снова');
+        setFlash(racing ? 'Оба снова' : both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         void (both ? juice.perfect() : juice.sync());
         startRef.current();
         return;

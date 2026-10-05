@@ -170,7 +170,10 @@ export default function SignalDrawScreen() {
       if (payload.rematch) {
         setPeerSeen(true);
         const both = Date.now() - lastRematchAt.current < 2500;
-        showToast(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
+        const racing =
+          both &&
+          (toastRef.current === 'Оба: ещё раунд' || toastRef.current === 'Оба снова');
+        showToast(racing ? 'Оба снова' : both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         void (both ? juice.perfect() : juice.sync());
         startRef.current();
         return;

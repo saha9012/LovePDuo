@@ -63,6 +63,7 @@ export default function TruthOrSparkScreen() {
   const [turnMine, setTurnMine] = useState(true);
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const turnToastRef = useRef<string | null>(null);
   const lastSkipAt = useRef(0);
   const lastFilterAt = useRef(0);
   const lastFilterChoice = useRef<SparkFilter>('soft');
@@ -80,9 +81,13 @@ export default function TruthOrSparkScreen() {
   const cardTilt = useSharedValue(0);
 
   const showTurnToast = (text: string) => {
+    turnToastRef.current = text;
     setTurnToast(text);
     if (turnToastTimer.current) clearTimeout(turnToastTimer.current);
-    turnToastTimer.current = setTimeout(() => setTurnToast(null), 1600);
+    turnToastTimer.current = setTimeout(() => {
+      turnToastRef.current = null;
+      setTurnToast(null);
+    }, 1600);
   };
 
   useEffect(() => {
@@ -168,8 +173,16 @@ export default function TruthOrSparkScreen() {
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
         const both = Date.now() - lastRematchAt.current < 2500;
+        const racing =
+          both &&
+          (turnToastRef.current === 'Оба: новая колода' ||
+            turnToastRef.current === 'Оба снова');
         showTurnToast(
-          both ? 'Оба: новая колода' : 'Партнёр: новая колода — твой ход',
+          racing
+            ? 'Оба снова'
+            : both
+              ? 'Оба: новая колода'
+              : 'Партнёр: новая колода — твой ход',
         );
         void (both ? juice.perfect() : juice.sync());
         return;

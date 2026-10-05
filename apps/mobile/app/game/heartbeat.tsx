@@ -185,9 +185,10 @@ export default function HeartbeatScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         const both = Date.now() - lastRematchAt.current < 2500;
-        setPeerNote(both ? 'оба ещё раунд' : 'ещё раунд');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+        const racing =
+          both &&
+          (peerNoteRef.current === 'оба ещё раунд' || peerNoteRef.current === 'оба снова');
+        bumpPeerNote(racing ? 'оба снова' : both ? 'оба ещё раунд' : 'ещё раунд', 1200);
         void (both ? juice.perfect() : juice.sync());
         // delay start until chart memo updates
         setTimeout(() => startRef.current(), 0);

@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Catalog rematch «Оба снова» · Music трек · Together свеча  
 - [x] Music «Оба в треке»/тишина · Together свеча/искра · Soft early  
 - [x] Together свеча/искра escalate · Soft early local · Word Veil typing  
-- [x] Soft local оба рано/спешат · Word Veil typing буквы · Play каталог  
 
 ## Catalog
 

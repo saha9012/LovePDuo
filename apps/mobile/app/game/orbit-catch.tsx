@@ -147,7 +147,10 @@ export default function OrbitCatchScreen() {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
           const both = Date.now() - lastRematchAt.current < 2500;
-          bumpPeerNote(both ? 'оба ещё раунд' : 'ещё раунд');
+          const racing =
+            both &&
+            (peerNoteRef.current === 'оба ещё раунд' || peerNoteRef.current === 'оба снова');
+          bumpPeerNote(racing ? 'оба снова' : both ? 'оба ещё раунд' : 'ещё раунд');
           void (both ? juice.perfect() : juice.sync());
           startRef.current();
           return;

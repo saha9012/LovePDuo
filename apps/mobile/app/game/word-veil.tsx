@@ -214,7 +214,10 @@ export default function WordVeilScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         const both = Date.now() - lastRematchAt.current < 2500;
-        setPresenceHint(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
+        const racing =
+          both &&
+          (hintRef.current === 'Оба: ещё раунд' || hintRef.current === 'Оба снова');
+        setPresenceHint(racing ? 'Оба снова' : both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         setTimeout(() => setPresenceHint(null), 1600);
         resetRef.current();
         void (both ? juice.perfect() : juice.sync());
