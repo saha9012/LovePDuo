@@ -426,7 +426,7 @@ export default function SoftDuelScreen() {
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
             gameId="soft-duel"
-            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
+            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
