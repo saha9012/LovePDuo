@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft shared-start 3·2·1 flash · ANDROID_QA HB/Orbit sync  
 - [x] ANDROID_QA sync! / sync-align · Heartbeat dual sync ping  
 - [x] Heartbeat dual sync! ping · Orbit sync-align perfect  
-- [x] Orbit sync-align perfect when both rings aligned · Music shelf miss hint  
 
 ## Catalog
 
