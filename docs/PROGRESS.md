@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Word Veil «Пишем вместе» · Draw together stroke · Soft dual early  
 - [x] Draw «Рисуем вместе» when both stroke · Soft dual early · mood sync  
 - [x] Soft «Оба рано» dual miss · Home mood sync · Together candle sync  
-- [x] Home mood sync-toast · Together candle sync-light · shared-start 3·2·1  
 
 ## Catalog
 

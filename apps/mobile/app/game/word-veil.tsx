@@ -198,7 +198,15 @@ export default function WordVeilScreen() {
       if (typeof payload?.typing === 'boolean') {
         if (payload.typing) {
           setPeerTyping((was) => {
-            if (!was) void juice.hit();
+            if (!was) {
+              if (mineRef.current.trim()) {
+                setPresenceHint('Пишем вместе');
+                setTimeout(() => setPresenceHint(null), 1200);
+                void juice.perfect();
+              } else {
+                void juice.hit();
+              }
+            }
             return true;
           });
         } else {
