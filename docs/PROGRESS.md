@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Draw «Рисуем вместе» when both stroke · Soft dual early · mood sync  
 - [x] Soft «Оба рано» dual miss · Home mood sync · Together candle sync  
 - [x] Home mood sync-toast · Together candle sync-light · shared-start 3·2·1  
-- [x] Together candle sync-light · named spark · shared-start 3·2·1  
 
 ## Catalog
 
