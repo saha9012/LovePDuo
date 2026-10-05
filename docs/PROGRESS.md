@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] ToS deck-wrap toast · Soft partner-finish juice  
-- [x] Soft arm ЖМИ · Word Veil start hello · ANDROID_QA  
+- [x] ToS deck-wrap · Soft partner-finish juice · QA checklist update  
+- [x] Soft arm ЖМИ · Word Veil start hello  
 
 ## Catalog
 
