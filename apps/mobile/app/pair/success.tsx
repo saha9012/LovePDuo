@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Share, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withRepeat,
   withSequence,
   withTiming,
@@ -27,6 +26,8 @@ export default function PairSuccessScreen() {
   const opacity = useSharedValue(0);
   const spin = useSharedValue(0);
   const pulse = useSharedValue(0);
+  const code = pair?.code ?? '------';
+  const deepLink = `lovepduo://join/${code}`;
 
   useEffect(() => {
     void juice.postMatch();
@@ -60,6 +61,18 @@ export default function PairSuccessScreen() {
     opacity: interpolate(pulse.value, [0, 1], [0.55, 0.95]),
   }));
 
+  const shareCode = async () => {
+    try {
+      await Share.share({
+        message: `LovePDuo — зайди в пару по коду ${code}\n${deepLink}`,
+        title: 'LovePDuo pair',
+      });
+      void juice.warmth();
+    } catch {
+      // cancelled
+    }
+  };
+
   return (
     <LpdBackground mood="warm">
       <View style={[styles.root, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
@@ -74,19 +87,20 @@ export default function PairSuccessScreen() {
           <Text style={typography.tease}>Два телефона. Одна комната. Можно жечь.</Text>
           <View style={styles.codeBlock}>
             <Text style={styles.codeLabel}>Код пары</Text>
-            <Text style={typography.code}>{pair?.code ?? '------'}</Text>
+            <Text style={typography.code}>{code}</Text>
           </View>
-          <Text style={styles.hint}>
-            Покажи код партнёру или deep link lovepduo://join/{pair?.code}
-          </Text>
+          <Text style={styles.hint}>Покажи код партнёру или deep link {deepLink}</Text>
         </Animated.View>
-        <LpdButton
-          label="В комнату пары"
-          onPress={() => {
-            void juice.warmth();
-            router.replace('/(tabs)/home');
-          }}
-        />
+        <View style={styles.actions}>
+          <LpdButton label="Поделиться кодом" variant="ghost" onPress={() => void shareCode()} />
+          <LpdButton
+            label="В комнату пары"
+            onPress={() => {
+              void juice.warmth();
+              router.replace('/(tabs)/home');
+            }}
+          />
+        </View>
       </View>
     </LpdBackground>
   );
@@ -165,5 +179,8 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 20,
     fontSize: 14,
+  },
+  actions: {
+    gap: spacing.sm,
   },
 });
