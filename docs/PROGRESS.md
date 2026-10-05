@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft rematch flash «партнёру» · late-start catch-up across games  
 - [x] Late-start «догоняем» flash in Soft/Sky/HB/Orbit/Draw/Veil · lobby drift  
 - [x] Lobby late-start «догоняем» toast · ToS deck-wrap peer  
-- [x] ToS deck-wrap peer toast · local/remote sync-finish perfect  
 
 ## Catalog
 

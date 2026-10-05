@@ -267,7 +267,8 @@ export default function SoftDuelScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    setFlash('Новый раунд');
+    setFlash('Ещё раунд — партнёру');
+    setSyncFinish(false);
     void juice.sync();
     pairRealtime.sendGame('soft-duel', { rematch: true, seed: next, hello: true });
     start();
