@@ -195,7 +195,9 @@ export default function WordVeilScreen() {
           late
             ? 'Оба догоняют'
             : both
-              ? 'Оба в игре'
+              ? hintRef.current === 'Оба в игре' || hintRef.current === 'Оба здесь'
+                ? 'Оба здесь'
+                : 'Оба в игре'
               : 'Партнёр в игре',
         );
         void (late || both ? juice.perfect() : juice.sync());

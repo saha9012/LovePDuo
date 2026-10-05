@@ -157,7 +157,13 @@ export default function SkyClaimScreen() {
           setPartnerLive(true);
           partnerLiveRef.current = true;
           const both = Date.now() - lastHelloAt.current < 2500;
-          bumpPeerNote(both ? 'оба в игре' : 'в игре');
+          bumpPeerNote(
+            both
+              ? peerNoteRef.current === 'оба в игре' || peerNoteRef.current === 'оба здесь'
+                ? 'оба здесь'
+                : 'оба в игре'
+              : 'в игре',
+          );
           void (both ? juice.perfect() : juice.sync());
           return;
         }

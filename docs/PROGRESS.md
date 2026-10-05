@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Catalog hello «Оба здесь» · Music полка · score в счёте  
 - [x] Music полка escalate · score «в счёте» · Word Veil завесили  
 - [x] Soft/Sky/Orbit/HB «Оба в счёте» · Word Veil завесили · Lobby  
-- [x] Word Veil «Оба завесили» · Lobby «Оба не готовы» · Draw рисуют  
 
 ## Catalog
 

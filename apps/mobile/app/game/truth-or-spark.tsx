@@ -161,7 +161,9 @@ export default function TruthOrSparkScreen() {
         const both = Date.now() - lastHelloAt.current < 2500;
         showTurnToast(
           both
-            ? 'Оба в игре'
+            ? turnToastRef.current === 'Оба в игре' || turnToastRef.current === 'Оба здесь'
+              ? 'Оба здесь'
+              : 'Оба в игре'
             : `${payload.fromName ?? 'Партнёр'} в игре`,
         );
         void (both ? juice.perfect() : juice.sync());

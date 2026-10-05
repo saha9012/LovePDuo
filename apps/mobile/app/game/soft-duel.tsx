@@ -124,7 +124,13 @@ export default function SoftDuelScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         const both = Date.now() - lastHelloAt.current < 2500;
-        setFlash(both ? 'Оба в игре' : 'Партнёр в игре');
+        setFlash(
+          both
+            ? flashRef.current === 'Оба в игре' || flashRef.current === 'Оба здесь'
+              ? 'Оба здесь'
+              : 'Оба в игре'
+            : 'Партнёр в игре',
+        );
         void (both ? juice.perfect() : juice.sync());
         return;
       }

@@ -163,9 +163,14 @@ export default function HeartbeatScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         const both = Date.now() - lastHelloAt.current < 2500;
-        setPeerNote(both ? 'оба в игре' : 'в игре');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+        bumpPeerNote(
+          both
+            ? peerNoteRef.current === 'оба в игре' || peerNoteRef.current === 'оба здесь'
+              ? 'оба здесь'
+              : 'оба в игре'
+            : 'в игре',
+          1200,
+        );
         void (both ? juice.perfect() : juice.sync());
         return;
       }

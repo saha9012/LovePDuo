@@ -158,7 +158,13 @@ export default function SignalDrawScreen() {
         setPeerSeen(true);
         if (payload.hello) {
           const both = Date.now() - lastHelloAt.current < 2500;
-          showToast(both ? 'Оба в игре' : 'Партнёр в игре');
+          showToast(
+            both
+              ? toastRef.current === 'Оба в игре' || toastRef.current === 'Оба здесь'
+                ? 'Оба здесь'
+                : 'Оба в игре'
+              : 'Партнёр в игре',
+          );
           void (both ? juice.perfect() : juice.sync());
           return;
         }
