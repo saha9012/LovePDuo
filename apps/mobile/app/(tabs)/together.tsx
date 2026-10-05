@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
@@ -10,6 +18,7 @@ import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { track } from '../../src/analytics/track';
 
 const CANDLE_SEC = 120;
 
@@ -22,6 +31,28 @@ export default function TogetherScreen() {
   const [draft, setDraft] = useState('');
   const soft = useMemo(() => sparksRu.filter((s) => s.filter === 'soft'), []);
   const card = soft[idx % soft.length];
+  const flame = useSharedValue(1);
+  const lit = candleLeft != null && candleLeft > 0;
+
+  useEffect(() => {
+    if (!lit) {
+      flame.value = withTiming(1, { duration: 200 });
+      return;
+    }
+    flame.value = withRepeat(
+      withSequence(
+        withTiming(1.18, { duration: 520, easing: Easing.inOut(Easing.quad) }),
+        withTiming(0.92, { duration: 480, easing: Easing.inOut(Easing.quad) }),
+      ),
+      -1,
+      false,
+    );
+  }, [lit, flame]);
+
+  const flameStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleY: flame.value }, { scaleX: 0.85 + (flame.value - 1) * 0.4 }],
+    opacity: lit ? 0.75 + (flame.value - 1) * 0.8 : 0.35,
+  }));
 
   useEffect(() => {
     if (candleLeft == null || candleLeft <= 0) return;
@@ -51,6 +82,7 @@ export default function TogetherScreen() {
     setCandleLeft(CANDLE_SEC);
     pairRealtime.sendGame('candle', { start: true, left: CANDLE_SEC });
     void juice.warmth();
+    track('warmth_sent', { ritual: 'candle' });
   };
 
   const nextSpark = () => {
@@ -71,6 +103,7 @@ export default function TogetherScreen() {
     pairRealtime.sendGame('tiny-note', note);
     setDraft('');
     void juice.card();
+    track('note_sent');
   };
 
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
@@ -103,11 +136,8 @@ export default function TogetherScreen() {
                 : `${mins}:${secs.toString().padStart(2, '0')}`}
           </Text>
           <View style={styles.flame}>
-            <View
-              style={[
-                styles.flameCore,
-                candleLeft != null && candleLeft > 0 && styles.flameLit,
-              ]}
+            <Animated.View
+              style={[styles.flameCore, lit && styles.flameLit, flameStyle]}
             />
           </View>
         </View>
@@ -133,9 +163,9 @@ export default function TogetherScreen() {
         <View style={styles.actions}>
           <LpdButton label="Следующая искра" onPress={nextSpark} />
           <LpdButton
-            label={candleLeft != null && candleLeft > 0 ? 'Свеча горит…' : 'Зажечь свечу (2 мин)'}
+            label={lit ? 'Свеча горит…' : 'Зажечь свечу (2 мин)'}
             variant="ghost"
-            disabled={candleLeft != null && candleLeft > 0}
+            disabled={lit}
             onPress={startCandle}
           />
           <LpdButton
@@ -145,6 +175,7 @@ export default function TogetherScreen() {
               sendWarmth();
               pairRealtime.sendWarmth();
               void juice.warmth();
+              track('warmth_sent');
             }}
           />
         </View>
@@ -221,22 +252,22 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   flame: {
-    height: 28,
-    justifyContent: 'center',
+    height: 36,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
   },
   flameCore: {
-    width: 10,
-    height: 16,
-    borderRadius: 8,
+    width: 12,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: colors.textMuted,
     opacity: 0.35,
   },
   flameLit: {
     backgroundColor: colors.accentAmber,
-    opacity: 1,
     shadowColor: colors.accentAmber,
     shadowOpacity: 0.9,
-    shadowRadius: 12,
+    shadowRadius: 14,
   },
   noteBlock: {
     gap: spacing.sm,

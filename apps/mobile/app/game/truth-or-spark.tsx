@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
@@ -53,10 +60,30 @@ export default function TruthOrSparkScreen() {
   const [skips, setSkips] = useState(SKIP_LIMIT);
   const [peerName, setPeerName] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [turnMine, setTurnMine] = useState(true);
 
   const deck = useMemo(() => shuffleDeck(seed, filter), [seed, filter]);
   const card = deck[index % deck.length];
   const isHost = Boolean(user?.id && pair?.hostUserId && pair.hostUserId === user.id);
+  const cardScale = useSharedValue(1);
+  const cardOpacity = useSharedValue(1);
+  const cardTilt = useSharedValue(0);
+
+  const flipIn = () => {
+    cardOpacity.value = 0.35;
+    cardScale.value = 0.88;
+    cardTilt.value = -4;
+    cardOpacity.value = withTiming(1, { duration: 220 });
+    cardScale.value = withSpring(1, { damping: 12, stiffness: 170 });
+    cardTilt.value = withSequence(
+      withTiming(3, { duration: 120 }),
+      withSpring(0, { damping: 10 }),
+    );
+  };
+
+  useEffect(() => {
+    flipIn();
+  }, [index, filter]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -67,6 +94,7 @@ export default function TruthOrSparkScreen() {
         filter?: SparkFilter;
         skips?: number;
         fromName?: string;
+        fromId?: string;
       } | undefined;
       if (!payload) return;
       setLive(true);
@@ -74,6 +102,9 @@ export default function TruthOrSparkScreen() {
       if (payload.filter === 'soft' || payload.filter === 'spicy') setFilter(payload.filter);
       if (typeof payload.skips === 'number') setSkips(payload.skips);
       if (payload.fromName) setPeerName(payload.fromName);
+      if (payload.fromId && payload.fromId !== user.id) {
+        setTurnMine(true);
+      }
     });
     return () => {
       off();
@@ -86,6 +117,7 @@ export default function TruthOrSparkScreen() {
       filter: nextFilter,
       skips: nextSkips,
       fromName: user?.displayName,
+      fromId: user?.id,
       seed,
     });
   };
@@ -93,6 +125,7 @@ export default function TruthOrSparkScreen() {
   const next = () => {
     const ni = index + 1;
     setIndex(ni);
+    setTurnMine(false);
     broadcast(ni, filter, skips);
     void juice.card();
   };
@@ -103,6 +136,7 @@ export default function TruthOrSparkScreen() {
     const ni = index + 1;
     setSkips(ns);
     setIndex(ni);
+    setTurnMine(false);
     broadcast(ni, filter, ns);
     void juice.miss();
   };
@@ -111,9 +145,18 @@ export default function TruthOrSparkScreen() {
     setFilter(f);
     setIndex(0);
     setSkips(SKIP_LIMIT);
+    setTurnMine(true);
     broadcast(0, f, SKIP_LIMIT);
     void juice.card();
   };
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [
+      { scale: cardScale.value },
+      { rotateZ: `${cardTilt.value}deg` },
+    ],
+  }));
 
   return (
     <LpdBackground mood={filter === 'spicy' ? 'warm' : 'night'}>
@@ -127,7 +170,7 @@ export default function TruthOrSparkScreen() {
 
         <Text style={styles.syncMeta}>
           seed {seed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
-          {isHost ? ' · host' : ''}
+          {isHost ? ' · host' : ''} · ход: {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
 
         <View style={styles.filters}>
@@ -144,20 +187,24 @@ export default function TruthOrSparkScreen() {
           ))}
         </View>
 
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, cardStyle]}>
           <Text style={styles.kind}>{card.kind}</Text>
           <Text style={styles.text}>{card.text}</Text>
           <Text style={styles.meta}>
             Карточка {(index % deck.length) + 1}/{deck.length} · skip осталось {skips}
           </Text>
-        </View>
+        </Animated.View>
 
         <View style={styles.actions}>
-          <LpdButton label="Дальше (обоим)" onPress={next} />
+          <LpdButton
+            label="Дальше (обоим)"
+            onPress={next}
+            disabled={!turnMine && params.solo !== '1' && live}
+          />
           <LpdButton
             label="Skip"
             variant="ghost"
-            disabled={skips <= 0}
+            disabled={skips <= 0 || (!turnMine && params.solo !== '1' && live)}
             onPress={skip}
           />
         </View>
