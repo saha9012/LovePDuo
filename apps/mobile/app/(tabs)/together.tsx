@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { sparksRu } from '../../src/content/sparks';
@@ -464,23 +465,30 @@ export default function TogetherScreen() {
             maxLength={180}
           />
           <LpdButton label="Отправить заметку" onPress={sendNote} />
-          {notes.slice(0, 6).map((n) => (
-            <View key={n.id} style={styles.noteRow}>
-              <Text style={styles.noteItem}>
-                {n.from}: {n.text}
-              </Text>
-              <Pressable
-                onPress={() => deleteNote(n)}
-                onLongPress={() => performDeleteNote(n)}
-                delayLongPress={380}
-                style={styles.noteDelete}
-                accessibilityLabel="Удалить заметку"
-                hitSlop={12}
-              >
-                <Text style={styles.noteDeleteLabel}>×</Text>
-              </Pressable>
-            </View>
-          ))}
+          {notes.length === 0 ? (
+            <EmptyState
+              title="Пока тихо"
+              body="Первая записка уйдёт партнёру по WS — и останется в ленте у обоих."
+            />
+          ) : (
+            notes.slice(0, 6).map((n) => (
+              <View key={n.id} style={styles.noteRow}>
+                <Text style={styles.noteItem}>
+                  {n.from}: {n.text}
+                </Text>
+                <Pressable
+                  onPress={() => deleteNote(n)}
+                  onLongPress={() => performDeleteNote(n)}
+                  delayLongPress={380}
+                  style={styles.noteDelete}
+                  accessibilityLabel="Удалить заметку"
+                  hitSlop={12}
+                >
+                  <Text style={styles.noteDeleteLabel}>×</Text>
+                </Pressable>
+              </View>
+            ))
+          )}
         </View>
 
         <View style={styles.actions}>
@@ -507,43 +515,50 @@ export default function TogetherScreen() {
           />
         </View>
 
-        {memories.length > 0 ? (
-          <View style={styles.memories}>
-            <Text style={styles.memTitle}>Memories</Text>
-            {memories.slice(0, 5).map((m) => (
-              <View key={m.id} style={styles.memRow}>
-                <Text style={styles.memItem}>
-                  {m.title} — {m.detail}
-                </Text>
-                <Pressable
-                  onPress={() => deleteMemory(m.id, m.title, m.detail)}
-                  onLongPress={() => performDeleteMemory(m.id, m.title)}
-                  delayLongPress={380}
-                  style={styles.noteDelete}
-                  accessibilityLabel="Удалить memory"
-                  hitSlop={12}
-                >
-                  <Text style={styles.noteDeleteLabel}>×</Text>
-                </Pressable>
-              </View>
-            ))}
-            <LpdButton
-              label="Очистить memories"
-              variant="ghost"
-              onPress={() => {
-                void confirmDestructive(
-                  'Очистить все memories?',
-                  'История у тебя и у партнёра.',
-                ).then((ok) => {
-                  if (!ok) return;
-                  clearMemories();
-                  broadcastMemoryClear(user);
-                  void juice.miss();
-                });
-              }}
+        <View style={styles.memories}>
+          <Text style={styles.memTitle}>Memories</Text>
+          {memories.length === 0 ? (
+            <EmptyState
+              title="Скрапбук пуст"
+              body="Финиш игры или догоревшая свеча появятся здесь у обоих."
             />
-          </View>
-        ) : null}
+          ) : (
+            <>
+              {memories.slice(0, 5).map((m) => (
+                <View key={m.id} style={styles.memRow}>
+                  <Text style={styles.memItem}>
+                    {m.title} — {m.detail}
+                  </Text>
+                  <Pressable
+                    onPress={() => deleteMemory(m.id, m.title, m.detail)}
+                    onLongPress={() => performDeleteMemory(m.id, m.title)}
+                    delayLongPress={380}
+                    style={styles.noteDelete}
+                    accessibilityLabel="Удалить memory"
+                    hitSlop={12}
+                  >
+                    <Text style={styles.noteDeleteLabel}>×</Text>
+                  </Pressable>
+                </View>
+              ))}
+              <LpdButton
+                label="Очистить memories"
+                variant="ghost"
+                onPress={() => {
+                  void confirmDestructive(
+                    'Очистить все memories?',
+                    'История у тебя и у партнёра.',
+                  ).then((ok) => {
+                    if (!ok) return;
+                    clearMemories();
+                    broadcastMemoryClear(user);
+                    void juice.miss();
+                  });
+                }}
+              />
+            </>
+          )}
+        </View>
       </ScrollView>
     </LpdBackground>
   );
