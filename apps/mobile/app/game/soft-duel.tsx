@@ -37,6 +37,7 @@ export default function SoftDuelScreen() {
   const [myScore, setMyScore] = useState(0);
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [flash, setFlash] = useState('');
   const [armed, setArmed] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
@@ -102,15 +103,22 @@ export default function SoftDuelScreen() {
       if (msg.type === 'peer_left') {
         setPartnerLive(false);
         partnerLiveRef.current = false;
-        setFlash('Партнёр вышел');
+        if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
+          setForceSolo(true);
+          setFlash('Партнёр вышел · соло');
+        } else {
+          setFlash('Партнёр вышел');
+        }
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setForceSolo(false);
         const racing =
           flashRef.current === 'Партнёр вышел' ||
+          flashRef.current === 'Партнёр вышел · соло' ||
           flashRef.current === 'Партнёр снова в комнате' ||
           flashRef.current === 'Оба снова в комнате';
         setFlash(racing ? 'Оба снова в комнате' : 'Партнёр снова в комнате');
@@ -634,9 +642,11 @@ export default function SoftDuelScreen() {
             <Text style={styles.hero}>Реакция на двоих</Text>
             <Text style={styles.body}>
               Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. {ROUNDS} раундов.
-              {params.solo !== '1' && !partnerLive
+              {params.solo !== '1' && !forceSolo && !partnerLive
                 ? ' Ждём, пока партнёр зайдёт в Soft Duel…'
-                : ''}
+                : forceSolo && params.solo !== '1'
+                  ? ' Партнёр вышел — играешь соло.'
+                  : ''}
             </Text>
             <Pressable onPress={start} style={styles.btn}>
               <Text style={styles.btnLabel}>Старт</Text>
@@ -656,7 +666,7 @@ export default function SoftDuelScreen() {
                 </Animated.Text>
               ) : (
                 <Text style={styles.meta}>
-                  {params.solo === '1' ? 'партнёр demo' : 'ожидаем партнёра…'}
+                  {params.solo === '1' || forceSolo ? 'партнёр demo' : 'ожидаем партнёра…'}
                 </Text>
               )}
             </View>

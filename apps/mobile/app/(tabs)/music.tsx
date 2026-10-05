@@ -59,6 +59,7 @@ export default function MusicScreen() {
   const lastListenTitle = React.useRef<string | null>(null);
   const playTrackRef = React.useRef<(track: TrackItem) => Promise<void>>(async () => undefined);
   const visibleTracksRef = React.useRef<TrackItem[]>([]);
+  const progressWidthRef = React.useRef(1);
 
   const showNote = (text: string, ms = 1800) => {
     noteRef.current = text;
@@ -742,7 +743,24 @@ export default function MusicScreen() {
         {nowPlayingId ? (
           <View style={styles.playbackRow}>
             {progress && progress.dur > 0 ? (
-              <View style={styles.progressBlock}>
+              <Pressable
+                style={styles.progressBlock}
+                onLayout={(e) => {
+                  progressWidthRef.current = Math.max(1, e.nativeEvent.layout.width);
+                }}
+                onPress={(e) => {
+                  const ratio = Math.max(
+                    0,
+                    Math.min(1, e.nativeEvent.locationX / progressWidthRef.current),
+                  );
+                  const target = Math.floor(ratio * progress.dur);
+                  void sound?.setPositionAsync(target).then(() => {
+                    setProgress({ pos: target, dur: progress.dur });
+                  });
+                  void juice.hit();
+                }}
+                accessibilityLabel="Перемотать трек"
+              >
                 <View style={styles.progressTrack}>
                   <View
                     style={[
@@ -754,9 +772,9 @@ export default function MusicScreen() {
                   />
                 </View>
                 <Text style={styles.progressTime}>
-                  {formatMs(progress.pos)} / {formatMs(progress.dur)}
+                  {formatMs(progress.pos)} / {formatMs(progress.dur)} · тап = seek
                 </Text>
-              </View>
+              </Pressable>
             ) : null}
             <LpdButton
               label="Предыдущий"

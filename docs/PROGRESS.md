@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music seek on progress · Lobby leave confirm · Soft solo after peer leave  
 - [x] Music playback progress bar · Prev/Next · peer-delete stop · Profile WS ping  
 - [x] Backend: rate limit · max payload · reconnect replaces stale socket  
-- [x] Music auto-advance + clear library sync · Together memory delete  
 
 ## Catalog
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -352,6 +352,34 @@ export default function GameLobbyScreen() {
     });
   };
 
+  const leaveLobby = () => {
+    const leave = () => {
+      if (user && readyMe) {
+        pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
+      }
+      setReadyMe(false);
+      setCountdown(null);
+      setMatchSeed(null);
+      setStartAtMs(null);
+      startSent.current = false;
+      router.back();
+    };
+    if (countdown != null || readyMe) {
+      Alert.alert(
+        countdown != null ? 'Уйти из старта?' : 'Снять Ready и выйти?',
+        countdown != null
+          ? 'Countdown уже идёт — партнёр останется один в лобби.'
+          : 'Ты в Ready. Выход снимет готовность.',
+        [
+          { text: 'Остаться', style: 'cancel' },
+          { text: 'Выйти', style: 'destructive', onPress: leave },
+        ],
+      );
+      return;
+    }
+    leave();
+  };
+
   return (
     <LpdBackground mood="warm">
       <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
@@ -394,7 +422,7 @@ export default function GameLobbyScreen() {
             />
           )}
           <LpdButton label="Solo / Demo" variant="ghost" onPress={solo} />
-          <LpdButton label="Назад" variant="ghost" onPress={() => router.back()} />
+          <LpdButton label="Назад" variant="ghost" onPress={leaveLobby} />
         </View>
       </View>
     </LpdBackground>
