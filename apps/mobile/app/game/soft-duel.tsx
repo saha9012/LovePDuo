@@ -238,6 +238,18 @@ export default function SoftDuelScreen() {
               ? juice.perfect()
               : juice.hit()
           );
+          if (
+            !bothPerfect &&
+            !bothGood &&
+            !bothOk &&
+            payload.score === myScoreRef.current
+          ) {
+            setTimeout(() => {
+              setFlash('Оба на очках');
+              flashScale.value = withSpring(1.12, { damping: 10 });
+              void juice.sync();
+            }, 380);
+          }
         } else if (ahead) {
           const racing = flashRef.current === 'Партнёр впереди';
           setFlash(racing ? 'Гонка' : 'Партнёр впереди');
