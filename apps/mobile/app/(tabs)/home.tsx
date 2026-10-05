@@ -133,7 +133,10 @@ export default function HomeScreen() {
     const size = typeof pair?.roomSize === 'number' ? pair.roomSize : 0;
     const prev = roomSizeSeen.current;
     if (prev > 0 && prev < 2 && size >= 2) {
-      setRoomToast('Оба в комнате');
+      const racing =
+        roomToastRef.current === 'Оба в комнате' ||
+        roomToastRef.current === 'Оба дома';
+      setRoomToast(racing ? 'Оба дома' : 'Оба в комнате');
       void juice.perfect();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;

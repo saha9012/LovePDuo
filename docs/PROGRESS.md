@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Home/Welcome «Оба дома» · late-start в старте · hello здесь  
 - [x] Catalog late-start «Оба в старте» · hello здесь · Music полка  
 - [x] Catalog hello «Оба здесь» · Music полка · score в счёте  
-- [x] Music полка escalate · score «в счёте» · Word Veil завесили  
 
 ## Catalog
 

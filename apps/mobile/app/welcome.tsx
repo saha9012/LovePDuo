@@ -25,15 +25,23 @@ export default function WelcomeScreen() {
   const [name, setName] = useState(user?.displayName ?? '');
   const [roomToast, setRoomToast] = useState<string | null>(null);
   const roomSizeSeen = useRef(pair?.roomSize ?? 0);
+  const roomToastRef = useRef<string | null>(null);
   const veil = useSharedValue(0);
   const rise = useSharedValue(28);
   const orbit = useSharedValue(0);
 
   useEffect(() => {
+    roomToastRef.current = roomToast;
+  }, [roomToast]);
+
+  useEffect(() => {
     const size = typeof pair?.roomSize === 'number' ? pair.roomSize : 0;
     const prev = roomSizeSeen.current;
     if (prev > 0 && prev < 2 && size >= 2) {
-      setRoomToast('Оба в комнате');
+      const racing =
+        roomToastRef.current === 'Оба в комнате' ||
+        roomToastRef.current === 'Оба дома';
+      setRoomToast(racing ? 'Оба дома' : 'Оба в комнате');
       void juice.perfect();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
