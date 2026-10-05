@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky dual combo · Lobby dual unready · Soft dual ЖМИ  
 - [x] Lobby dual unready · Soft dual ЖМИ · Music stop · candle blow  
 - [x] Music dual stop · Together dual blow · HB dual perfect/great  
-- [x] HB dual perfect/great · ToS dual soft/spicy · Draw dual tools  
 
 ## Catalog
 

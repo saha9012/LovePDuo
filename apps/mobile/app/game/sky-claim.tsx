@@ -174,7 +174,8 @@ export default function SkyClaimScreen() {
           return;
         }
         if (typeof payload?.combo === 'number' && payload.combo > 0) {
-          bumpPeerNote(`combo×${payload.combo}`);
+          const both = comboRef.current >= 5;
+          bumpPeerNote(both ? `оба combo×${payload.combo}` : `combo×${payload.combo}`);
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(1.16, { damping: 9 }),
