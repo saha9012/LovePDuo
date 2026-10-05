@@ -205,9 +205,11 @@ export default function HeartbeatScreen() {
       if (payload?.sync) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setPeerNote('sync!');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+        const racing =
+          peerNoteRef.current === 'sync!' ||
+          peerNoteRef.current === 'оба sync' ||
+          peerNoteRef.current === 'оба в ритме';
+        bumpPeerNote(racing ? 'оба sync' : 'sync!', 900);
         syncGlow.value = withSequence(
           withTiming(1, { duration: 80 }),
           withTiming(0, { duration: 420 }),
@@ -495,9 +497,9 @@ export default function HeartbeatScreen() {
       );
       void juice.perfect();
       if (realSync) {
-        setPeerNote('sync!');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+        const racing =
+          peerNoteRef.current === 'sync!' || peerNoteRef.current === 'оба sync';
+        bumpPeerNote(racing ? 'оба sync' : 'sync!', 900);
         pairRealtime.sendGame('heartbeat', {
           sync: true,
           total: scoreRef.current + syncRef.current,
