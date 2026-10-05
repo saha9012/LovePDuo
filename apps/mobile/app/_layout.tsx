@@ -18,6 +18,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppProvider, useApp } from '../src/store/AppStore';
 import { MemoriesProvider } from '../src/store/MemoriesStore';
 import { RealtimeConnector } from '../src/realtime/RealtimeConnector';
+import { MusicRealtimeSync } from '../src/realtime/MusicRealtimeSync';
 import { colors } from '../src/theme/tokens';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -85,6 +86,7 @@ function RootNavigator() {
   return (
     <AuthGate>
       <RealtimeConnector />
+      <MusicRealtimeSync />
       <StatusBar style="light" />
       <Stack
         screenOptions={{
