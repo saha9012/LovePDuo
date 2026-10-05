@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Welcome reconnect sync juice · ANDROID_QA dual-feel checklist  
-- [x] Heartbeat finish · Lobby READY/start toasts  
-- [x] Orbit/Signal finish · Together warmth  
+- [x] Profile WS online/offline toast · peer join/leave juice  
+- [x] Welcome reconnect sync · ANDROID_QA dual-feel checklist  
+- [x] Heartbeat finish · Lobby READY toasts  
 
 ## Catalog
 

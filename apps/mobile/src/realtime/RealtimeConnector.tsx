@@ -49,12 +49,14 @@ export function RealtimeConnector() {
       }
       if (msg.type === 'peer_joined') {
         sendWarmth();
+        void juice.sync();
         if (typeof msg.name === 'string' && msg.name) {
           setPartnerInfo(msg.name, 'online');
         }
       }
       if (msg.type === 'peer_left') {
         setPartnerInfo(pair.partnerName || 'Партнёр', 'away');
+        void juice.miss();
       }
     });
 

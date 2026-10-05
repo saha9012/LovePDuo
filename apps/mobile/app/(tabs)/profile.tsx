@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +28,8 @@ export default function ProfileScreen() {
   const [nameSaved, setNameSaved] = useState(false);
   const [roomSaved, setRoomSaved] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [wsToast, setWsToast] = useState<string | null>(null);
+  const wasOnline = useRef(pairRealtime.connected);
 
   useEffect(() => {
     setNameDraft(user?.displayName ?? '');
@@ -43,7 +45,19 @@ export default function ProfileScreen() {
       setWsDraft(url);
       setWsSaved(url);
     });
-    return pairRealtime.onStatus(setWsOnline);
+    return pairRealtime.onStatus((online) => {
+      setWsOnline(online);
+      if (online && !wasOnline.current) {
+        setWsToast('Realtime online');
+        void juice.sync();
+        setTimeout(() => setWsToast(null), 1600);
+      } else if (!online && wasOnline.current) {
+        setWsToast('Realtime offline — переподключение…');
+        void juice.miss();
+        setTimeout(() => setWsToast(null), 1800);
+      }
+      wasOnline.current = online;
+    });
   }, []);
 
   return (
@@ -67,6 +81,7 @@ export default function ProfileScreen() {
             <Text style={[styles.wsBadge, wsOnline ? styles.wsOn : styles.wsOff]}>
               WS {wsOnline ? 'online' : 'переподключение…'}
             </Text>
+            {wsToast ? <Text style={styles.wsToast}>{wsToast}</Text> : null}
           </View>
         </View>
 
@@ -160,6 +175,9 @@ export default function ProfileScreen() {
               onPress={async () => {
                 await setWsUrl(wsDraft);
                 setWsSaved(getWsUrl());
+                void juice.hit();
+                setWsToast('URL сохранён — reconnect…');
+                setTimeout(() => setWsToast(null), 1600);
                 if (user && pair) {
                   pairRealtime.connect(pair.code, user.id, user.displayName);
                 }
@@ -261,6 +279,12 @@ const styles = StyleSheet.create({
   wsOff: {
     color: colors.accentRose,
     backgroundColor: 'rgba(196,92,110,0.16)',
+  },
+  wsToast: {
+    marginTop: 6,
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    color: colors.accentAmber,
   },
   wsBox: {
     gap: spacing.sm,
