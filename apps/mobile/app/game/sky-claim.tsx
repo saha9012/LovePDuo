@@ -195,8 +195,26 @@ export default function SkyClaimScreen() {
         }
         if (payload?.miss || payload?.decoy) {
           const kind = payload.decoy ? 'decoy' : 'miss';
-          const both = flashRef.current === kind;
-          bumpPeerNote(both ? (kind === 'decoy' ? 'оба decoy' : 'оба miss') : kind);
+          const both =
+            flashRef.current === kind ||
+            peerNoteRef.current === `оба ${kind}` ||
+            peerNoteRef.current === 'оба мимо' ||
+            peerNoteRef.current === 'оба decoy синх';
+          const racing =
+            peerNoteRef.current === `оба ${kind}` ||
+            peerNoteRef.current === 'оба мимо' ||
+            peerNoteRef.current === 'оба decoy синх';
+          bumpPeerNote(
+            both
+              ? racing
+                ? kind === 'decoy'
+                  ? 'оба decoy синх'
+                  : 'оба мимо'
+                : kind === 'decoy'
+                  ? 'оба decoy'
+                  : 'оба miss'
+              : kind,
+          );
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),

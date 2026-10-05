@@ -221,9 +221,10 @@ export default function HeartbeatScreen() {
       if (payload?.miss) {
         const both = lastRef.current === 'miss';
         setPartnerFlash(true);
-        setPeerNote(both ? 'оба miss' : 'промах');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+        const racing =
+          both &&
+          (peerNoteRef.current === 'оба miss' || peerNoteRef.current === 'оба мимо');
+        bumpPeerNote(racing ? 'оба мимо' : both ? 'оба miss' : 'промах', 900);
         partnerScale.value = withSequence(
           withSpring(0.94, { damping: 10 }),
           withTiming(1, { duration: 200 }),

@@ -187,7 +187,10 @@ export default function OrbitCatchScreen() {
         }
         if (payload?.miss) {
           const both = Date.now() - lastMissAt.current < 900;
-          bumpPeerNote(both ? 'оба miss' : 'промах');
+          const racing =
+            both &&
+            (peerNoteRef.current === 'оба miss' || peerNoteRef.current === 'оба мимо');
+          bumpPeerNote(racing ? 'оба мимо' : both ? 'оба miss' : 'промах');
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),
