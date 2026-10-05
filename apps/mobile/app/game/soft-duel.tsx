@@ -48,6 +48,7 @@ export default function SoftDuelScreen() {
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
+  const prevPresence = useRef(pair?.partnerPresence);
   const padScale = useSharedValue(1);
   const flashScale = useSharedValue(1);
   const partnerScale = useSharedValue(1);
@@ -55,6 +56,23 @@ export default function SoftDuelScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    if (phase !== 'playing') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      setFlash('Партнёр offline');
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      setFlash('Партнёр online');
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -100,6 +118,12 @@ export default function SoftDuelScreen() {
         setTimeout(() => setPartnerFlash(false), 450);
         if (payload.phase === 'finished' && phase === 'playing') {
           setFlash('Партнёр финиш');
+        } else if (typeof payload.tap === 'number') {
+          const label =
+            payload.tap < 180 ? 'Партнёр PERFECT' : payload.tap < 420 ? 'Партнёр GOOD' : 'Партнёр OK';
+          setFlash(label);
+          flashScale.value = withSpring(1.16, { damping: 10 });
+          void (payload.tap < 180 ? juice.perfect() : juice.hit());
         }
       }
     });

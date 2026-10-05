@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Lobby cancel mid-countdown · peer leave aborts start  
-- [x] Signal Draw first peer stroke toast · ToS skip sync juice  
-- [x] Orbit align pulse · Sky combo · Soft Duel finish announce  
+- [x] Word Veil peer-locked hint · Soft Duel tap grade mirror · HB miss HUD  
+- [x] Signal Draw rematch toast · mid-match partner presence flash  
+- [x] Lobby cancel mid-countdown · ToS skip sync juice  
 
 ## Catalog
 

@@ -53,6 +53,7 @@ export default function WordVeilScreen() {
   const revealY = useSharedValue(24);
   const revealOp = useSharedValue(0);
   const mineRef = useRef(mine);
+  const lockedRef = useRef(false);
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,6 +61,10 @@ export default function WordVeilScreen() {
   useEffect(() => {
     mineRef.current = mine;
   }, [mine]);
+
+  useEffect(() => {
+    lockedRef.current = locked;
+  }, [locked]);
 
   useEffect(() => {
     seedRef.current = matchSeed;
@@ -129,6 +134,9 @@ export default function WordVeilScreen() {
       if (payload?.word) {
         setPartnerWord(payload.word);
         setPeerTyping(false);
+        if (!lockedRef.current) {
+          void juice.hit();
+        }
       }
       if (typeof payload?.score === 'number') setTheirScore(payload.score);
     });
@@ -255,7 +263,9 @@ export default function WordVeilScreen() {
               style={[styles.input, locked && styles.inputLocked]}
               autoCapitalize="none"
             />
-            {peerTyping && !locked && phase === 'playing' ? (
+            {partnerWord && !locked && phase === 'playing' ? (
+              <Text style={styles.waitHint}>Партнёр закрыл слово — закрой своё</Text>
+            ) : peerTyping && !locked && phase === 'playing' ? (
               <Text style={styles.waitHint}>Партнёр пишет…</Text>
             ) : null}
             {phase === 'reveal' ? (

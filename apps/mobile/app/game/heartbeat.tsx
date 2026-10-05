@@ -64,6 +64,8 @@ export default function HeartbeatScreen() {
   const syncGlow = useSharedValue(0);
   const partnerScale = useSharedValue(1);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [peerNote, setPeerNote] = useState<string | null>(null);
+  const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     seedRef.current = matchSeed;
@@ -90,8 +92,10 @@ export default function HeartbeatScreen() {
         return;
       }
       if (payload?.miss) {
-        setLast('miss');
         setPartnerFlash(true);
+        setPeerNote('промах');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
         partnerScale.value = withSequence(
           withSpring(0.94, { damping: 10 }),
           withTiming(1, { duration: 200 }),
@@ -309,6 +313,7 @@ export default function HeartbeatScreen() {
               >
                 партнёр {partnerScore}
                 {partnerLive ? ' ·live' : ''}
+                {peerNote ? ` · ${peerNote}` : ''}
               </Animated.Text>
               <Text style={styles.stat}>
                 {Math.max(0, Math.ceil((heartbeatConfig.durationMs - elapsed) / 1000))}s

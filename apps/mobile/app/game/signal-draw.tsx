@@ -64,6 +64,7 @@ export default function SignalDrawScreen() {
   const startRef = useRef<() => void>(() => undefined);
   const peerPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
@@ -82,6 +83,23 @@ export default function SignalDrawScreen() {
   };
 
   useEffect(() => {
+    if (phase !== 'playing') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      showToast('Партнёр offline');
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      showToast('Партнёр снова online');
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
+
+  useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type !== 'game' || msg.gameId !== 'signal-draw') return;
@@ -96,6 +114,8 @@ export default function SignalDrawScreen() {
       } | undefined;
       if (!payload) return;
       if (payload.rematch) {
+        showToast('Новый раунд');
+        void juice.sync();
         startRef.current();
         return;
       }
