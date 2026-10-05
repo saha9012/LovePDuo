@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky партнёр впереди/гонка · Word Veil буквы · Draw штрихи  
 - [x] Word Veil «Оба на буквах» · Draw stroke-tie · Orbit/HB tie  
 - [x] Draw «Оба на штрихах» · Orbit/HB score-tie · Sky tie  
-- [x] Orbit/HB «оба на очках» · Sky score-tie · Soft local tie  
 
 ## Catalog
 

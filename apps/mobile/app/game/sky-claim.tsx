@@ -70,6 +70,7 @@ export default function SkyClaimScreen() {
   const partnerScoreRef = useRef(0);
   const partnerFinishedRef = useRef(false);
   const flashRef = useRef<string | null>(null);
+  const peerNoteRef = useRef<string | null>(null);
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
@@ -96,9 +97,13 @@ export default function SkyClaimScreen() {
   }, [phase]);
 
   const bumpPeerNote = (text: string) => {
+    peerNoteRef.current = text;
     setPeerNote(text);
     if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-    peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+    peerNoteTimer.current = setTimeout(() => {
+      peerNoteRef.current = null;
+      setPeerNote(null);
+    }, 1000);
   };
 
   useEffect(() => {
@@ -242,6 +247,17 @@ export default function SkyClaimScreen() {
           ) {
             bumpPeerNote('оба на очках');
             void juice.sync();
+          } else if (
+            !payload.phase &&
+            !payload.miss &&
+            !payload.decoy &&
+            phaseRef.current === 'playing' &&
+            payload.score > scoreRef.current + 5
+          ) {
+            const racing =
+              peerNoteRef.current === 'партнёр впереди' || peerNoteRef.current === 'гонка';
+            bumpPeerNote(racing ? 'гонка' : 'партнёр впереди');
+            void (racing ? juice.sync() : juice.hit());
           }
         }
       }
