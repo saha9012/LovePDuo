@@ -197,11 +197,21 @@ export default function TruthOrSparkScreen() {
         const both =
           Date.now() - lastFilterAt.current < 2800 &&
           lastFilterChoice.current === payload.filter;
+        const raceFilter =
+          both &&
+          (turnToastRef.current === 'Оба: soft' ||
+            turnToastRef.current === 'Оба: spicy' ||
+            turnToastRef.current === 'Оба в soft' ||
+            turnToastRef.current === 'Оба в spicy');
         showTurnToast(
           both
-            ? payload.filter === 'spicy'
-              ? 'Оба: spicy'
-              : 'Оба: soft'
+            ? raceFilter
+              ? payload.filter === 'spicy'
+                ? 'Оба в spicy'
+                : 'Оба в soft'
+              : payload.filter === 'spicy'
+                ? 'Оба: spicy'
+                : 'Оба: soft'
             : payload.filter === 'spicy'
               ? `${who}: spicy`
               : `${who}: soft`,

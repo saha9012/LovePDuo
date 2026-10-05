@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Draw «Оба рисуют» · ToS soft/spicy escalate · Sky catch  
 - [x] Sky/Orbit/HB catch escalate · Soft ритм · names  
 - [x] Soft grade escalate ритм/темп/такт · Оба наравне · names  
-- [x] Soft «Оба наравне» · Home/Profile names · Play ждут  
 
 ## Catalog
 

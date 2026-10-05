@@ -247,7 +247,16 @@ export default function SignalDrawScreen() {
         setPartnerStrokes(peerCount.current);
         bumpPeer();
         if (firstStroke) {
-          showToast(myCount.current > 0 ? 'Рисуем вместе' : 'Партнёр рисует');
+          const racing =
+            toastRef.current === 'Рисуем вместе' ||
+            toastRef.current === 'Оба рисуют';
+          showToast(
+            myCount.current > 0
+              ? racing
+                ? 'Оба рисуют'
+                : 'Рисуем вместе'
+              : 'Партнёр рисует',
+          );
           void (myCount.current > 0 ? juice.perfect() : juice.hit());
           if (peerCount.current === myCount.current && myCount.current > 0) {
             setTimeout(() => {
