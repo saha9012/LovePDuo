@@ -78,6 +78,8 @@ type AppState = {
   sendWarmth: () => void;
   warmthPulse: number;
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
+  removeTrack: (id: string) => void;
+  removeTrackMeta: (title: string, artist?: string) => boolean;
   reactTrack: (id: string, reaction: TrackItem['reaction']) => void;
   reactTrackMeta: (
     title: string,
@@ -92,6 +94,7 @@ type AppState = {
   receiveNote: (note: TinyNote) => void;
   setActivePlaylist: (id: string | null) => void;
   addTrackToPlaylist: (playlistId: string, trackId: string) => void;
+  removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
 };
 
 const STORAGE_KEY = 'lovepduo.v1';
@@ -275,6 +278,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTracks((prev) => [{ ...track, id: makeId('trk') }, ...prev]);
   }, []);
 
+  const removeTrack = useCallback((id: string) => {
+    setTracks((prev) => prev.filter((t) => t.id !== id));
+    setPlaylists((prev) =>
+      prev.map((pl) =>
+        pl.trackIds.includes(id)
+          ? { ...pl, trackIds: pl.trackIds.filter((tid) => tid !== id) }
+          : pl,
+      ),
+    );
+    setNowPlayingId((cur) => (cur === id ? null : cur));
+  }, []);
+
+  const removeTrackMeta = useCallback((title: string, artist?: string) => {
+    const tNorm = title.trim().toLowerCase();
+    const aNorm = (artist ?? '').trim().toLowerCase();
+    let hitId: string | null = null;
+    setTracks((prev) => {
+      const hit = prev.find(
+        (t) =>
+          t.title.toLowerCase() === tNorm &&
+          (!aNorm || t.artist.toLowerCase() === aNorm),
+      );
+      if (!hit) return prev;
+      hitId = hit.id;
+      return prev.filter((t) => t.id !== hit.id);
+    });
+    if (!hitId) return false;
+    const id = hitId;
+    setPlaylists((prev) =>
+      prev.map((pl) =>
+        pl.trackIds.includes(id)
+          ? { ...pl, trackIds: pl.trackIds.filter((tid) => tid !== id) }
+          : pl,
+      ),
+    );
+    setNowPlayingId((cur) => (cur === id ? null : cur));
+    return true;
+  }, []);
+
   const reactTrack = useCallback((id: string, reaction: TrackItem['reaction']) => {
     setTracks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, reaction } : t)),
@@ -336,6 +378,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const removeTrackFromPlaylist = useCallback((playlistId: string, trackId: string) => {
+    setPlaylists((prev) =>
+      prev.map((pl) =>
+        pl.id === playlistId && pl.trackIds.includes(trackId)
+          ? { ...pl, trackIds: pl.trackIds.filter((id) => id !== trackId) }
+          : pl,
+      ),
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       hydrated,
@@ -358,6 +410,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       sendWarmth,
       warmthPulse,
       addTrack,
+      removeTrack,
+      removeTrackMeta,
       reactTrack,
       reactTrackMeta,
       nowPlayingId,
@@ -368,6 +422,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveNote,
       setActivePlaylist,
       addTrackToPlaylist,
+      removeTrackFromPlaylist,
     }),
     [
       hydrated,
@@ -390,6 +445,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       sendWarmth,
       warmthPulse,
       addTrack,
+      removeTrack,
+      removeTrackMeta,
       reactTrack,
       reactTrackMeta,
       nowPlayingId,
@@ -399,6 +456,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveNote,
       setActivePlaylist,
       addTrackToPlaylist,
+      removeTrackFromPlaylist,
     ],
   );
 

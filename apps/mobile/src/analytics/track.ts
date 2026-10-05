@@ -5,6 +5,7 @@ type EventName =
   | 'game_started'
   | 'game_finished'
   | 'track_uploaded'
+  | 'track_removed'
   | 'warmth_sent'
   | 'note_sent';
 

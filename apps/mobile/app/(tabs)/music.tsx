@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import Animated, {
@@ -25,6 +25,8 @@ export default function MusicScreen() {
   const {
     tracks,
     addTrack,
+    removeTrack,
+    removeTrackMeta,
     user,
     pair,
     reactTrack,
@@ -37,6 +39,7 @@ export default function MusicScreen() {
     activePlaylistId,
     setActivePlaylist,
     addTrackToPlaylist,
+    removeTrackFromPlaylist,
     setMood,
   } = useApp();
   const [note, setNote] = useState('');
@@ -274,6 +277,21 @@ export default function MusicScreen() {
         );
         void (again || same ? juice.perfect() : juice.card());
       }
+      if (msg.type === 'game' && msg.gameId === 'track-remove') {
+        const payload = msg.payload as {
+          title?: string;
+          artist?: string;
+          from?: string;
+          fromId?: string;
+        } | undefined;
+        if (!payload?.title || payload.fromId === user?.id) return;
+        const ok = removeTrackMeta(payload.title, payload.artist);
+        if (ok) {
+          showNote(`${payload.from ?? 'Партнёр'} удалил «${payload.title}»`);
+          void juice.miss();
+        }
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'playlist') {
         const payload = msg.payload as {
           playlistId?: string;
@@ -304,7 +322,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -342,6 +360,56 @@ export default function MusicScreen() {
     } catch {
       showNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).', 2800);
     }
+  };
+
+  const deleteTrack = (track: TrackItem) => {
+    Alert.alert(
+      'Удалить трек?',
+      `«${track.title}» — ${track.artist}\nУйдёт из комнаты и со всех полок.`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Удалить',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              if (nowPlayingId === track.id) {
+                try {
+                  await sound?.stopAsync();
+                  await sound?.unloadAsync();
+                } catch {
+                  /* ignore */
+                }
+                setSound(null);
+                setNowPlaying(null);
+                lastStopAt.current = Date.now();
+                pairRealtime.sendGame('now-playing', {
+                  title: null,
+                  from: user?.displayName,
+                });
+              }
+              removeTrack(track.id);
+              pairRealtime.sendGame('track-remove', {
+                title: track.title,
+                artist: track.artist,
+                from: user?.displayName,
+                fromId: user?.id,
+              });
+              showNote(`Удалили «${track.title}»`);
+              void juice.miss();
+              trackEvent('track_removed', { source: track.sourceType });
+            })();
+          },
+        },
+      ],
+    );
+  };
+
+  const shelfRemove = (track: TrackItem) => {
+    if (!active || !active.trackIds.includes(track.id)) return;
+    removeTrackFromPlaylist(active.id, track.id);
+    showNote(`Убрали из «${active.name}»`);
+    void juice.hit();
   };
 
   const upload = async () => {
@@ -509,7 +577,7 @@ export default function MusicScreen() {
           {tracks.length === 0 ? (
             <EmptyState
               title="Пока тихо"
-              body="Загрузите первый трек — он останется в комнате после перезахода."
+              body="Загрузите первый трек — он останется в комнате после перезахода. Удалить можно крестиком у карточки."
             />
           ) : (
             visibleTracks.map((t) => {
@@ -531,19 +599,28 @@ export default function MusicScreen() {
                   </Pressable>
                   <Pressable
                     onPress={() => {
-                      if (active) {
-                        addTrackToPlaylist(active.id, t.id);
-                        pairRealtime.sendGame('playlist-add', {
-                          playlistId: active.id,
-                          title: t.title,
-                          artist: t.artist,
-                          from: user?.displayName,
-                        });
-                        showNote(`В «${active.name}» — полка у обоих.`);
-                        void juice.hit();
+                      if (!active) return;
+                      if (inActive) {
+                        shelfRemove(t);
+                        return;
                       }
+                      addTrackToPlaylist(active.id, t.id);
+                      pairRealtime.sendGame('playlist-add', {
+                        playlistId: active.id,
+                        title: t.title,
+                        artist: t.artist,
+                        from: user?.displayName,
+                      });
+                      showNote(`В «${active.name}» — полка у обоих.`);
+                      void juice.hit();
+                    }}
+                    onLongPress={() => {
+                      if (inActive) shelfRemove(t);
                     }}
                     style={styles.addPl}
+                    accessibilityLabel={
+                      inActive ? `Убрать из ${active?.name}` : `Добавить в ${active?.name}`
+                    }
                   >
                     <Text style={styles.addPlLabel}>{inActive ? '✓' : '+'}</Text>
                   </Pressable>
@@ -556,6 +633,14 @@ export default function MusicScreen() {
                       </Pressable>
                     ))}
                   </View>
+                  <Pressable
+                    onPress={() => deleteTrack(t)}
+                    style={styles.deleteBtn}
+                    accessibilityLabel={`Удалить ${t.title}`}
+                    hitSlop={8}
+                  >
+                    <Text style={styles.deleteLabel}>×</Text>
+                  </Pressable>
                 </View>
               );
             })
@@ -675,6 +760,23 @@ const styles = StyleSheet.create({
   addPlLabel: {
     color: colors.accentAmber,
     fontFamily: fonts.uiSemi,
+  },
+  deleteBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(196,92,110,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(196,92,110,0.12)',
+  },
+  deleteLabel: {
+    color: colors.accentRose,
+    fontFamily: fonts.uiSemi,
+    fontSize: 18,
+    lineHeight: 20,
+    marginTop: -1,
   },
   reactRow: {
     flexDirection: 'row',

@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music: удаление трека (store + UI + WS sync + stop if playing)  
 - [x] Lobby/Profile WS dual · Word Veil «Оба на грани»  
 - [x] Play catalog browse · Home/Profile name «Оба назвались»  
-- [x] Presence «Оба на связи» across catalog + Home/Soft  
 
 ## Catalog
 
