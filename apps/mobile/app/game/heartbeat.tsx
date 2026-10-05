@@ -57,20 +57,27 @@ export default function HeartbeatScreen() {
   const scoreRef = useRef(0);
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
+  const phaseRef = useRef<Phase>('ready');
   const padScale = useSharedValue(1);
   const syncGlow = useSharedValue(0);
   const partnerScale = useSharedValue(1);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
+  const [syncFinish, setSyncFinish] = useState(false);
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
 
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -166,6 +173,7 @@ export default function HeartbeatScreen() {
         return;
       }
       if (payload?.phase === 'finished') {
+        partnerFinishedRef.current = true;
         setPeerNote('финиш');
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
@@ -174,6 +182,7 @@ export default function HeartbeatScreen() {
           setPartnerLive(true);
           partnerLiveRef.current = true;
         }
+        if (phaseRef.current === 'finished') setSyncFinish(true);
         void juice.sync();
         return;
       }
@@ -211,9 +220,11 @@ export default function HeartbeatScreen() {
     setScore(0);
     setSyncBonus(0);
     setLast(null);
+    setSyncFinish(false);
     cursor.current = 0;
     scoreRef.current = 0;
     syncRef.current = 0;
+    partnerFinishedRef.current = false;
     lastPartnerTapMs.current = null;
     startAt.current = Date.now();
     pairRealtime.sendGame('heartbeat', {
@@ -268,12 +279,15 @@ export default function HeartbeatScreen() {
           );
           setPartnerScore(partner);
         }
+        if (partnerFinishedRef.current) setSyncFinish(true);
         setPhase('finished');
         void juice.postMatch();
         addMemory({
           kind: 'heartbeat',
           title: 'Heartbeat Tap',
-          detail: `Итог ${total} · sync +${syncRef.current}`,
+          detail: partnerFinishedRef.current
+            ? `Синхрон финиш · итог ${total}`
+            : `Итог ${total} · sync +${syncRef.current}`,
         });
       } else if (Math.floor(t / 1000) % 4 === 0) {
         pairRealtime.sendGame('heartbeat', {
@@ -362,6 +376,7 @@ export default function HeartbeatScreen() {
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
             gameId="heartbeat"
+            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } })}

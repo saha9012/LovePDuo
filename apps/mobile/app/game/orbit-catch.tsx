@@ -44,8 +44,11 @@ export default function OrbitCatchScreen() {
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
   const [matchSeed, setMatchSeed] = useState(seed);
+  const [syncFinish, setSyncFinish] = useState(false);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
+  const partnerFinishedRef = useRef(false);
+  const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,6 +69,10 @@ export default function OrbitCatchScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -128,12 +135,14 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (payload?.phase === 'finished') {
+          partnerFinishedRef.current = true;
           bumpPeerNote('финиш');
           void juice.sync();
           if (typeof payload.caught === 'number') {
             partnerRef.current = payload.caught;
             setPartnerCaught(payload.caught);
           }
+          if (phaseRef.current === 'finished') setSyncFinish(true);
           return;
         }
         if (payload?.miss) {
@@ -181,6 +190,8 @@ export default function OrbitCatchScreen() {
   const start = () => {
     caughtRef.current = 0;
     partnerRef.current = 0;
+    partnerFinishedRef.current = false;
+    setSyncFinish(false);
     setCaught(0);
     setPartnerCaught(0);
     setTimeLeft(35);
@@ -222,6 +233,7 @@ export default function OrbitCatchScreen() {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(tick);
+          if (partnerFinishedRef.current) setSyncFinish(true);
           setPhase('finished');
           void juice.postMatch();
           pairRealtime.sendGame('orbit-catch', {
@@ -234,7 +246,9 @@ export default function OrbitCatchScreen() {
           addMemory({
             kind: 'orbit',
             title: 'Orbit Catch',
-            detail: `Co-op ${caughtRef.current + partnerRef.current} catches`,
+            detail: partnerFinishedRef.current
+              ? `Синхрон финиш · co-op ${caughtRef.current + partnerRef.current}`
+              : `Co-op ${caughtRef.current + partnerRef.current} catches`,
           });
           return 0;
         }
@@ -311,6 +325,7 @@ export default function OrbitCatchScreen() {
           <PostMatchCard
             title="Орбита закрыта"
             gameId="orbit-catch"
+            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
