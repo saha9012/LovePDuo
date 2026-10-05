@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ToS dual soft/spicy · Draw brush/clear/undo · Word Veil lock  
 - [x] Draw dual brush/clear/undo · Word Veil dual lock · Orbit dual miss  
 - [x] Word Veil dual lock · Orbit dual miss · Sky dual miss/decoy  
-- [x] Orbit dual miss · Sky dual miss/decoy · Soft dual OK  
 
 ## Catalog
 

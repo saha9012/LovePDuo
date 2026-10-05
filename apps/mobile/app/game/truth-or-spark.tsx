@@ -64,6 +64,8 @@ export default function TruthOrSparkScreen() {
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSkipAt = useRef(0);
+  const lastFilterAt = useRef(0);
+  const lastFilterChoice = useRef<SparkFilter>('soft');
   const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
@@ -166,10 +168,19 @@ export default function TruthOrSparkScreen() {
         if (payload.fromName) setPeerName(payload.fromName);
         setTurnMine(true);
         const who = payload.fromName || 'Партнёр';
+        const both =
+          Date.now() - lastFilterAt.current < 2800 &&
+          lastFilterChoice.current === payload.filter;
         showTurnToast(
-          payload.filter === 'spicy' ? `${who}: spicy` : `${who}: soft`,
+          both
+            ? payload.filter === 'spicy'
+              ? 'Оба: spicy'
+              : 'Оба: soft'
+            : payload.filter === 'spicy'
+              ? `${who}: spicy`
+              : `${who}: soft`,
         );
-        void juice.card();
+        void (both ? juice.perfect() : juice.card());
         return;
       }
       if (typeof payload.index === 'number') setIndex(payload.index);
@@ -255,6 +266,8 @@ export default function TruthOrSparkScreen() {
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
+    lastFilterAt.current = Date.now();
+    lastFilterChoice.current = f;
     broadcast(0, f, SKIP_LIMIT, { filterChange: true });
     void juice.card();
   };
