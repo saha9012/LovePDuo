@@ -273,9 +273,26 @@ export default function SignalDrawScreen() {
     if (delay < 400) {
       showToast('Догоняем старт');
       void juice.hit();
+      const id = setTimeout(() => startRef.current(), delay);
+      return () => clearTimeout(id);
+    }
+    const ticks: ReturnType<typeof setTimeout>[] = [];
+    for (const sec of [3, 2, 1]) {
+      const when = delay - sec * 1000;
+      if (when > 80) {
+        ticks.push(
+          setTimeout(() => {
+            showToast(`Старт ${sec}`);
+            void juice.hit();
+          }, when),
+        );
+      }
     }
     const id = setTimeout(() => startRef.current(), delay);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      ticks.forEach(clearTimeout);
+    };
   }, [params.startAt, params.solo]);
 
   useEffect(() => {

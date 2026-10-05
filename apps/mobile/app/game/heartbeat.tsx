@@ -278,9 +278,28 @@ export default function HeartbeatScreen() {
       if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
       peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
       void juice.hit();
+      const id = setTimeout(() => startRef.current(), delay);
+      return () => clearTimeout(id);
+    }
+    const ticks: ReturnType<typeof setTimeout>[] = [];
+    for (const sec of [3, 2, 1]) {
+      const when = delay - sec * 1000;
+      if (when > 80) {
+        ticks.push(
+          setTimeout(() => {
+            setPeerNote(`старт ${sec}`);
+            if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+            peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+            void juice.hit();
+          }, when),
+        );
+      }
     }
     const id = setTimeout(() => startRef.current(), delay);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      ticks.forEach(clearTimeout);
+    };
   }, [params.startAt, params.solo]);
 
   useEffect(() => {

@@ -236,9 +236,27 @@ export default function WordVeilScreen() {
       setPresenceHint('Догоняем старт');
       void juice.hit();
       setTimeout(() => setPresenceHint(null), 1400);
+      const id = setTimeout(() => setPhase('playing'), delay);
+      return () => clearTimeout(id);
+    }
+    const ticks: ReturnType<typeof setTimeout>[] = [];
+    for (const sec of [3, 2, 1]) {
+      const when = delay - sec * 1000;
+      if (when > 80) {
+        ticks.push(
+          setTimeout(() => {
+            setPresenceHint(`Старт ${sec}`);
+            void juice.hit();
+            setTimeout(() => setPresenceHint(null), 900);
+          }, when),
+        );
+      }
     }
     const id = setTimeout(() => setPhase('playing'), delay);
-    return () => clearTimeout(id);
+    return () => {
+      clearTimeout(id);
+      ticks.forEach(clearTimeout);
+    };
   }, [params.startAt, params.solo]);
 
   useEffect(() => {

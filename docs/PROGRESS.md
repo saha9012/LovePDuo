@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Shared-start 3·2·1 across Soft/Sky/HB/Orbit/Draw/Veil  
 - [x] Soft shared-start 3·2·1 flash · ANDROID_QA HB/Orbit sync  
 - [x] ANDROID_QA sync! / sync-align · Heartbeat dual sync ping  
-- [x] Heartbeat dual sync! ping · Orbit sync-align perfect  
 
 ## Catalog
 
