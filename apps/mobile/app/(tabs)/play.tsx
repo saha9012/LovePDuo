@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
@@ -111,6 +111,11 @@ export default function PlayScreen() {
   const [lastGame, setLastGame] = useState<string | null>(null);
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const [peekToast, setPeekToast] = useState<string | null>(null);
+  const filterRef = useRef<Filter>('all');
+
+  useEffect(() => {
+    filterRef.current = filter;
+  }, [filter]);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -128,6 +133,29 @@ export default function PlayScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'play-filter') {
+        const payload = msg.payload as {
+          filter?: Filter;
+          fromId?: string;
+          from?: string;
+        } | undefined;
+        if (!payload?.filter || payload.fromId === user.id) return;
+        const both = filterRef.current === payload.filter;
+        const label =
+          payload.filter === 'all'
+            ? 'Все'
+            : payload.filter === 'mvp'
+              ? 'MVP'
+              : 'New';
+        setPeekToast(
+          both
+            ? `Оба: фильтр ${label}`
+            : `${payload.from ?? 'Партнёр'}: фильтр ${label}`,
+        );
+        void (both ? juice.perfect() : juice.hit());
+        setTimeout(() => setPeekToast(null), 1400);
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'play-peek') return;
       const payload = msg.payload as {
         game?: string;
@@ -232,6 +260,11 @@ export default function PlayScreen() {
                 );
                 void juice.hit();
                 setTimeout(() => setPeekToast(null), 1200);
+                pairRealtime.sendGame('play-filter', {
+                  filter: id,
+                  fromId: user?.id,
+                  from: user?.displayName,
+                });
               }}
               style={[styles.chip, filter === id && styles.chipOn]}
             >
