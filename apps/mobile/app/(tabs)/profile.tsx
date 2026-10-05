@@ -28,6 +28,10 @@ export default function ProfileScreen() {
             <Text style={styles.name}>{user?.displayName ?? 'Ты'}</Text>
             <Text style={typography.caption}>Код: {pair?.code ?? '—'}</Text>
             <Text style={typography.caption}>{pair?.name}</Text>
+            <Text style={styles.lan}>
+              Android / 2 телефона: backend `npm start`, в apps/mobile задай
+              EXPO_PUBLIC_LPD_WS_URL=ws://IP_ПК:8787 и npm start.
+            </Text>
           </View>
         </View>
 
@@ -86,6 +90,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
     fontSize: 20,
     color: colors.textPrimary,
+  },
+  lan: {
+    marginTop: 8,
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textMuted,
   },
   actions: {
     marginTop: 'auto',

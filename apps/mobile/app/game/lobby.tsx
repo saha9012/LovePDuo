@@ -17,6 +17,7 @@ const routes = {
   'soft-duel': '/game/soft-duel',
   'word-veil': '/game/word-veil',
   'signal-draw': '/game/signal-draw',
+  'orbit-catch': '/game/orbit-catch',
 } as const;
 
 export default function GameLobbyScreen() {

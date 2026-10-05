@@ -58,6 +58,14 @@ export default function PlayScreen() {
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
           />
           <GameTile
+            title="Orbit Catch"
+            subtitle="Co-op орбита. Ловите совпадение маркера и орба."
+            accent="mist"
+            cover="sky"
+            badge="NEW"
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
+          />
+          <GameTile
             title="Soft Duel"
             subtitle="Реакция на вспышку слова. Perfect / рано / реванш."
             accent="rose"
