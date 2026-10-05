@@ -173,7 +173,7 @@ export default function SignalDrawScreen() {
         }
         if (phaseRef.current === 'finished') {
           setSyncFinish(true);
-          showToast('Синхрон финиш');
+          showToast('Оба финиш');
           void juice.perfect();
         } else {
           showToast('Партнёр закончил');
@@ -491,7 +491,7 @@ export default function SignalDrawScreen() {
           <PostMatchCard
             title="Общий холст закрыт"
             gameId="signal-draw"
-            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
+            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}

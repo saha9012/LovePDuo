@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Catalog «Оба финиш» PostMatch · Soft dual finish · candle dual end  
 - [x] Soft «Оба финиш» · Together dual candle end · ToS dual deck wrap  
 - [x] Together dual candle end · ToS dual deck wrap · Word Veil одно слово  
-- [x] ToS dual deck wrap · Word Veil одно слово · Soft Наравне  
 
 ## Catalog
 

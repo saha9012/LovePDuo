@@ -449,7 +449,7 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
-            winnerLabel={syncFinish ? 'Синхрон финиш' : 'Post-match'}
+            winnerLabel={syncFinish ? 'Оба финиш' : 'Post-match'}
             gameId="sky-claim"
             line={line.text}
             onRematch={rematch}

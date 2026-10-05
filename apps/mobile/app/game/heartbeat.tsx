@@ -453,7 +453,7 @@ export default function HeartbeatScreen() {
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
             gameId="heartbeat"
-            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
+            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } })}

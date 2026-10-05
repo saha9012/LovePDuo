@@ -374,7 +374,7 @@ export default function OrbitCatchScreen() {
           <PostMatchCard
             title="Орбита закрыта"
             gameId="orbit-catch"
-            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
+            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
