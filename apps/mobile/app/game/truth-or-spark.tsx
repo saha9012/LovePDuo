@@ -121,9 +121,16 @@ export default function TruthOrSparkScreen() {
         seed?: number;
         skipped?: boolean;
         filterChange?: boolean;
+        hello?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
+      if (payload.hello) {
+        if (payload.fromName) setPeerName(payload.fromName);
+        showTurnToast(`${payload.fromName ?? 'Партнёр'} в игре`);
+        void juice.sync();
+        return;
+      }
       if (payload.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         setIndex(0);
@@ -166,6 +173,15 @@ export default function TruthOrSparkScreen() {
       off();
     };
   }, [pair?.code, user?.id]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame(GAME_ID, {
+      hello: true,
+      fromName: user.displayName,
+      fromId: user.id,
+    });
+  }, [pair?.code, user?.id, user?.displayName, params.solo]);
 
   const broadcast = (
     nextIndex: number,

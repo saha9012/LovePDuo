@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Profile WS online/offline toast · peer join/leave juice  
-- [x] Welcome reconnect sync · ANDROID_QA dual-feel checklist  
-- [x] Heartbeat finish · Lobby READY toasts  
+- [x] PostMatch rematch juice · ToS hello ping when partner enters  
+- [x] Soft Duel «ожидаем партнёра» HUD  
+- [x] Profile WS reconnect · peer join/leave juice  
 
 ## Catalog
 

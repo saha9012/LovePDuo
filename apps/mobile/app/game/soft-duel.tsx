@@ -306,7 +306,9 @@ export default function SoftDuelScreen() {
                   партнёр {partnerScore} · r{Math.min(ROUNDS, partnerRound + 1)} · live
                 </Animated.Text>
               ) : (
-                <Text style={styles.meta}>партнёр offline</Text>
+                <Text style={styles.meta}>
+                  {params.solo === '1' ? 'партнёр demo' : 'ожидаем партнёра…'}
+                </Text>
               )}
             </View>
             <Animated.View style={[styles.padWrap, padStyle]}>

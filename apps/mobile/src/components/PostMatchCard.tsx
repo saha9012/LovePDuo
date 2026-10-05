@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radii, spacing } from '../theme/tokens';
 import { typography } from '../theme/typography';
-import { track } from '../analytics/track';
+import { juice } from '../audio/juice';
 
 type Props = {
   title: string;
@@ -35,6 +35,7 @@ export function PostMatchCard({
           <Pressable
             onPress={() => {
               track('game_started', { game: gameId ?? title, rematch: true });
+              void juice.sync();
               onRematch();
             }}
             style={styles.primary}
