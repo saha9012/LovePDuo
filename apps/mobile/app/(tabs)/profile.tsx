@@ -109,6 +109,14 @@ export default function ProfileScreen() {
               const next = await updateDisplayName(nameDraft);
               setNameDraft(next.displayName);
               setNameSaved(true);
+              const racing =
+                wsToastRef.current === 'Имя сохранено' ||
+                wsToastRef.current === 'Оба назвались' ||
+                wsToastRef.current === 'Оба обновили имена';
+              const toast = racing ? 'Оба назвались' : 'Имя сохранено';
+              wsToastRef.current = toast;
+              setWsToast(toast);
+              setTimeout(() => setWsToast(null), 1600);
               void juice.hit();
               if (pair) {
                 pairRealtime.connect(pair.code, next.id, next.displayName);

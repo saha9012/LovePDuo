@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Play catalog browse · Home/Profile name «Оба назвались»  
 - [x] Presence «Оба на связи» across catalog + Home/Soft  
 - [x] Welcome/Play rejoin dual · Оба снова дома/в лобби  
-- [x] Catalog/Lobby rejoin «Оба снова здесь/в лобби»  
 
 ## Catalog
 

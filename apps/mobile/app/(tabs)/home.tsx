@@ -227,11 +227,15 @@ export default function HomeScreen() {
         ) {
           const racing =
             roomToastRef.current?.startsWith('Партнёр теперь:') ||
-            roomToastRef.current === 'Оба обновили имена';
+            roomToastRef.current === 'Оба обновили имена' ||
+            roomToastRef.current === 'Оба назвались';
           setRoomToast(
-            racing
-              ? 'Оба обновили имена'
-              : `Партнёр теперь: ${payload.name.trim()}`,
+            roomToastRef.current === 'Оба обновили имена' ||
+              roomToastRef.current === 'Оба назвались'
+              ? 'Оба назвались'
+              : racing
+                ? 'Оба обновили имена'
+                : `Партнёр теперь: ${payload.name.trim()}`,
           );
           void (racing ? juice.perfect() : juice.card());
           setTimeout(() => setRoomToast(null), 1800);

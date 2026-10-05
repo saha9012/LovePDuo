@@ -174,7 +174,10 @@ export default function PlayScreen() {
               : 'New';
         setPeekToast(
           again
-            ? 'Оба в каталоге'
+            ? peekToastRef.current === 'Оба в каталоге' ||
+              peekToastRef.current === 'Оба листают каталог'
+              ? 'Оба листают каталог'
+              : 'Оба в каталоге'
             : both
               ? `Оба: фильтр ${label}`
               : `${payload.from ?? 'Партнёр'}: фильтр ${label}`,
