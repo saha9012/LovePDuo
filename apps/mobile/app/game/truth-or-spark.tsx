@@ -116,6 +116,17 @@ export default function TruthOrSparkScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setLive(true);
+        showTurnToast('Партнёр вернулся');
+        void juice.sync();
+        pairRealtime.sendGame(GAME_ID, {
+          hello: true,
+          fromName: user.displayName,
+          fromId: user.id,
+        });
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== GAME_ID) return;
       const payload = msg.payload as {
         index?: number;

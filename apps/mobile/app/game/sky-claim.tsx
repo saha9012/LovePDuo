@@ -113,6 +113,14 @@ export default function SkyClaimScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        bumpPeerNote('вернулся');
+        void juice.sync();
+        pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'sky-claim') {
         const payload = msg.payload as {
           score?: number;

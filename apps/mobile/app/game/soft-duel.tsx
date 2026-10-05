@@ -90,6 +90,14 @@ export default function SoftDuelScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        setFlash('Партнёр снова в комнате');
+        void juice.sync();
+        pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'soft-duel') return;
       const payload = msg.payload as {
         score?: number;

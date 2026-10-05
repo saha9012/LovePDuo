@@ -105,6 +105,16 @@ export default function HeartbeatScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        setPeerNote('вернулся');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+        void juice.sync();
+        pairRealtime.sendGame('heartbeat', { hello: true, fromId: user.id });
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'heartbeat') return;
       const payload = msg.payload as {
         total?: number;

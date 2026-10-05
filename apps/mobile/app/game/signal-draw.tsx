@@ -110,6 +110,13 @@ export default function SignalDrawScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setPeerSeen(true);
+        showToast('Партнёр вернулся');
+        void juice.sync();
+        pairRealtime.sendGame('signal-draw', { hello: true, fromId: user.id });
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'signal-draw') return;
       const payload = msg.payload as {
         stroke?: Stroke;

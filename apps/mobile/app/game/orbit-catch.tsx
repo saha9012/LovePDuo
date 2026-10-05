@@ -93,6 +93,13 @@ export default function OrbitCatchScreen() {
         void juice.miss();
         return;
       }
+      if (msg.type === 'peer_joined') {
+        setPeerSeen(true);
+        bumpPeerNote('вернулся');
+        void juice.sync();
+        pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'orbit-catch') {
         const payload = msg.payload as {
           caught?: number;

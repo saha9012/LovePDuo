@@ -120,7 +120,17 @@ export default function WordVeilScreen() {
     revealY.value = withSpring(0, { damping: 14, stiffness: 160 });
     revealOp.value = withTiming(1, { duration: 280 });
     veil.value = withDelay(80, withTiming(1, { duration: 320 }));
-    void juice.sync();
+    if (pts >= 5) {
+      setPresenceHint('Одно слово!');
+      void juice.perfect();
+      setTimeout(() => setPresenceHint(null), 1800);
+    } else if (pts >= 3) {
+      setPresenceHint('Почти одно…');
+      void juice.sync();
+      setTimeout(() => setPresenceHint(null), 1600);
+    } else {
+      void juice.sync();
+    }
   };
 
   const resetRound = () => {
@@ -142,6 +152,13 @@ export default function WordVeilScreen() {
       if (msg.type === 'peer_left') {
         setPresenceHint('Партнёр вышел');
         void juice.miss();
+        setTimeout(() => setPresenceHint(null), 1600);
+        return;
+      }
+      if (msg.type === 'peer_joined') {
+        setPresenceHint('Партнёр вернулся');
+        void juice.sync();
+        pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
