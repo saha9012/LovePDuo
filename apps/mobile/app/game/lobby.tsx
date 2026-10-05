@@ -145,8 +145,8 @@ export default function GameLobbyScreen() {
         if (peek?.fromId === user.id) return;
         if (peek?.leave) return;
         if (peek?.game === gameId) {
-          showCancelToast('Партнёр тоже в этом лобби');
-          void juice.sync();
+          showCancelToast('Оба в этом лобби');
+          void juice.perfect();
         }
         return;
       }
