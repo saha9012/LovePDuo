@@ -63,6 +63,7 @@ export default function TruthOrSparkScreen() {
   const [turnMine, setTurnMine] = useState(true);
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
   const card = deck[index % deck.length];
@@ -76,6 +77,19 @@ export default function TruthOrSparkScreen() {
     if (turnToastTimer.current) clearTimeout(turnToastTimer.current);
     turnToastTimer.current = setTimeout(() => setTurnToast(null), 1600);
   };
+
+  useEffect(() => {
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      showTurnToast('Партнёр offline');
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      showTurnToast('Партнёр снова online');
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence]);
 
   const flipIn = () => {
     cardOpacity.value = 0.35;

@@ -69,11 +69,16 @@ export default function SkyClaimScreen() {
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
+  const phaseRef = useRef<Phase>('ready');
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   const bumpPeerNote = (text: string) => {
     setPeerNote(text);
@@ -150,6 +155,10 @@ export default function SkyClaimScreen() {
             withTiming(1, { duration: 220 }),
           );
           setTimeout(() => setPartnerFlash(false), 420);
+          if (payload.phase === 'finished' && phaseRef.current === 'playing') {
+            bumpPeerNote('финиш');
+            void juice.sync();
+          }
         }
       }
     });

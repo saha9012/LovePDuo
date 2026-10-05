@@ -57,6 +57,8 @@ export default function WordVeilScreen() {
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
+  const [presenceHint, setPresenceHint] = useState<string | null>(null);
 
   useEffect(() => {
     mineRef.current = mine;
@@ -69,6 +71,30 @@ export default function WordVeilScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    if (phase !== 'playing' && phase !== 'reveal') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      setPresenceHint('Партнёр offline');
+      void juice.miss();
+      const t = setTimeout(() => setPresenceHint(null), 1800);
+      prevPresence.current = cur;
+      return () => clearTimeout(t);
+    }
+    if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      setPresenceHint('Партнёр снова online');
+      void juice.hit();
+      const t = setTimeout(() => setPresenceHint(null), 1800);
+      prevPresence.current = cur;
+      return () => clearTimeout(t);
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
 
   const scoreWords = (a: string, b: string) => {
     const x = a.trim().toLowerCase();
@@ -267,7 +293,9 @@ export default function WordVeilScreen() {
               style={[styles.input, locked && styles.inputLocked]}
               autoCapitalize="none"
             />
-            {partnerWord && !locked && phase === 'playing' ? (
+            {presenceHint ? (
+              <Text style={styles.waitHint}>{presenceHint}</Text>
+            ) : partnerWord && !locked && phase === 'playing' ? (
               <Text style={styles.waitHint}>Партнёр закрыл слово — закрой своё</Text>
             ) : peerTyping && !locked && phase === 'playing' ? (
               <Text style={styles.waitHint}>Партнёр пишет…</Text>

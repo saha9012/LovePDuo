@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] ToS named turn/filter toasts · Soft Duel phaseRef finish/ahead  
-- [x] Home toast when partner renames  
-- [x] Soft Duel round-ahead · Word Veil typing juice  
+- [x] Sky partner finish note while you still play  
+- [x] Word Veil + ToS mid-session presence toasts  
+- [x] Named ToS turns · partner rename on Home  
 
 ## Catalog
 
