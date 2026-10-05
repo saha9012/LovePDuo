@@ -319,6 +319,7 @@ export default function OrbitCatchScreen() {
     if (diff < 0.22) {
       caughtRef.current += 1;
       setCaught(caughtRef.current);
+      lastCatchAt.current = Date.now();
       pairRealtime.sendGame('orbit-catch', { caught: caughtRef.current });
       void juice.catch();
       flash.value = withSequence(
