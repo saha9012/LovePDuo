@@ -196,12 +196,19 @@ export default function SoftDuelScreen() {
                 : 'Партнёр OK';
           const bothPerfect = grade === 'PERFECT' && flashRef.current === 'PERFECT';
           const bothGood = grade === 'GOOD' && flashRef.current === 'GOOD';
+          const bothOk = grade === 'OK' && flashRef.current === 'OK';
           setFlash(
-            bothPerfect ? 'Оба PERFECT' : bothGood ? 'Оба GOOD' : label,
+            bothPerfect
+              ? 'Оба PERFECT'
+              : bothGood
+                ? 'Оба GOOD'
+                : bothOk
+                  ? 'Оба OK'
+                  : label,
           );
           flashScale.value = withSpring(1.16, { damping: 10 });
           void (
-            bothPerfect || bothGood || grade === 'PERFECT'
+            bothPerfect || bothGood || bothOk || grade === 'PERFECT'
               ? juice.perfect()
               : juice.hit()
           );

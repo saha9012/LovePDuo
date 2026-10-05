@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft dual OK · Profile WS presets · Soft dual GOOD  
 - [x] Profile WS preset toasts · Soft dual GOOD · Warmth встречное  
 - [x] Soft dual GOOD · Warmth встречное · Together переписка  
-- [x] Warmth встречное QA · meet-in-middle · send/receive split  
 
 ## Catalog
 
