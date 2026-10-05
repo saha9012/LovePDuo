@@ -31,7 +31,7 @@ export default function PlayScreen() {
             accent="amber"
             cover="sky"
             badge="MVP"
-            onPress={() => router.push('/game/sky-claim')}
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'sky-claim' } })}
           />
           <GameTile
             title="Heartbeat Tap"
@@ -39,7 +39,7 @@ export default function PlayScreen() {
             accent="rose"
             cover="heartbeat"
             badge="MVP"
-            onPress={() => router.push('/game/heartbeat')}
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'heartbeat' } })}
           />
           <GameTile
             title="Truth Or Spark"
@@ -47,7 +47,7 @@ export default function PlayScreen() {
             accent="mist"
             cover="spark"
             badge="MVP"
-            onPress={() => router.push('/game/truth-or-spark')}
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'truth-or-spark' } })}
           />
         </View>
       </ScrollView>

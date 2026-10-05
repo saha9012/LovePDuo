@@ -18,6 +18,7 @@ ios/Pods/
 *.mobileprovision
 apps/mobile/.expo/
 apps/mobile/dist/
+apps/mobile/dist-web/
 backend/node_modules/
 .vscode/
 .idea/
