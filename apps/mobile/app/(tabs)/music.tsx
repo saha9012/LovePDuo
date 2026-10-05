@@ -287,9 +287,39 @@ export default function MusicScreen() {
         if (!payload?.title || payload.fromId === user?.id) return;
         const ok = removeTrackMeta(payload.title, payload.artist);
         if (ok) {
+          if (
+            partnerNowPlaying &&
+            partnerNowPlaying.toLowerCase().includes(payload.title.toLowerCase())
+          ) {
+            setPartnerNowPlaying(null);
+          }
           showNote(`${payload.from ?? 'Партнёр'} удалил «${payload.title}»`);
           void juice.miss();
         }
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'playlist-remove') {
+        const payload = msg.payload as {
+          playlistId?: string;
+          title?: string;
+          artist?: string;
+          from?: string;
+          fromId?: string;
+        } | undefined;
+        if (!payload?.playlistId || !payload.title || payload.fromId === user?.id) return;
+        const match = tracks.find(
+          (t) =>
+            t.title === payload.title &&
+            (payload.artist ? t.artist === payload.artist : true),
+        );
+        if (!match) return;
+        const pl = playlists.find((p) => p.id === payload.playlistId);
+        if (!pl?.trackIds.includes(match.id)) return;
+        removeTrackFromPlaylist(payload.playlistId, match.id);
+        showNote(
+          `${payload.from ?? 'Партнёр'} убрал «${payload.title}»${pl.name ? ` из «${pl.name}»` : ''}`,
+        );
+        void juice.hit();
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'playlist') {
@@ -322,7 +352,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -408,6 +438,13 @@ export default function MusicScreen() {
   const shelfRemove = (track: TrackItem) => {
     if (!active || !active.trackIds.includes(track.id)) return;
     removeTrackFromPlaylist(active.id, track.id);
+    pairRealtime.sendGame('playlist-remove', {
+      playlistId: active.id,
+      title: track.title,
+      artist: track.artist,
+      from: user?.displayName,
+      fromId: user?.id,
+    });
     showNote(`Убрали из «${active.name}»`);
     void juice.hit();
   };
@@ -420,9 +457,15 @@ export default function MusicScreen() {
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
     const title = asset.name.replace(/\.[^.]+$/, '');
+    const artist = 'Загружено в LPD';
+    if (tracks.some((t) => t.title === title && t.artist === artist && t.uri === asset.uri)) {
+      showNote('Этот файл уже на полке.');
+      void juice.miss();
+      return;
+    }
     addTrack({
       title,
-      artist: 'Загружено в LPD',
+      artist,
       sourceType: 'upload',
       playbackMode: 'local',
       addedBy: user?.displayName ?? 'Ты',
@@ -430,7 +473,7 @@ export default function MusicScreen() {
     });
     pairRealtime.sendGame('track-meta', {
       title,
-      artist: 'Загружено в LPD',
+      artist,
       sourceType: 'upload',
       from: user?.displayName,
       fromId: user?.id,
@@ -442,6 +485,11 @@ export default function MusicScreen() {
   const addSpotifyStub = () => {
     const title = 'Midnight Orbit (demo)';
     const artist = 'Spotify metadata';
+    if (tracks.some((t) => t.title === title && t.artist === artist)) {
+      showNote('Spotify demo уже на полке — удали ×, если нужен заново.');
+      void juice.miss();
+      return;
+    }
     addTrack({
       title,
       artist,
@@ -468,6 +516,11 @@ export default function MusicScreen() {
   const addVkStub = () => {
     const title = 'Dusty Rose Night (demo)';
     const artist = 'VK link fallback';
+    if (tracks.some((t) => t.title === title && t.artist === artist)) {
+      showNote('VK demo уже на полке — удали ×, если нужен заново.');
+      void juice.miss();
+      return;
+    }
     addTrack({
       title,
       artist,
