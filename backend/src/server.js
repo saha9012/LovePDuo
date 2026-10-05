@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 
 /**
- * LovePDuo realtime room stub.
+ * LovePDuo realtime — sockets keyed by **pair invite code** (not a separate room id).
  * Protocol (JSON):
  *  { type: 'join', code, userId, name }
  *  { type: 'presence', status }
@@ -10,18 +10,44 @@ import { WebSocketServer } from 'ws';
  *  { type: 'ping', token?, t? } → { type: 'pong', token, t, serverAt }
  *  server → { type: 'joined', code, peers, size }
  *  server → { type: 'peer_joined' | 'peer_left', userId, name?, size }
+ *  server → { type: 'pair_sync', pairId, lastMatch?, pairName? } on join
  */
 
 const PORT = Number(process.env.PORT || 8787);
 const MAX_MSG_BYTES = Number(process.env.LPD_MAX_MSG_BYTES || 48_000);
 const RATE_WINDOW_MS = 1000;
 const RATE_MAX = Number(process.env.LPD_RATE_MAX || 48);
+/** Live sockets for a pair code */
 const rooms = new Map();
+/** Durable-enough pair meta while process lives (match handoff / nickname) */
+const pairMeta = new Map();
+const MATCH_TTL_MS = 12 * 60_000;
+
+function pairIdFromCode(code) {
+  return `pair_${String(code || '').toUpperCase()}`;
+}
 
 function roomOf(code) {
   const key = String(code || '').toUpperCase();
   if (!rooms.has(key)) rooms.set(key, new Set());
   return rooms.get(key);
+}
+
+function metaOf(code) {
+  const key = String(code || '').toUpperCase();
+  if (!pairMeta.has(key)) {
+    pairMeta.set(key, { pairId: pairIdFromCode(key), pairName: null, lastMatch: null });
+  }
+  return pairMeta.get(key);
+}
+
+function pruneMatch(meta) {
+  if (!meta?.lastMatch) return null;
+  if (Date.now() - (meta.lastMatch.startAtMs || 0) > MATCH_TTL_MS) {
+    meta.lastMatch = null;
+    return null;
+  }
+  return meta.lastMatch;
 }
 
 function roomPeers(code, except) {
@@ -119,11 +145,24 @@ wss.on('connection', (socket) => {
         },
         socket,
       );
+      const meta = metaOf(code);
+      const lastMatch = pruneMatch(meta);
       socket.send(
         JSON.stringify({
           type: 'joined',
           code,
+          pairId: meta.pairId,
           peers,
+          size,
+        }),
+      );
+      socket.send(
+        JSON.stringify({
+          type: 'pair_sync',
+          code,
+          pairId: meta.pairId,
+          pairName: meta.pairName,
+          lastMatch,
           size,
         }),
       );
@@ -167,11 +206,29 @@ wss.on('connection', (socket) => {
 
     if (msg.type === 'game' || msg.type === 'warmth') {
       if (msg.type === 'game') {
-        if (msg.payload?.rematch) {
+        const meta = metaOf(socket.lpd.code);
+        const payload = msg.payload && typeof msg.payload === 'object' ? msg.payload : {};
+        if (msg.gameId === 'room-name' && typeof payload.name === 'string') {
+          meta.pairName = payload.name.trim() || meta.pairName;
+        }
+        if (payload.start && typeof payload.seed === 'number') {
+          meta.lastMatch = {
+            gameId: msg.gameId,
+            seed: payload.seed,
+            startAtMs: typeof payload.startAtMs === 'number' ? payload.startAtMs : Date.now(),
+          };
+          console.log(`[LPD] match ${socket.lpd.code} · ${msg.gameId} · seed=${payload.seed}`);
+        }
+        if (payload.rematch && typeof payload.seed === 'number') {
+          meta.lastMatch = {
+            gameId: msg.gameId,
+            seed: payload.seed,
+            startAtMs: typeof payload.startAtMs === 'number' ? payload.startAtMs : Date.now(),
+          };
           console.log(`[LPD] rematch ${socket.lpd.code} · ${msg.gameId ?? '?'}`);
-        } else if (msg.payload?.hello || msg.gameId === 'play-peek') {
+        } else if (payload.hello || msg.gameId === 'play-peek') {
           console.log(
-            `[LPD] ${msg.payload?.hello ? 'hello' : 'peek'} ${socket.lpd.code} · ${msg.gameId ?? '?'} · ${socket.lpd.name}`,
+            `[LPD] ${payload.hello ? 'hello' : 'peek'} ${socket.lpd.code} · ${msg.gameId ?? '?'} · ${socket.lpd.name}`,
           );
         }
       }

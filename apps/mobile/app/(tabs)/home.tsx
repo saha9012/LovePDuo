@@ -428,7 +428,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.room}>
-          <Text style={styles.roomName}>{pair?.name ?? 'Комната'}</Text>
+          <Text style={styles.roomName}>{pair?.name ?? 'Пара'}</Text>
           <View style={styles.pairRow}>
             <View style={styles.person}>
               <PairAvatar name={user?.displayName ?? 'Ты'} presence="online" />
@@ -462,7 +462,8 @@ export default function HomeScreen() {
           {(
             [
               { n: stats.daysTogether, l: 'дней' },
-              { n: stats.games, l: 'игр' },
+              { n: stats.games, l: 'memory-игр' },
+              { n: pair?.gamesStarted ?? 0, l: 'стартов' },
               { n: stats.warmth, l: 'тепла' },
               { n: stats.tracks, l: 'треков' },
               { n: stats.notes, l: 'заметок' },

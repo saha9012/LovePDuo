@@ -6,11 +6,11 @@
 
 ## Latest
 
+- [x] Pair identity = invite code (`pairIdFromCode`); warmth + gamesStarted persist  
+- [x] Match session AsyncStorage + backend `pair_sync` / lastMatch handoff  
 - [x] Home density: scroll + pair stats grid + feed + quick chips (numbers first)  
-- [x] Fix Sky Claim / Orbit Catch timers (wall-clock seconds; 50ms was eating the round)  
-- [x] Signal Draw: measureInWindow touch map (ink no longer stuck at top)  
-- [x] Play catalog per-game play counts · LpdButton denser ghost fill  
-- [x] Music/Together delete via confirmDestructive (web window.confirm)  
+- [x] Fix Sky Claim / Orbit Catch timers · Signal Draw hit map · Heartbeat sync throttle  
+- [x] Music/Together/Play/Profile live stats · Word Veil reveal on peer finish  
 
 ## Catalog
 

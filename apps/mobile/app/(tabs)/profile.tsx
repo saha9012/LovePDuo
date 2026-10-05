@@ -87,7 +87,7 @@ export default function ProfileScreen() {
         <Text style={styles.kicker}>Profile</Text>
         <Text style={typography.headline}>Пара и настройки</Text>
         <Text style={typography.body}>
-          Локальный профиль · Google Sign-In пока нет · привязка к коду пары
+          Локальный профиль · Google Sign-In пока нет · identity = код пары ({pair?.id ?? '—'})
         </Text>
         <View style={styles.statStrip}>
           {(
@@ -99,6 +99,7 @@ export default function ProfileScreen() {
                   : '0',
                 'дней',
               ],
+              ['g', String(pair?.gamesStarted ?? 0), 'стартов'],
               ['t', String(tracks.length), 'треков'],
               ['n', String(notes.length), 'заметок'],
               ['m', String(memories.length), 'memory'],
@@ -168,34 +169,34 @@ export default function ProfileScreen() {
               }
             }}
           />
-          <Text style={styles.wsLabel}>Имя комнаты</Text>
+          <Text style={styles.wsLabel}>Имя пары</Text>
           <TextInput
             value={roomDraft}
             onChangeText={(t) => {
               setRoomDraft(t);
               setRoomSaved(false);
             }}
-            placeholder="Наша ночь"
+            placeholder="Наша пара"
             placeholderTextColor={colors.textMuted}
             style={styles.nameInput}
           />
           <LpdButton
-            label={roomSaved ? 'Комната сохранена' : 'Сохранить комнату'}
+            label={roomSaved ? 'Пара сохранена' : 'Сохранить имя пары'}
             variant="ghost"
             onPress={() => {
-              const next = roomDraft.trim() || 'Наша комната';
+              const next = roomDraft.trim() || 'Наша пара';
               const both = pair?.name === next;
               const racing =
                 both &&
-                (wsToastRef.current === 'Оба назвали комнату' ||
-                  wsToastRef.current === 'Оба в одной комнате');
+                (wsToastRef.current === 'Оба назвали пару' ||
+                  wsToastRef.current === 'Оба в одной паре');
               setPairName(next);
               setRoomSaved(true);
               const toast = racing
-                ? 'Оба в одной комнате'
+                ? 'Оба в одной паре'
                 : both
-                  ? 'Оба назвали комнату'
-                  : 'Имя комнаты сохранено';
+                  ? 'Оба назвали пару'
+                  : 'Имя пары сохранено';
               wsToastRef.current = toast;
               setWsToast(toast);
               setTimeout(() => setWsToast(null), 1600);

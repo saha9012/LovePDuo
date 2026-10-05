@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { pairRealtime } from '../realtime/PairRealtime';
+import { hydrateMatchSession } from '../realtime/matchSession';
 import { hydrateWsUrl } from '../realtime/wsConfig';
 import { track } from '../analytics/track';
 
@@ -20,8 +21,10 @@ export type UserProfile = {
 };
 
 export type PairState = {
+  /** Stable id derived from invite code — same on both devices */
   id: string;
   code: string;
+  /** Display nickname of the pair space (not a separate “room” identity) */
   name: string;
   hostUserId: string;
   partnerName: string;
@@ -30,7 +33,26 @@ export type PairState = {
   roomSize?: number;
   /** When this device first bound the pair — for “days together” stats */
   pairedAt?: number;
+  /** Cumulative pair stats (persist across app restarts) */
+  gamesStarted?: number;
+  lastActiveAt?: number;
 };
+
+/** Pair identity = invite code. WS “room” is just the live socket set for that code. */
+export function pairIdFromCode(code: string) {
+  return `pair_${code.trim().toUpperCase()}`;
+}
+
+function normalizePair(p: PairState): PairState {
+  const code = (p.code || '').trim().toUpperCase();
+  return {
+    ...p,
+    code,
+    id: code.length === 6 ? pairIdFromCode(code) : p.id,
+    gamesStarted: p.gamesStarted ?? 0,
+    lastActiveAt: p.lastActiveAt ?? p.pairedAt ?? Date.now(),
+  };
+}
 
 export type TrackItem = {
   id: string;
@@ -77,6 +99,8 @@ type AppState = {
   setPairName: (name: string) => void;
   setRoomSize: (size: number) => void;
   setPartnerInfo: (name: string, presence?: Presence) => void;
+  bumpGamesStarted: () => void;
+  touchPairActive: () => void;
   sendWarmth: () => void;
   warmthPulse: number;
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
@@ -147,6 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         await hydrateWsUrl();
+        await hydrateMatchSession();
         track('session_start');
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
@@ -157,6 +182,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             notes?: TinyNote[];
             playlists?: Playlist[];
             activePlaylistId?: string | null;
+            warmthPulse?: number;
           };
           setUser(parsed.user ?? null);
           if (parsed.pair) {
@@ -167,7 +193,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (!p.pairedAt) {
               p.pairedAt = Date.now();
             }
-            setPair(p);
+            setPair(normalizePair(p));
           } else {
             setPair(null);
           }
@@ -177,6 +203,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             parsed.playlists?.length ? parsed.playlists : defaultPlaylists(),
           );
           setActivePlaylistId(parsed.activePlaylistId ?? 'pl_night');
+          if (typeof parsed.warmthPulse === 'number' && parsed.warmthPulse > 0) {
+            setWarmthPulse(parsed.warmthPulse);
+          }
         }
       } finally {
         setHydrated(true);
@@ -188,9 +217,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     void AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ user, pair, tracks, notes, playlists, activePlaylistId }),
+      JSON.stringify({
+        user,
+        pair,
+        tracks,
+        notes,
+        playlists,
+        activePlaylistId,
+        warmthPulse,
+      }),
     );
-  }, [hydrated, user, pair, tracks, notes, playlists, activePlaylistId]);
+  }, [hydrated, user, pair, tracks, notes, playlists, activePlaylistId, warmthPulse]);
 
   const signIn = useCallback(async (name: string) => {
     const clean = name.trim() || 'Игрок';
@@ -218,16 +255,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const createPair = useCallback(async (pairName?: string, hostUserId?: string) => {
-    const next: PairState = {
-      id: makeId('pair'),
-      code: makePairCode(),
-      name: pairName?.trim() || 'Наша комната',
+    const code = makePairCode();
+    const next = normalizePair({
+      id: pairIdFromCode(code),
+      code,
+      name: pairName?.trim() || 'Наша пара',
       hostUserId: hostUserId ?? '',
       partnerName: 'Ожидание партнёра',
       partnerPresence: 'offline',
       mood: 'night',
       pairedAt: Date.now(),
-    };
+      gamesStarted: 0,
+      lastActiveAt: Date.now(),
+    });
     setPair(next);
     return next;
   }, []);
@@ -237,8 +277,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (clean.length !== 6) {
       throw new Error('Нужен код из 6 символов');
     }
-    const next: PairState = {
-      id: makeId('pair'),
+    let next: PairState = normalizePair({
+      id: pairIdFromCode(clean),
       code: clean,
       name: 'Связанная пара',
       hostUserId: '',
@@ -246,12 +286,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       partnerPresence: 'online',
       mood: 'warm',
       pairedAt: Date.now(),
-    };
-    setPair(next);
+      gamesStarted: 0,
+      lastActiveAt: Date.now(),
+    });
+    setPair((prev) => {
+      // Re-join same invite → keep local nickname / history, same pair id
+      if (prev?.code === clean) {
+        next = normalizePair({
+          ...prev,
+          partnerPresence: 'online',
+          lastActiveAt: Date.now(),
+        });
+        return next;
+      }
+      return next;
+    });
     return next;
   }, []);
 
   const unlinkPair = useCallback(async () => {
+    const { clearMatchSession } = await import('../realtime/matchSession');
+    clearMatchSession();
     setPair(null);
   }, []);
 
@@ -260,12 +315,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setPairName = useCallback((name: string) => {
-    const clean = name.trim() || 'Наша комната';
+    const clean = name.trim() || 'Наша пара';
     setPair((prev) => (prev ? { ...prev, name: clean } : prev));
   }, []);
 
   const setRoomSize = useCallback((size: number) => {
     setPair((prev) => (prev ? { ...prev, roomSize: size } : prev));
+  }, []);
+
+  const bumpGamesStarted = useCallback(() => {
+    setPair((prev) =>
+      prev
+        ? {
+            ...prev,
+            gamesStarted: (prev.gamesStarted ?? 0) + 1,
+            lastActiveAt: Date.now(),
+          }
+        : prev,
+    );
+  }, []);
+
+  const touchPairActive = useCallback(() => {
+    setPair((prev) => (prev ? { ...prev, lastActiveAt: Date.now() } : prev));
   }, []);
 
   const setPartnerInfo = useCallback((name: string, presence: Presence = 'online') => {
@@ -498,6 +569,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setPairName,
       setRoomSize,
       setPartnerInfo,
+      bumpGamesStarted,
+      touchPairActive,
       sendWarmth,
       warmthPulse,
       addTrack,
@@ -539,6 +612,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setPairName,
       setRoomSize,
       setPartnerInfo,
+      bumpGamesStarted,
+      touchPairActive,
       sendWarmth,
       warmthPulse,
       addTrack,

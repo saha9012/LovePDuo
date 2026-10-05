@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useApp, TinyNote } from '../store/AppStore';
 import { useMemories, MemoryItem } from '../store/MemoriesStore';
 import { pairRealtime } from './PairRealtime';
+import { setMatchSession } from './matchSession';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -106,6 +107,37 @@ export function RealtimeConnector() {
         const peer = peers?.find((p) => p.userId && p.userId !== user.id && p.name);
         if (peer?.name) {
           setPartnerInfo(peer.name, 'online');
+        }
+      }
+      if (msg.type === 'pair_sync') {
+        const payload = msg as {
+          pairName?: string | null;
+          lastMatch?: {
+            gameId?: string;
+            seed?: number;
+            startAtMs?: number;
+          } | null;
+        };
+        if (typeof payload.pairName === 'string' && payload.pairName.trim()) {
+          if (pair.name !== payload.pairName.trim()) {
+            setPairName(payload.pairName.trim());
+          }
+        }
+        const lm = payload.lastMatch;
+        if (
+          lm &&
+          typeof lm.gameId === 'string' &&
+          typeof lm.seed === 'number' &&
+          typeof lm.startAtMs === 'number' &&
+          Date.now() - lm.startAtMs < 12 * 60_000
+        ) {
+          setMatchSession({
+            gameId: lm.gameId,
+            seed: lm.seed,
+            startAtMs: lm.startAtMs,
+            pairCode: pair.code,
+            pairId: pair.id,
+          });
         }
       }
       if (msg.type === 'peer_joined') {

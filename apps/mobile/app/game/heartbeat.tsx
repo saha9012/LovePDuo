@@ -61,6 +61,7 @@ export default function HeartbeatScreen() {
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerScoreRef = useRef(0);
+  const lastBroadcastSec = useRef(-1);
   const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
   const lastRematchAt = useRef(0);
@@ -470,11 +471,15 @@ export default function HeartbeatScreen() {
             : `Итог ${total} · sync +${syncRef.current}`,
         });
         broadcastMemory(mem, user);
-      } else if (Math.floor(t / 1000) % 4 === 0) {
-        pairRealtime.sendGame('heartbeat', {
-          phase: 'playing',
-          total: scoreRef.current + syncRef.current,
-        });
+      } else {
+        const sec = Math.floor(t / 1000);
+        if (sec > 0 && sec % 4 === 0 && sec !== lastBroadcastSec.current) {
+          lastBroadcastSec.current = sec;
+          pairRealtime.sendGame('heartbeat', {
+            phase: 'playing',
+            total: scoreRef.current + syncRef.current,
+          });
+        }
       }
     }, 32);
     return () => clearInterval(id);

@@ -50,6 +50,7 @@ export default function SoftDuelScreen() {
     null,
   );
   const myScoreRef = useRef(0);
+  const partnerScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const flashRef = useRef('');
   const partnerFinishedRef = useRef(false);
@@ -77,6 +78,10 @@ export default function SoftDuelScreen() {
   useEffect(() => {
     flashRef.current = flash;
   }, [flash]);
+
+  useEffect(() => {
+    partnerScoreRef.current = partnerScore;
+  }, [partnerScore]);
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -573,7 +578,7 @@ export default function SoftDuelScreen() {
         flashScale.value = withSpring(1.14, { damping: 10 });
         void juice.perfect();
       }, 320);
-    } else if (partnerLiveRef.current && myScoreRef.current === partnerScore) {
+    } else if (partnerLiveRef.current && myScoreRef.current === partnerScoreRef.current) {
       setTimeout(() => {
         setFlash(
           flashRef.current === 'Оба на очках' || flashRef.current === 'Оба в счёте'
@@ -583,7 +588,7 @@ export default function SoftDuelScreen() {
         flashScale.value = withSpring(1.12, { damping: 10 });
         void juice.sync();
       }, 320);
-    } else if (partnerLiveRef.current && myScoreRef.current > partnerScore + 2) {
+    } else if (partnerLiveRef.current && myScoreRef.current > partnerScoreRef.current + 2) {
       setTimeout(() => {
         const racing =
           flashRef.current === 'Я впереди' ||

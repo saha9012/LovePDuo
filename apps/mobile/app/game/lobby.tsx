@@ -16,7 +16,7 @@ import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { setMatchSession } from '../../src/realtime/matchSession';
+import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
 
@@ -35,7 +35,7 @@ export default function GameLobbyScreen() {
   const router = useRouter();
   const { game } = useLocalSearchParams<{ game?: string }>();
   const gameId = (game as keyof typeof routes) || 'sky-claim';
-  const { user, pair } = useApp();
+  const { user, pair, bumpGamesStarted, touchPairActive } = useApp();
   const [readyMe, setReadyMe] = useState(false);
   const [readyPeer, setReadyPeer] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -223,7 +223,15 @@ export default function GameLobbyScreen() {
           const drift = at - Date.now();
           setMatchSeed(payload.seed);
           setStartAtMs(at);
-          setMatchSession({ gameId, seed: payload.seed, startAtMs: at });
+          if (pair?.code) {
+            setMatchSession({
+              gameId,
+              seed: payload.seed,
+              startAtMs: at,
+              pairCode: pair.code,
+              pairId: pair.id,
+            });
+          }
           setCountdown(3);
           if (drift < 500) {
             showCancelToast(
@@ -255,6 +263,20 @@ export default function GameLobbyScreen() {
     setMatchSeed(null);
     setStartAtMs(null);
   }, [gameId]);
+
+  // Resume in-flight match for this pair (app kill / late reopen during countdown)
+  useEffect(() => {
+    if (!pair?.code) return;
+    const pending = peekMatchSession(gameId, pair.code);
+    if (!pending) return;
+    const msLeft = pending.startAtMs - Date.now();
+    if (msLeft < -8_000) return;
+    setMatchSeed(pending.seed);
+    setStartAtMs(pending.startAtMs);
+    setCountdown(Math.max(0, Math.min(3, Math.ceil(msLeft / 720))));
+    showCancelToast('Сессия пары восстановлена');
+    void juice.sync();
+  }, [gameId, pair?.code]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -301,13 +323,23 @@ export default function GameLobbyScreen() {
     const startAt = Date.now() + 2800;
     setMatchSeed(seed);
     setStartAtMs(startAt);
-    setMatchSession({ gameId, seed, startAtMs: startAt });
+    if (pair?.code) {
+      setMatchSession({
+        gameId,
+        seed,
+        startAtMs: startAt,
+        pairCode: pair.code,
+        pairId: pair.id,
+      });
+    }
     pairRealtime.sendGame(gameId, { start: true, seed, startAtMs: startAt });
     setCountdown(3);
+    bumpGamesStarted();
+    touchPairActive();
     showCancelToast('Старт для обоих');
     void juice.perfect();
     track('game_started', { game: gameId });
-  }, [readyMe, readyPeer, countdown, gameId, isHost]);
+  }, [readyMe, readyPeer, countdown, gameId, isHost, pair?.code, pair?.id, bumpGamesStarted, touchPairActive]);
 
   const countStyle = useAnimatedStyle(() => ({
     transform: [{ scale: countScale.value }],
