@@ -79,6 +79,11 @@ type AppState = {
   warmthPulse: number;
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
   reactTrack: (id: string, reaction: TrackItem['reaction']) => void;
+  reactTrackMeta: (
+    title: string,
+    artist: string,
+    reaction: NonNullable<TrackItem['reaction']>,
+  ) => void;
   nowPlayingId: string | null;
   setNowPlaying: (id: string | null) => void;
   partnerNowPlaying: string | null;
@@ -276,6 +281,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const reactTrackMeta = useCallback(
+    (title: string, artist: string, reaction: NonNullable<TrackItem['reaction']>) => {
+      const tNorm = title.trim().toLowerCase();
+      const aNorm = artist.trim().toLowerCase();
+      setTracks((prev) =>
+        prev.map((t) =>
+          t.title.toLowerCase() === tNorm && (!aNorm || t.artist.toLowerCase() === aNorm)
+            ? { ...t, reaction }
+            : t,
+        ),
+      );
+    },
+    [],
+  );
+
   const setNowPlaying = useCallback((id: string | null) => {
     setNowPlayingId(id);
   }, []);
@@ -339,6 +359,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       warmthPulse,
       addTrack,
       reactTrack,
+      reactTrackMeta,
       nowPlayingId,
       setNowPlaying,
       partnerNowPlaying,
@@ -370,6 +391,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       warmthPulse,
       addTrack,
       reactTrack,
+      reactTrackMeta,
       nowPlayingId,
       setNowPlaying,
       partnerNowPlaying,

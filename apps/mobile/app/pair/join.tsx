@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,13 +20,15 @@ export default function JoinPairScreen() {
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const autoTried = useRef('');
 
-  const onJoin = async () => {
+  const onJoin = async (nextCode = code) => {
+    if (loading) return;
     setLoading(true);
     setError('');
     try {
       await signIn(displayName || 'Партнёр');
-      await joinPair(code);
+      await joinPair(nextCode);
       track('pair_joined');
       void juice.postMatch();
       router.replace('/pair/success');
@@ -36,6 +38,14 @@ export default function JoinPairScreen() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (code.length === 6 && autoTried.current !== code && !loading) {
+      autoTried.current = code;
+      void onJoin(code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
 
   return (
     <LpdBackground mood="rain">
@@ -54,6 +64,7 @@ export default function JoinPairScreen() {
           />
           <Text style={styles.label}>Код</Text>
           <CodeInput value={code} onChange={setCode} />
+          {loading ? <Text style={styles.hint}>Входим…</Text> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
         </View>
         <View style={styles.actions}>
@@ -99,6 +110,11 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: fonts.ui,
     fontSize: 16,
+  },
+  hint: {
+    fontFamily: fonts.ui,
+    color: colors.accentMist,
+    fontSize: 13,
   },
   error: {
     fontFamily: fonts.ui,

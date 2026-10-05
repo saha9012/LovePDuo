@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Lobby unready / peer_left · Together spark+candle sync · post-match → lobby  
-- [x] Play filter persist · pair invite (web clipboard) · wss prod draft doc  
-- [x] Shared rematch catalog · WS reconnect · mute · presence  
+- [x] Join auto-submit · deep-link wait for hydrate  
+- [x] Music reaction + playlist mood sync over WS  
+- [x] Lobby/Together/mood/rematch batch (prior)  
 
 ## Catalog
 

@@ -27,6 +27,7 @@ export default function MusicScreen() {
     addTrack,
     user,
     reactTrack,
+    reactTrackMeta,
     nowPlayingId,
     setNowPlaying,
     partnerNowPlaying,
@@ -82,11 +83,34 @@ export default function MusicScreen() {
           setPartnerNowPlaying(null);
         }
       }
+      if (msg.type === 'game' && msg.gameId === 'track-react') {
+        const payload = msg.payload as {
+          title?: string;
+          artist?: string;
+          reaction?: TrackItem['reaction'];
+          from?: string;
+        } | undefined;
+        if (!payload?.title || !payload.reaction) return;
+        reactTrackMeta(payload.title, payload.artist ?? '', payload.reaction);
+        setNote(`${payload.from ?? 'Партнёр'} отметил «${payload.title}»`);
+        void juice.card();
+      }
+      if (msg.type === 'game' && msg.gameId === 'playlist') {
+        const payload = msg.payload as {
+          playlistId?: string;
+          mood?: 'night' | 'warm' | 'rain' | 'pulse';
+        } | undefined;
+        if (payload?.playlistId) {
+          setActivePlaylist(payload.playlistId);
+          if (payload.mood && payload.mood !== 'pulse') setMood(payload.mood);
+          void juice.hit();
+        }
+      }
     });
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta]);
 
   const playTrack = async (track: TrackItem) => {
     if (!track.uri || track.playbackMode !== 'local') {
@@ -163,12 +187,22 @@ export default function MusicScreen() {
 
   const react = (id: string, reaction: NonNullable<TrackItem['reaction']>) => {
     reactTrack(id, reaction);
+    const t = tracks.find((x) => x.id === id);
+    if (t) {
+      pairRealtime.sendGame('track-react', {
+        title: t.title,
+        artist: t.artist,
+        reaction,
+        from: user?.displayName,
+      });
+    }
     void juice.card();
   };
 
   const selectPlaylist = (id: string, mood: 'night' | 'warm' | 'rain' | 'pulse') => {
     setActivePlaylist(id);
     if (mood !== 'pulse') setMood(mood);
+    pairRealtime.sendGame('playlist', { playlistId: id, mood });
     void juice.card();
   };
 
