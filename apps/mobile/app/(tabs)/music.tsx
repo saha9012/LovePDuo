@@ -26,6 +26,7 @@ export default function MusicScreen() {
     tracks,
     addTrack,
     user,
+    pair,
     reactTrack,
     reactTrackMeta,
     nowPlayingId,
@@ -75,6 +76,13 @@ export default function MusicScreen() {
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'music-hello') {
+        const payload = msg.payload as { from?: string; fromId?: string } | undefined;
+        if (payload?.fromId && payload.fromId === user?.id) return;
+        setNote(`${payload?.from ?? 'Партнёр'} на Music`);
+        void juice.hit();
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'now-playing') {
         const payload = msg.payload as { title?: string | null; from?: string } | undefined;
         if (payload?.title) {
@@ -113,7 +121,15 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, user?.id]);
+
+  useEffect(() => {
+    if (!pair || !user) return;
+    pairRealtime.sendGame('music-hello', {
+      from: user.displayName,
+      fromId: user.id,
+    });
+  }, [pair?.code, user?.id, user?.displayName]);
 
   const playTrack = async (track: TrackItem) => {
     if (!track.uri || track.playbackMode !== 'local') {

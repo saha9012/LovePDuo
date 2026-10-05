@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Hello ping across Soft/Sky/Orbit/HB/Draw/Veil  
-- [x] PostMatch rematch juice · ToS partner-enter toast  
-- [x] Soft Duel wait HUD  
+- [x] Music + Together tab hello · STORE_SHOTS dual-feel capture notes  
+- [x] Hello ping across all dual minigames  
+- [x] PostMatch rematch juice  
 
 ## Catalog
 

@@ -14,21 +14,25 @@ Requires Pillow: `pip install pillow`
 
 ## Live capture (preferred)
 
-1. Run Expo on Android/iOS with pair already linked.
+1. Run Expo on Android/iOS with pair already linked (two devices or web dual).
 2. Shoot these screens full-bleed (no status-bar clutter if possible):
-   - Welcome
+   - Welcome / reconnect
    - Pair create / join success
-   - Home (partner online)
-   - Sky Claim mid-round
+   - Home (partner online · warmth toast if possible)
+   - Play with peer-lobby banner (optional dual timing)
+   - Lobby both READY / countdown
+   - Sky Claim mid-round (partner score live)
    - Heartbeat Tap
-   - Music shelf with a track
-   - Together candle
+   - Signal Draw dual strokes
+   - Music shelf with partner now-playing
+   - Together candle lit
 3. Export 1080×1920 (or crop to 9:16) and overwrite:
    - `assets/store/01_welcome.png` … `07_candle.png`
 4. Keep filenames — listing docs reference them.
+5. Dual-feel extras ( Ideal Bar QA ): lobby cancel toast, Soft Duel partner grade, ToS named turn.
 
 ## Web helper (optional)
 
 Open `assets/store/capture.html` in a browser to preview frame slots and mark which are still drafts.
 
-See also `docs/STORE_LISTING.md`.
+See also `docs/STORE_LISTING.md` · `docs/ANDROID_QA.md`.

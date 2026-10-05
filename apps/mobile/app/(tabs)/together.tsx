@@ -91,6 +91,13 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'together-hello') {
+        const payload = msg.payload as { from?: string; fromId?: string } | undefined;
+        if (payload?.fromId === user.id) return;
+        showPeer(`${payload?.from ?? 'Партнёр'} на Together`);
+        void juice.warmth();
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'candle') {
         const payload = msg.payload as {
           left?: number;
@@ -134,6 +141,14 @@ export default function TogetherScreen() {
       off();
     };
   }, [pair?.code, user?.id, receiveNote]);
+
+  useEffect(() => {
+    if (!pair || !user) return;
+    pairRealtime.sendGame('together-hello', {
+      from: user.displayName,
+      fromId: user.id,
+    });
+  }, [pair?.code, user?.id, user?.displayName]);
 
   const startCandle = () => {
     candleLogged.current = false;
