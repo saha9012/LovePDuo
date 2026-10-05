@@ -186,11 +186,17 @@ export default function GameLobbyScreen() {
         }
         if (payload?.start && typeof payload.seed === 'number') {
           const at = payload.startAtMs ?? Date.now() + 2500;
+          const drift = at - Date.now();
           setMatchSeed(payload.seed);
           setStartAtMs(at);
           setMatchSession({ gameId, seed: payload.seed, startAtMs: at });
           setCountdown(3);
-          showCancelToast('Старт!');
+          if (drift < 500) {
+            showCancelToast('Старт! · догоняем');
+            void juice.hit();
+          } else {
+            showCancelToast('Старт!');
+          }
         }
       }
     });
