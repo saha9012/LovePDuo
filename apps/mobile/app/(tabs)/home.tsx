@@ -16,6 +16,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { juice } from '../../src/audio/juice';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -80,6 +81,7 @@ export default function HomeScreen() {
             onPress={() => {
               sendWarmth();
               pairRealtime.sendWarmth();
+              void juice.warmth();
             }}
           />
           <View style={styles.moodRow}>

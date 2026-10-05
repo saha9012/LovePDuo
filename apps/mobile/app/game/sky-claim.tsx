@@ -6,8 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
@@ -22,6 +21,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
+import { juice } from '../../src/audio/juice';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -184,7 +184,7 @@ export default function SkyClaimScreen() {
           comboRef.current = 0;
           setCombo(0);
           setFlash('miss');
-          void Haptics.selectionAsync();
+          void juice.miss();
           return prev;
         }
         const result = scoreCatch(comboRef.current, hit.points);
@@ -193,11 +193,7 @@ export default function SkyClaimScreen() {
         setCombo(result.combo);
         setScore(scoreRef.current);
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
-        void Haptics.impactAsync(
-          hit.type === 'decoy'
-            ? Haptics.ImpactFeedbackStyle.Medium
-            : Haptics.ImpactFeedbackStyle.Light,
-        );
+        void (hit.type === 'decoy' ? juice.decoy() : juice.catch());
         return rest;
       });
     },

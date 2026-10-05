@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
@@ -16,6 +15,8 @@ import {
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { consumeMatchSession } from '../../src/realtime/matchSession';
+import { juice } from '../../src/audio/juice';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -23,7 +24,17 @@ export default function HeartbeatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
-  const chart = useMemo(() => buildHeartbeatChart(3), []);
+  const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+
+  const seed = useMemo(() => {
+    const fromParam = Number(params.seed);
+    if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
+    const session = consumeMatchSession('heartbeat');
+    if (session) return session.seed;
+    return 3;
+  }, [params.seed]);
+
+  const chart = useMemo(() => buildHeartbeatChart(seed), [seed]);
   const [phase, setPhase] = useState<Phase>('ready');
   const [elapsed, setElapsed] = useState(0);
   const [score, setScore] = useState(0);
@@ -36,18 +47,25 @@ export default function HeartbeatScreen() {
   const scoreRef = useRef(0);
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const lastPartnerTapMs = useRef<number | null>(null);
+  const startRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     if (!pair || !user) return;
-    pairRealtime.connect(pair.code, user.id, user.displayName);
     const off = pairRealtime.onMessage((msg) => {
-      if (msg.type === 'game' && msg.gameId === 'heartbeat') {
-        const payload = msg.payload as { total?: number } | undefined;
-        if (typeof payload?.total === 'number') {
-          setPartnerScore(payload.total);
-          setPartnerLive(true);
-          partnerLiveRef.current = true;
-        }
+      if (msg.type !== 'game' || msg.gameId !== 'heartbeat') return;
+      const payload = msg.payload as {
+        total?: number;
+        tapAt?: number;
+        phase?: string;
+      } | undefined;
+      if (typeof payload?.total === 'number') {
+        setPartnerScore(payload.total);
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+      }
+      if (typeof payload?.tapAt === 'number') {
+        lastPartnerTapMs.current = payload.tapAt;
       }
     });
     return () => {
@@ -66,9 +84,22 @@ export default function HeartbeatScreen() {
     syncRef.current = 0;
     partnerLiveRef.current = false;
     setPartnerLive(false);
+    lastPartnerTapMs.current = null;
     startAt.current = Date.now();
-    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0 });
+    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0, seed });
+    void juice.beat();
   };
+
+  startRef.current = start;
+
+  useEffect(() => {
+    if (params.solo === '1') return;
+    const at = Number(params.startAt);
+    if (!Number.isFinite(at)) return;
+    const delay = Math.max(0, at - Date.now());
+    const id = setTimeout(() => startRef.current(), delay);
+    return () => clearTimeout(id);
+  }, [params.startAt, params.solo]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -94,6 +125,7 @@ export default function HeartbeatScreen() {
           setPartnerScore(partner);
         }
         setPhase('finished');
+        void juice.postMatch();
       } else if (Math.floor(t / 1000) % 4 === 0) {
         pairRealtime.sendGame('heartbeat', {
           phase: 'playing',
@@ -112,7 +144,7 @@ export default function HeartbeatScreen() {
     const delta = t - note.atMs;
     if (Math.abs(delta) > heartbeatConfig.windowGreatMs + 40) {
       setLast('miss');
-      void Haptics.selectionAsync();
+      void juice.miss();
       return;
     }
     const j = judgeTap(delta);
@@ -121,18 +153,33 @@ export default function HeartbeatScreen() {
     setScore(scoreRef.current);
     setLast(j);
     cursor.current += 1;
-    // simulated partner sync window
-    if (j !== 'miss' && Math.abs(delta) < 90 && Math.random() > 0.35) {
+    pairRealtime.sendGame('heartbeat', {
+      tapAt: t,
+      total: scoreRef.current + syncRef.current,
+    });
+
+    const partnerTap = lastPartnerTapMs.current;
+    const realSync =
+      partnerTap != null && Math.abs(partnerTap - t) <= 120 && j !== 'miss';
+    const demoSync =
+      !partnerLiveRef.current &&
+      j !== 'miss' &&
+      Math.abs(delta) < 90 &&
+      Math.random() > 0.35;
+
+    if (realSync || demoSync) {
       syncRef.current += 40;
       setSyncBonus(syncRef.current);
-      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      void juice.sync();
+    } else if (j === 'perfect') {
+      void juice.perfect();
     } else {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      void juice.hit();
     }
   };
 
   const total = score + syncBonus;
-  const line = pickPostMatchLine(total, partnerScore, elapsed || 1);
+  const line = pickPostMatchLine(total, partnerScore, seed + (elapsed || 1));
   const beatPulse = Math.sin((elapsed / (60000 / heartbeatConfig.bpm)) * Math.PI * 2);
 
   if (phase === 'finished') {
@@ -158,12 +205,12 @@ export default function HeartbeatScreen() {
   return (
     <LpdBackground mood="rain">
       <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-        <Text style={styles.title}>Heartbeat Tap</Text>
+        <Text style={styles.title}>Heartbeat Tap · seed {seed}</Text>
         {phase === 'ready' ? (
           <View style={styles.ready}>
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
             <Text style={styles.body}>
-              Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно.
+              Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.
             </Text>
             <Pressable onPress={start} style={styles.btn}>
               <Text style={styles.btnLabel}>Старт</Text>

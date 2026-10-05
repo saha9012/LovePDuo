@@ -4,67 +4,51 @@
 **Local:** `C:\prodject\LovePDio`  
 **TZ:** v1.1.2  
 **Updated:** 2026-10-05  
-**Branch:** `cursor/phase0-foundation-lovepduo-8960` (+ pushed to `main`)
+**Branch:** `cursor/phase0-foundation-lovepduo-8960` (+ `main`)
 
-## Stack decision
+## Stack
 
-Expo RN + TypeScript (Flutter SDK отсутствует в среде). Зафиксировано в README.
+Expo RN + TypeScript. Realtime: `backend` WS `:8787`.
 
-## Status by phase
+## Dev servers (owner test)
+
+- App: http://localhost:8081  
+- WS: ws://127.0.0.1:8787  
+
+## Phase status
 
 ### Phase 0 — Foundation ✅
+### Phase 1 — Pair core ✅ (+ app-wide RealtimeConnector)
+### Phase 2 — Games MVP ✅
 
-- [x] Monorepo + Expo app `app.lovepduo`
-- [x] Theme tokens amber + dusty rose / Fraunces+Sora+Plex
-- [x] `LpdBackground` breathing glow
-- [x] Welcome hero brand LovePDuo
-- [x] README + docs (TZ / DESIGN / GAMES / PROGRESS)
-
-### Phase 1 — Pair core ✅ (local + WS stub)
-
-- [x] Sign-in persist, create/join 6-char, success cinematic
-- [x] Home room, mood, warmth pulse
-- [x] WS backend `:8787` + client `PairRealtime`
-- [ ] QR deep-link join UI polish
-
-### Phase 2 — Games MVP ✅ (playable)
-
-- [x] Sky Claim + juice + post-match + WS score relay (fallback demo partner)
-- [x] Heartbeat Tap + sync bonus
-- [x] Truth Or Spark 62 cards soft/spicy
-- [x] Post-match ≥30 lines + GameCover tiles
-- [ ] Shared seed countdown lobby UX
+- [x] Lobby Ready → shared seed → countdown (host starts)
+- [x] Sky Claim shared seed + live score
+- [x] Heartbeat shared seed + real tap sync bonus (±120ms) + live score
+- [x] Truth Or Spark shared shuffled deck + synced index/filter/skip
+- [x] Post-match ≥30 · GameCover · juice haptics layer
 
 ### Phase 3 — Music 🚧
 
-- [x] Upload → library persist + in-app AV play for local URI
-- [x] Spotify/VK metadata stubs + honest notes in UI/PROGRESS
-- [ ] Spotify OAuth keys / App Remote
-- [ ] VK official audio (blocked → upload fallback)
+- [x] Upload persist + in-app AV play
+- [x] Spotify/VK metadata stubs (honest)
+- [ ] OAuth keys when available
+
+### Together
+
+- [x] Daily spark
+- [x] Candle Timer 2 мин (WS sync start)
+- [x] Warmth from Together
 
 ## Gaps vs Ideal Bar
 
-1. Shared authoritative spawn seed still soft (per-client seed + score sync).
-2. Custom SVG icon set / SFX packs incomplete.
-3. Device dual-phone QA pending (need 2 clients + backend running).
-4. PR API 401 без token — ветки запушены; PR можно открыть вручную.
+1. Dual-phone physical QA (web 2× окна работают; Android Expo Go — нужен LAN IP в `.env`)
+2. WAV SFX packs (сейчас haptic juice)
+3. Custom raster app icon / store screenshots
+4. Authoritative server clock for beat (сейчас client clocks + shared seed)
 
 ## Run
 
 ```bash
-cd apps/mobile && npm start
-# optional realtime:
 cd backend && npm start
+cd apps/mobile && npm start   # web: http://localhost:8081
 ```
-
-## Acceptance snapshot
-
-| Criterion | Status |
-|-----------|--------|
-| Canonical repo LovePDuo | ✅ pushed |
-| Brand first screen | ✅ |
-| Dark romantic | ✅ |
-| 3 games playable | ✅ |
-| Music upload persist + play | ✅ local |
-| Spotify/VK attempt logged | ✅ |
-| Dual-phone live score | 🟡 WS ready, needs 2-device QA |

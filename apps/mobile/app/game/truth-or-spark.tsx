@@ -1,33 +1,118 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
-import { typography } from '../../src/theme/typography';
 import { SparkFilter, sparksRu } from '../../src/content/sparks';
+import { useApp } from '../../src/store/AppStore';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { consumeMatchSession } from '../../src/realtime/matchSession';
+import { juice } from '../../src/audio/juice';
 
 const SKIP_LIMIT = 3;
+const GAME_ID = 'truth-or-spark';
+
+function mulberry32(seed: number) {
+  return function rand() {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleDeck(seed: number, filter: SparkFilter) {
+  const base = sparksRu.filter((c) => c.filter === filter);
+  const rand = mulberry32(seed + (filter === 'spicy' ? 99 : 7));
+  const copy = [...base];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(rand() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 
 export default function TruthOrSparkScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, pair } = useApp();
+  const params = useLocalSearchParams<{ seed?: string; solo?: string }>();
+
+  const seed = useMemo(() => {
+    const fromParam = Number(params.seed);
+    if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
+    const session = consumeMatchSession(GAME_ID);
+    if (session) return session.seed;
+    return Date.now() % 100000;
+  }, [params.seed]);
+
   const [filter, setFilter] = useState<SparkFilter>('soft');
   const [index, setIndex] = useState(0);
   const [skips, setSkips] = useState(SKIP_LIMIT);
+  const [peerName, setPeerName] = useState<string | null>(null);
+  const [live, setLive] = useState(false);
 
-  const deck = useMemo(
-    () => sparksRu.filter((c) => c.filter === filter),
-    [filter],
-  );
+  const deck = useMemo(() => shuffleDeck(seed, filter), [seed, filter]);
   const card = deck[index % deck.length];
+  const isHost = Boolean(user?.id && pair?.hostUserId && pair.hostUserId === user.id);
 
-  const next = () => setIndex((v) => v + 1);
+  useEffect(() => {
+    if (!pair || !user) return;
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type !== 'game' || msg.gameId !== GAME_ID) return;
+      const payload = msg.payload as {
+        index?: number;
+        filter?: SparkFilter;
+        skips?: number;
+        fromName?: string;
+      } | undefined;
+      if (!payload) return;
+      setLive(true);
+      if (typeof payload.index === 'number') setIndex(payload.index);
+      if (payload.filter === 'soft' || payload.filter === 'spicy') setFilter(payload.filter);
+      if (typeof payload.skips === 'number') setSkips(payload.skips);
+      if (payload.fromName) setPeerName(payload.fromName);
+    });
+    return () => {
+      off();
+    };
+  }, [pair?.code, user?.id]);
+
+  const broadcast = (nextIndex: number, nextFilter: SparkFilter, nextSkips: number) => {
+    pairRealtime.sendGame(GAME_ID, {
+      index: nextIndex,
+      filter: nextFilter,
+      skips: nextSkips,
+      fromName: user?.displayName,
+      seed,
+    });
+  };
+
+  const next = () => {
+    const ni = index + 1;
+    setIndex(ni);
+    broadcast(ni, filter, skips);
+    void juice.card();
+  };
+
   const skip = () => {
     if (skips <= 0) return;
-    setSkips((s) => s - 1);
-    next();
+    const ns = skips - 1;
+    const ni = index + 1;
+    setSkips(ns);
+    setIndex(ni);
+    broadcast(ni, filter, ns);
+    void juice.miss();
+  };
+
+  const changeFilter = (f: SparkFilter) => {
+    setFilter(f);
+    setIndex(0);
+    setSkips(SKIP_LIMIT);
+    broadcast(0, f, SKIP_LIMIT);
+    void juice.card();
   };
 
   return (
@@ -40,15 +125,16 @@ export default function TruthOrSparkScreen() {
           </Pressable>
         </View>
 
+        <Text style={styles.syncMeta}>
+          seed {seed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
+          {isHost ? ' · host' : ''}
+        </Text>
+
         <View style={styles.filters}>
           {(['soft', 'spicy'] as const).map((f) => (
             <Pressable
               key={f}
-              onPress={() => {
-                setFilter(f);
-                setIndex(0);
-                setSkips(SKIP_LIMIT);
-              }}
+              onPress={() => changeFilter(f)}
               style={[styles.chip, filter === f && styles.chipActive]}
             >
               <Text style={[styles.chipLabel, filter === f && styles.chipLabelActive]}>
@@ -67,7 +153,7 @@ export default function TruthOrSparkScreen() {
         </View>
 
         <View style={styles.actions}>
-          <LpdButton label="Дальше" onPress={next} />
+          <LpdButton label="Дальше (обоим)" onPress={next} />
           <LpdButton
             label="Skip"
             variant="ghost"
@@ -99,6 +185,11 @@ const styles = StyleSheet.create({
   back: {
     fontFamily: fonts.uiMedium,
     color: colors.accentAmber,
+  },
+  syncMeta: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    color: colors.textMuted,
   },
   filters: {
     flexDirection: 'row',
