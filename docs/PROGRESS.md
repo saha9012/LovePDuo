@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Welcome leave toast · Home leave · dual room-name · оба финиш  
 - [x] Home leave toast when room drops · dual room-name · оба финиш  
 - [x] Dual room-name juice when names match · ANDROID_QA оба финиш  
-- [x] ANDROID_QA оба финиш · Catalog PostMatch dual · Soft dual finish  
 
 ## Catalog
 

@@ -39,6 +39,13 @@ export default function WelcomeScreen() {
       roomSizeSeen.current = size;
       return () => clearTimeout(t);
     }
+    if (prev >= 2 && size === 1) {
+      setRoomToast('Партнёр вышел');
+      void juice.miss();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      roomSizeSeen.current = size;
+      return () => clearTimeout(t);
+    }
     roomSizeSeen.current = size;
   }, [pair?.roomSize]);
 
