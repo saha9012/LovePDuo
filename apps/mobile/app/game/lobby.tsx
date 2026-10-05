@@ -196,8 +196,8 @@ export default function GameLobbyScreen() {
           setMatchSession({ gameId, seed: payload.seed, startAtMs: at });
           setCountdown(3);
           if (drift < 500) {
-            showCancelToast('Старт! · догоняем');
-            void juice.hit();
+            showCancelToast('Оба догоняют');
+            void juice.perfect();
           } else {
             showCancelToast('Старт!');
           }
