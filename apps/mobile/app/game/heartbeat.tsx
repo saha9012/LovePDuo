@@ -105,6 +105,9 @@ export default function HeartbeatScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setPartnerFlash(true);
+        if (payload.judgement === 'perfect' || payload.judgement === 'great') {
+          setLast(payload.judgement);
+        }
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),
           withTiming(1, { duration: 200 }),
@@ -221,6 +224,7 @@ export default function HeartbeatScreen() {
     pairRealtime.sendGame('heartbeat', {
       tapAt: t,
       total: scoreRef.current + syncRef.current,
+      judgement: j,
     });
 
     const partnerTap = lastPartnerTapMs.current;
