@@ -545,7 +545,7 @@ export default function MusicScreen() {
         ) : null}
         {active && active.trackIds.length === 0 && tracks.length > 0 ? (
           <Text style={styles.playlistHint}>
-            «{active.name}» пуст — жми + у трека, чтобы положить на полку настроения.
+            «{active.name}» пуст — жми + у трека, чтобы положить на полку. Повторный тап по ✓ убирает с полки; × удаляет трек.
           </Text>
         ) : null}
         {nowPlayingId ? (
