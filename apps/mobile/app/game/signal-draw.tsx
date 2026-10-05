@@ -56,6 +56,7 @@ export default function SignalDrawScreen() {
   const [brush, setBrush] = useState<'fine' | 'bold'>('fine');
   const [peerPulse, setPeerPulse] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [peerSeen, setPeerSeen] = useState(false);
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
@@ -118,6 +119,7 @@ export default function SignalDrawScreen() {
       } | undefined;
       if (!payload) return;
       if (payload.hello) {
+        setPeerSeen(true);
         showToast('Партнёр в игре');
         void juice.sync();
         return;
@@ -414,6 +416,7 @@ export default function SignalDrawScreen() {
             <Text style={styles.hero}>Рисуйте сигнал</Text>
             <Text style={styles.body}>
               Общий холст. Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
+              {params.solo !== '1' && !peerSeen ? ' Ждём партнёра на холсте…' : ''}
             </Text>
             <LpdButton label="Старт" onPress={start} />
           </View>

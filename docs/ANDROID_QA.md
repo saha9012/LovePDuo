@@ -70,3 +70,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 Два профиля браузера → http://localhost:8081  
 WS: `ws://127.0.0.1:8787` (default).
+
+## Remote dual без одной Wi‑Fi
+
+См. `docs/WSS_PROD.md` — Cloudflare Tunnel one-liner → `wss://….trycloudflare.com` в Profile на обоих телефонах.

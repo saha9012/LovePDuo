@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Cloudflare Tunnel one-liner in WSS_PROD · Soft/Sky/HB wait copy  
+- [x] Orbit/Draw ready wait · ANDROID_QA Cloudflare Tunnel note  
+- [x] Soft/Sky/HB wait copy · WSS tunnel one-liner  
 - [x] Home peer-lobby CTA  
-- [x] Music/Together hello  
 
 ## Catalog
 

@@ -42,6 +42,7 @@ export default function OrbitCatchScreen() {
   const [aligned, setAligned] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
+  const [peerSeen, setPeerSeen] = useState(false);
   const [matchSeed, setMatchSeed] = useState(seed);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
@@ -97,6 +98,7 @@ export default function OrbitCatchScreen() {
           hello?: boolean;
         } | undefined;
         if (payload?.hello) {
+          setPeerSeen(true);
           bumpPeerNote('в игре');
           void juice.sync();
           return;
@@ -306,6 +308,7 @@ export default function OrbitCatchScreen() {
             <Text style={styles.hero}>Ловите орбиту</Text>
             <Text style={styles.body}>
               Жми, когда янтарный маркер совпадает с розовым орбом. Очки пары складываются.
+              {params.solo !== '1' && !peerSeen ? ' Ждём партнёра на орбите…' : ''}
             </Text>
             <Pressable onPress={start} style={styles.btn}>
               <Text style={styles.btnLabel}>Старт</Text>
