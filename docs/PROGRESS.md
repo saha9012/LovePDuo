@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Pair success toast when partner arrives  
-- [x] Upload/Spotify/VK track cards sync dual  
+- [x] Lobby WS reconnect toast · Pair success peer arrival  
+- [x] Music track cards sync · Soft rematch flash  
 
 ## Catalog
 

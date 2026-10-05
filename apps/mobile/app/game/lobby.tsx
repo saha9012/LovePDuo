@@ -45,6 +45,7 @@ export default function GameLobbyScreen() {
   const startSent = useRef(false);
   const countdownRef = useRef<number | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasWsOnline = useRef(pairRealtime.connected);
   const countScale = useSharedValue(1);
   const countOpacity = useSharedValue(1);
 
@@ -65,7 +66,17 @@ export default function GameLobbyScreen() {
   }, [countdown]);
 
   useEffect(() => {
-    return pairRealtime.onStatus(setWsOnline);
+    return pairRealtime.onStatus((online) => {
+      setWsOnline(online);
+      if (online && !wasWsOnline.current) {
+        showCancelToast('WS online');
+        void juice.sync();
+      } else if (!online && wasWsOnline.current) {
+        showCancelToast('WS offline…');
+        void juice.miss();
+      }
+      wasWsOnline.current = online;
+    });
   }, []);
 
   useEffect(() => {
