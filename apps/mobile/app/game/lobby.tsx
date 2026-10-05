@@ -173,15 +173,18 @@ export default function GameLobbyScreen() {
             showCancelToast('Партнёр READY');
           } else {
             const wasCounting = countdownRef.current != null;
-            void juice.miss();
+            const both = !readyMeRef.current;
+            void (both ? juice.sync() : juice.miss());
             setCountdown(null);
             setMatchSeed(null);
             setStartAtMs(null);
             startSent.current = false;
             showCancelToast(
-              wasCounting
-                ? 'Партнёр снял Ready — старт отменён'
-                : 'Партнёр снял Ready',
+              both
+                ? 'Оба сняли Ready'
+                : wasCounting
+                  ? 'Партнёр снял Ready — старт отменён'
+                  : 'Партнёр снял Ready',
             );
           }
         }

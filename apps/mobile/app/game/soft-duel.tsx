@@ -125,13 +125,16 @@ export default function SoftDuelScreen() {
       }
       if (payload?.arm) {
         setPartnerFlash(true);
-        setFlash((cur) => (cur === 'ЖМИ' || cur === 'Жди…' ? cur : 'Партнёр ЖМИ'));
+        const both = flashRef.current === 'ЖМИ';
+        setFlash((cur) =>
+          both ? 'Оба ЖМИ' : cur === 'ЖМИ' || cur === 'Жди…' ? cur : 'Партнёр ЖМИ',
+        );
         partnerScale.value = withSequence(
           withSpring(1.1, { damping: 10 }),
           withTiming(1, { duration: 200 }),
         );
         setTimeout(() => setPartnerFlash(false), 420);
-        void juice.beat();
+        void (both ? juice.perfect() : juice.beat());
         return;
       }
       if (payload?.phase === 'start') {
