@@ -52,17 +52,19 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 ## 5. Smoke checklist
 
-- [ ] Sky Claim: очки партнёра двигаются · rematch sync  
-- [ ] Heartbeat: sync bonus · rematch seed  
-- [ ] Truth Or Spark: ход переключается · Перетасовать sync  
-- [ ] Signal Draw: чужие штрихи видны · rematch blank  
-- [ ] Orbit Catch: co-op счёт · rematch  
-- [ ] Soft Duel / Word Veil: live + rematch  
-- [ ] Lobby: Ready / Снять Ready · peer_left clears · room size  
-- [ ] Welcome reconnect · Profile invite deep link  
-- [ ] Music: now-playing · reaction sync  
-- [ ] Together: candle sync · spark sync · tiny note snippet  
-- [ ] Home: warmth toast · room size 2 · mood sync  
+- [ ] Sky Claim: очки партнёра · miss/decoy/combo notes · finish note · rematch  
+- [ ] Heartbeat: sync · miss HUD note · finish note · rematch · presence mid-match  
+- [ ] Truth Or Spark: named turn · skip juice · filter-change toast · Перетасовать  
+- [ ] Signal Draw: first stroke toast · brush toast · 5s warning · peer finish · rematch  
+- [ ] Orbit Catch: miss/align notes · finish sync · rematch · presence  
+- [ ] Soft Duel: tap grade mirror · round-ahead · finish · rematch · presence  
+- [ ] Word Veil: typing juice · peer-locked hint · presence · rematch  
+- [ ] Lobby: Ready toast · cancel mid-count · peer_left · peek «партнёр тоже здесь»  
+- [ ] Play: peer-lobby banner → one-tap join  
+- [ ] Welcome reconnect · Profile invite deep link · partner rename toast  
+- [ ] Music: now-playing juice · playlist switch toast · reaction sync  
+- [ ] Together: candle · spark · note · warmth receive toast  
+- [ ] Home: warmth · mood toast · presence online/away · room size 2  
 
 ## Web dual (без телефонов)
 

@@ -60,6 +60,7 @@ export default function WelcomeScreen() {
     void juice.warmth();
     await ensureUser();
     if (pair) {
+      void juice.sync();
       router.replace('/(tabs)/home');
     } else {
       router.push('/pair/create');
@@ -69,6 +70,7 @@ export default function WelcomeScreen() {
   const goPlay = async () => {
     void juice.hit();
     await ensureUser();
+    if (pair) void juice.sync();
     router.replace('/(tabs)/play');
   };
 

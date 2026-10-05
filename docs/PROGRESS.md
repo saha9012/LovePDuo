@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Heartbeat partner-finish note · Lobby READY/start toasts  
-- [x] Orbit/Signal finish sync · Together warmth receive  
-- [x] Memory kinds orbit/veil  
+- [x] Welcome reconnect sync juice · ANDROID_QA dual-feel checklist  
+- [x] Heartbeat finish · Lobby READY/start toasts  
+- [x] Orbit/Signal finish · Together warmth  
 
 ## Catalog
 
