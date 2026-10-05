@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
 - [x] Word Veil match juice · peer_joined rejoin hello across games  
 - [x] Mid-match peer_left toast across Soft/Sky/HB/Orbit/Draw/Veil/ToS  
-- [x] Play/Home lobby-leave toast · Soft sync-finish memory  
 
 ## Catalog
 

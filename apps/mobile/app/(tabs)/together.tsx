@@ -100,6 +100,20 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        showPeer('Партнёр ушёл с Together');
+        void juice.miss();
+        return;
+      }
+      if (msg.type === 'peer_joined') {
+        showPeer('Партнёр снова рядом');
+        void juice.warmth();
+        pairRealtime.sendGame('together-hello', {
+          from: user.displayName,
+          fromId: user.id,
+        });
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'together-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId === user.id) return;

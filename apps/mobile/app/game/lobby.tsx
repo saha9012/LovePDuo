@@ -126,6 +126,19 @@ export default function GameLobbyScreen() {
         );
         return;
       }
+      if (msg.type === 'peer_joined') {
+        showCancelToast('Партнёр снова в лобби');
+        void juice.sync();
+        if (readyMeRef.current && user.id) {
+          pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+        }
+        pairRealtime.sendGame('play-peek', {
+          game: gameId,
+          title: titles[gameId] ?? gameId,
+          fromId: user.id,
+        });
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'play-peek') {
         const peek = msg.payload as { game?: string; fromId?: string; leave?: boolean } | undefined;
         if (peek?.fromId === user.id) return;

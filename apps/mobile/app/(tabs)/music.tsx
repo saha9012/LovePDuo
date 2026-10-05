@@ -76,6 +76,23 @@ export default function MusicScreen() {
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPartnerNowPlaying(null);
+        setNote('Партнёр ушёл с Music');
+        void juice.miss();
+        return;
+      }
+      if (msg.type === 'peer_joined') {
+        setNote('Партнёр снова на связи');
+        void juice.sync();
+        if (user?.id) {
+          pairRealtime.sendGame('music-hello', {
+            from: user.displayName,
+            fromId: user.id,
+          });
+        }
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'music-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId && payload.fromId === user?.id) return;
