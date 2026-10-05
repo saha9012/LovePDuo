@@ -39,6 +39,7 @@ export default function GameLobbyScreen() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [matchSeed, setMatchSeed] = useState<number | null>(null);
   const [startAtMs, setStartAtMs] = useState<number | null>(null);
+  const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const startSent = useRef(false);
   const countScale = useSharedValue(1);
   const countOpacity = useSharedValue(1);
@@ -46,6 +47,10 @@ export default function GameLobbyScreen() {
   const isHost = Boolean(
     user?.id && pair?.hostUserId && pair.hostUserId === user.id,
   );
+
+  useEffect(() => {
+    return pairRealtime.onStatus(setWsOnline);
+  }, []);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -147,6 +152,7 @@ export default function GameLobbyScreen() {
         </Text>
         <Text style={styles.hostHint}>
           {isHost ? 'Ты host — стартуешь раунд для обоих.' : 'Жди host (кто создал пару).'}
+          {' · '}WS {wsOnline ? 'online' : 'offline'}
         </Text>
 
         <View style={styles.status}>
