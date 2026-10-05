@@ -258,6 +258,7 @@ export default function TruthOrSparkScreen() {
     const ni = index + 1;
     const wrapped = ni > 0 && ni % deck.length === 0;
     if (wrapped) {
+      lastDeckWrapAt.current = Date.now();
       showTurnToast('Колода по кругу');
       void juice.sync();
     }
