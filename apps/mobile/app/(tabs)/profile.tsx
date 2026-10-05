@@ -107,6 +107,15 @@ export default function ProfileScreen() {
               void juice.hit();
               if (pair) {
                 pairRealtime.connect(pair.code, next.id, next.displayName);
+                pairRealtime.send({
+                  type: 'presence',
+                  status: 'online',
+                  name: next.displayName,
+                });
+                pairRealtime.sendGame('display-name', {
+                  name: next.displayName,
+                  fromId: next.id,
+                });
               }
             }}
           />

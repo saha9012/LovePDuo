@@ -39,6 +39,18 @@ export function RealtimeConnector() {
           setPairName(payload.name);
         }
       }
+      if (msg.type === 'game' && msg.gameId === 'display-name') {
+        const payload = msg.payload as { name?: string; fromId?: string } | undefined;
+        if (
+          payload?.fromId &&
+          payload.fromId !== user.id &&
+          typeof payload.name === 'string' &&
+          payload.name.trim()
+        ) {
+          setPartnerInfo(payload.name.trim(), 'online');
+          void juice.card();
+        }
+      }
       if (msg.type === 'joined') {
         const peers = msg.peers as { userId?: string; name?: string }[] | undefined;
         const peer = peers?.find((p) => p.userId && p.userId !== user.id && p.name);

@@ -64,7 +64,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Music: now-playing juice · stop toast · playlist switch · shelf + sync · reaction sync · leave/rejoin  
 - [ ] Together: candle start/blow/end · spark · note · warmth · leave/rejoin  
 - [ ] Home: warmth · peer-join toast · mood toast · presence online/away · room size 2  
-- [ ] Welcome reconnect · Profile invite deep link · partner rename toast 
+- [ ] Welcome reconnect · Profile invite deep link · partner rename toast · display-name sync 
 
 ## Web dual (без телефонов)
 

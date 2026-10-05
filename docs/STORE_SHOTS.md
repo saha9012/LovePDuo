@@ -29,7 +29,7 @@ Requires Pillow: `pip install pillow`
 3. Export 1080×1920 (or crop to 9:16) and overwrite:
    - `assets/store/01_welcome.png` … `07_candle.png`
 4. Keep filenames — listing docs reference them.
-5. Dual-feel extras ( Ideal Bar QA ): lobby cancel toast, Soft Duel partner grade, ToS named turn.
+5. Dual-feel extras (Ideal Bar QA): lobby cancel toast, Soft Duel partner grade, ToS named turn, sync-finish PostMatch, peer leave/rejoin.
 
 ## Web helper (optional)
 
