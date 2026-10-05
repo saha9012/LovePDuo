@@ -69,6 +69,7 @@ export default function TruthOrSparkScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lastDeckWrapAt = useRef(0);
+  const lastNextAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
@@ -215,8 +216,12 @@ export default function TruthOrSparkScreen() {
           showTurnToast(both ? 'Оба скипнули' : `${who} скипнул — твой ход`);
           void (both ? juice.sync() : juice.miss());
         } else {
-          showTurnToast(`${who} передал ход`);
-          void juice.hit();
+          const both = Date.now() - lastNextAt.current < 2200;
+          const racing = both && Date.now() - lastNextAt.current < 900;
+          showTurnToast(
+            racing ? 'Оба на карте' : both ? 'Оба листают' : `${who} передал ход`,
+          );
+          void (racing || both ? juice.perfect() : juice.hit());
         }
       }
     });
@@ -262,6 +267,7 @@ export default function TruthOrSparkScreen() {
       showTurnToast('Колода по кругу');
       void juice.sync();
     }
+    lastNextAt.current = Date.now();
     setIndex(ni);
     setTurnMine(false);
     broadcast(ni, filter, skips, wrapped ? { deckWrap: true } : undefined);

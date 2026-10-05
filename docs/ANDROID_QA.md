@@ -54,7 +54,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 - [ ] Sky Claim: очки · miss/decoy/combo · оба ловят · оба на очках · партнёр впереди/гонка · оба miss/decoy · оба combo · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Heartbeat: sync! dual · оба miss · оба perfect/great · оба на очках · партнёр впереди/гонка · оба финиш · оба догоняют · оба rematch · presence · peer_left  
-- [ ] Truth Or Spark: named turn · skip · оба скипнули · оба soft/spicy · filter · оба колода · оба новая колода · peer_left  
+- [ ] Truth Or Spark: named turn · skip · оба скипнули · оба листают/на карте · оба soft/spicy · filter · оба колода · оба новая колода · peer_left  
 - [ ] Signal Draw: first stroke · рисуем вместе · оба на штрихах · оба кисть/clear/undo · brush · 5s · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Orbit Catch: miss/align · sync-align · оба catch · оба на очках · партнёр впереди/гонка · оба miss · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Soft Duel: tap grade · оба PERFECT/GOOD/OK · оба на очках · оба рано · оба ЖМИ · оба ждут · наравне · гонка · оба финиш · оба догоняют · arm · sync-finish · оба rematch · late-start · peer_left  
