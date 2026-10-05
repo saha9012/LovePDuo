@@ -39,6 +39,8 @@ export default function HomeScreen() {
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
   const memorySeen = React.useRef(lastMemory?.id ?? '');
   const roomSizeSeen = React.useRef(pair?.roomSize ?? 0);
+  const lastMoodMatchAt = React.useRef(0);
+  const lastMoodMatch = React.useRef<string | null>(null);
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -178,20 +180,30 @@ export default function HomeScreen() {
         if (payload?.mood === 'night' || payload?.mood === 'warm' || payload?.mood === 'rain') {
           const same = pair?.mood === payload.mood;
           setMood(payload.mood);
+          const again =
+            same &&
+            lastMoodMatch.current === payload.mood &&
+            Date.now() - lastMoodMatchAt.current < 3200;
+          if (same) {
+            lastMoodMatchAt.current = Date.now();
+            lastMoodMatch.current = payload.mood;
+          }
           setRoomToast(
-            same
-              ? payload.mood === 'night'
-                ? 'Оба: Ночь'
-                : payload.mood === 'warm'
-                  ? 'Оба: Тёплый свет'
-                  : 'Оба: Дождь'
-              : payload.mood === 'night'
-                ? 'Партнёр: Ночь'
-                : payload.mood === 'warm'
-                  ? 'Партнёр: Тёплый свет'
-                  : 'Партнёр: Дождь',
+            again
+              ? 'Оба в настроении'
+              : same
+                ? payload.mood === 'night'
+                  ? 'Оба: Ночь'
+                  : payload.mood === 'warm'
+                    ? 'Оба: Тёплый свет'
+                    : 'Оба: Дождь'
+                : payload.mood === 'night'
+                  ? 'Партнёр: Ночь'
+                  : payload.mood === 'warm'
+                    ? 'Партнёр: Тёплый свет'
+                    : 'Партнёр: Дождь',
           );
-          void (same ? juice.perfect() : juice.card());
+          void (again || same ? juice.perfect() : juice.card());
           setTimeout(() => setRoomToast(null), 1600);
         }
       }
@@ -223,22 +235,30 @@ export default function HomeScreen() {
 
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
     const same = pair?.mood === m;
+    const again =
+      same && lastMoodMatch.current === m && Date.now() - lastMoodMatchAt.current < 3200;
     setMood(m);
     pairRealtime.sendGame('mood', { mood: m });
+    if (same) {
+      lastMoodMatchAt.current = Date.now();
+      lastMoodMatch.current = m;
+    }
     setRoomToast(
-      same
-        ? m === 'night'
-          ? 'Оба: Ночь'
-          : m === 'warm'
-            ? 'Оба: Тёплый свет'
-            : 'Оба: Дождь'
-        : m === 'night'
-          ? 'Настроение: Ночь'
-          : m === 'warm'
-            ? 'Настроение: Тёплый свет'
-            : 'Настроение: Дождь',
+      again
+        ? 'Оба в настроении'
+        : same
+          ? m === 'night'
+            ? 'Оба: Ночь'
+            : m === 'warm'
+              ? 'Оба: Тёплый свет'
+              : 'Оба: Дождь'
+          : m === 'night'
+            ? 'Настроение: Ночь'
+            : m === 'warm'
+              ? 'Настроение: Тёплый свет'
+              : 'Настроение: Дождь',
     );
-    void (same ? juice.perfect() : juice.hit());
+    void (again || same ? juice.perfect() : juice.hit());
     setTimeout(() => setRoomToast(null), 1400);
   };
 

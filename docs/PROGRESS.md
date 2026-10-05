@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Lobby «Оба READY» · Home «Оба в настроении» · Music/Together  
 - [x] Music «Оба чувствуют» · Together «Оба на буквах» · Orbit/HB lead  
 - [x] Orbit/HB я впереди/гонка · Draw/Sky lead · Soft lead  
-- [x] Draw/Sky я впереди/гонка · Soft lead · ToS листают  
 
 ## Catalog
 

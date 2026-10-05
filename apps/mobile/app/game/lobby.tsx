@@ -169,8 +169,9 @@ export default function GameLobbyScreen() {
         if (typeof payload?.ready === 'boolean' && payload.userId !== user.id) {
           setReadyPeer(payload.ready);
           if (payload.ready) {
-            void juice.sync();
-            showCancelToast('Партнёр READY');
+            const both = readyMeRef.current;
+            void (both ? juice.perfect() : juice.sync());
+            showCancelToast(both ? 'Оба READY' : 'Партнёр READY');
           } else {
             const wasCounting = countdownRef.current != null;
             const both = !readyMeRef.current;
@@ -287,6 +288,10 @@ export default function GameLobbyScreen() {
     setReadyMe(true);
     juice.hit();
     pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+    if (readyPeer) {
+      showCancelToast('Оба READY');
+      void juice.perfect();
+    }
   };
 
   const onUnready = () => {
