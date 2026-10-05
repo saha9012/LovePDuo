@@ -101,7 +101,11 @@ export default function MusicScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        showNote('Партнёр снова на связи');
+        const racing =
+          noteRef.current === 'Партнёр ушёл с Music' ||
+          noteRef.current === 'Партнёр снова на связи' ||
+          noteRef.current === 'Оба снова на Music';
+        showNote(racing ? 'Оба снова на Music' : 'Партнёр снова на связи');
         void juice.sync();
         if (user?.id) {
           lastHelloAt.current = Date.now();
@@ -115,7 +119,6 @@ export default function MusicScreen() {
       if (msg.type === 'game' && msg.gameId === 'music-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId && payload.fromId === user?.id) return;
-        const both = Date.now() - lastHelloAt.current < 2500;
         const both = Date.now() - lastHelloAt.current < 2500;
         showNote(
           both

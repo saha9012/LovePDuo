@@ -105,7 +105,11 @@ export default function SoftDuelScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setFlash('Партнёр снова в комнате');
+        const racing =
+          flashRef.current === 'Партнёр вышел' ||
+          flashRef.current === 'Партнёр снова в комнате' ||
+          flashRef.current === 'Оба снова в комнате';
+        setFlash(racing ? 'Оба снова в комнате' : 'Партнёр снова в комнате');
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });

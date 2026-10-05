@@ -133,10 +133,13 @@ export default function HomeScreen() {
     const size = typeof pair?.roomSize === 'number' ? pair.roomSize : 0;
     const prev = roomSizeSeen.current;
     if (prev > 0 && prev < 2 && size >= 2) {
+      const afterLeave =
+        roomToastRef.current === 'Партнёр вышел из комнаты' ||
+        roomToastRef.current === 'Оба снова дома';
       const racing =
         roomToastRef.current === 'Оба в комнате' ||
         roomToastRef.current === 'Оба дома';
-      setRoomToast(racing ? 'Оба дома' : 'Оба в комнате');
+      setRoomToast(afterLeave ? 'Оба снова дома' : racing ? 'Оба дома' : 'Оба в комнате');
       void juice.perfect();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
@@ -156,7 +159,11 @@ export default function HomeScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_joined') {
         const name = typeof msg.name === 'string' && msg.name ? msg.name : 'Партнёр';
-        setRoomToast(`${name} вошёл`);
+        const racing =
+          roomToastRef.current === 'Партнёр вышел из комнаты' ||
+          roomToastRef.current === 'Оба снова дома' ||
+          roomToastRef.current?.endsWith(' вошёл');
+        setRoomToast(racing ? 'Оба снова дома' : `${name} вошёл`);
         void juice.sync();
         setTimeout(() => setRoomToast(null), 1800);
         return;
