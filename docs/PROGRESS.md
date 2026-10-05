@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] HB/Draw «оба догоняют» · Sky/Orbit dual late-start · Soft late-start  
 - [x] Sky/Orbit «оба догоняют» · Soft dual late-start · ANDROID_QA leave  
 - [x] Soft «Оба догоняют» late-start · ANDROID_QA leave · Catalog memory  
-- [x] ANDROID_QA leave toasts · Catalog memory Оба финиш · Play dual peek  
 
 ## Catalog
 

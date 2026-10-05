@@ -74,6 +74,7 @@ export default function SignalDrawScreen() {
   const lastUndoAt = useRef(0);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lateStartAt = useRef(0);
   const brushRef = useRef<'fine' | 'bold'>('fine');
 
   const myColor = colors.accentAmber;
@@ -155,6 +156,10 @@ export default function SignalDrawScreen() {
           showToast(both ? 'Оба в игре' : 'Партнёр в игре');
           void (both ? juice.perfect() : juice.sync());
           return;
+        }
+        if (payload.phase === 'start' && Date.now() - lateStartAt.current < 2500) {
+          showToast('Оба догоняют');
+          void juice.perfect();
         }
       }
       if (payload.rematch) {
@@ -296,6 +301,7 @@ export default function SignalDrawScreen() {
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
+      lateStartAt.current = Date.now();
       showToast('Догоняем старт');
       void juice.hit();
       const id = setTimeout(() => startRef.current(), delay);

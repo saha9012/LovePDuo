@@ -62,6 +62,7 @@ export default function HeartbeatScreen() {
   const lastPartnerTapMs = useRef<number | null>(null);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lateStartAt = useRef(0);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
@@ -155,6 +156,12 @@ export default function HeartbeatScreen() {
       if (payload?.phase === 'start') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        if (Date.now() - lateStartAt.current < 2500) {
+          setPeerNote('оба догоняют');
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+          void juice.perfect();
+        }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setPartnerLive(true);
@@ -294,6 +301,7 @@ export default function HeartbeatScreen() {
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
+      lateStartAt.current = Date.now();
       setPeerNote('догоняем');
       if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
       peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
