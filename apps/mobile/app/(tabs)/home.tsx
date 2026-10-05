@@ -168,15 +168,18 @@ export default function HomeScreen() {
       if (msg.type === 'game' && msg.gameId === 'mood') {
         const payload = msg.payload as { mood?: 'night' | 'warm' | 'rain' } | undefined;
         if (payload?.mood === 'night' || payload?.mood === 'warm' || payload?.mood === 'rain') {
+          const same = pair?.mood === payload.mood;
           setMood(payload.mood);
           setRoomToast(
-            payload.mood === 'night'
-              ? 'Партнёр: Ночь'
-              : payload.mood === 'warm'
-                ? 'Партнёр: Тёплый свет'
-                : 'Партнёр: Дождь',
+            same
+              ? 'Синхрон настроения'
+              : payload.mood === 'night'
+                ? 'Партнёр: Ночь'
+                : payload.mood === 'warm'
+                  ? 'Партнёр: Тёплый свет'
+                  : 'Партнёр: Дождь',
           );
-          void juice.card();
+          void (same ? juice.perfect() : juice.card());
           setTimeout(() => setRoomToast(null), 1600);
         }
       }
@@ -184,7 +187,7 @@ export default function HomeScreen() {
     return () => {
       off();
     };
-  }, [setMood, user?.id]);
+  }, [setMood, user?.id, pair?.mood]);
 
   useEffect(() => {
     if (!warmthPulse) return;
@@ -206,9 +209,14 @@ export default function HomeScreen() {
   }));
 
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
+    const same = pair?.mood === m;
     setMood(m);
     pairRealtime.sendGame('mood', { mood: m });
-    void juice.hit();
+    setRoomToast(
+      m === 'night' ? 'Настроение: Ночь' : m === 'warm' ? 'Настроение: Тёплый свет' : 'Настроение: Дождь',
+    );
+    void (same ? juice.sync() : juice.hit());
+    setTimeout(() => setRoomToast(null), 1400);
   };
 
   return (

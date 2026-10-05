@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Home mood sync-toast · Together candle sync-light · shared-start 3·2·1  
 - [x] Together candle sync-light · named spark · shared-start 3·2·1  
 - [x] Shared-start 3·2·1 across Soft/Sky/HB/Orbit/Draw/Veil  
-- [x] Soft shared-start 3·2·1 flash · ANDROID_QA HB/Orbit sync  
 
 ## Catalog
 
