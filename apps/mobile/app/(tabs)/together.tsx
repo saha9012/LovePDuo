@@ -115,7 +115,9 @@ export default function TogetherScreen() {
         const payload = msg.payload as TinyNote | undefined;
         if (payload?.id && payload.text) {
           receiveNote(payload);
-          showPeer('Новая заметка');
+          const snip =
+            payload.text.length > 42 ? `${payload.text.slice(0, 40)}…` : payload.text;
+          showPeer(`${payload.from ?? 'Партнёр'}: ${snip}`);
           void juice.card();
         }
       }

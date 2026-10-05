@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,14 +9,21 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { track } from '../../src/analytics/track';
+import { juice } from '../../src/audio/juice';
 
 export default function CreatePairScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { createPair, signIn, user } = useApp();
+  const { createPair, signIn, user, pair } = useApp();
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (pair?.code) {
+      router.replace('/(tabs)/home');
+    }
+  }, [pair?.code, router]);
 
   const onCreate = async () => {
     setLoading(true);
@@ -24,6 +31,7 @@ export default function CreatePairScreen() {
       const profile = await signIn(displayName || 'Ты');
       await createPair(name, profile.id);
       track('pair_created');
+      void juice.postMatch();
       router.replace('/pair/success');
     } finally {
       setLoading(false);
@@ -39,6 +47,11 @@ export default function CreatePairScreen() {
           <Text style={typography.body}>
             Создай код. Второй телефон входит по нему — и комната загорается.
           </Text>
+          {pair ? (
+            <Text style={styles.linked}>
+              Уже есть пара {pair.code}. Открой комнату или отвяжи в Profile.
+            </Text>
+          ) : null}
           <Text style={styles.label}>Твоё имя</Text>
           <TextInput
             value={displayName}
@@ -57,7 +70,11 @@ export default function CreatePairScreen() {
           />
         </View>
         <View style={styles.actions}>
-          <LpdButton label="Создать код" loading={loading} onPress={() => void onCreate()} />
+          {pair ? (
+            <LpdButton label="В комнату" onPress={() => router.replace('/(tabs)/home')} />
+          ) : (
+            <LpdButton label="Создать код" loading={loading} onPress={() => void onCreate()} />
+          )}
           <LpdButton
             label="У меня уже есть код"
             variant="ghost"
@@ -77,6 +94,12 @@ const styles = StyleSheet.create({
   },
   block: {
     gap: spacing.md,
+  },
+  linked: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.accentRose,
   },
   label: {
     marginTop: spacing.sm,

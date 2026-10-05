@@ -66,6 +66,18 @@ export default function WelcomeScreen() {
     }
   };
 
+  const goPlay = async () => {
+    void juice.hit();
+    await ensureUser();
+    router.replace('/(tabs)/play');
+  };
+
+  const goJoin = async () => {
+    void juice.card();
+    await ensureUser();
+    router.push('/pair/join');
+  };
+
   return (
     <LpdBackground mood="night">
       <View style={[styles.root, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 24 }]}>
@@ -78,7 +90,7 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.hero, contentStyle]}>
-          <Text style={styles.kicker}>LPD online</Text>
+          <Text style={styles.kicker}>{pair ? 'Пара на связи' : 'LPD online'}</Text>
           <BrandMark size="hero" showTagline />
           <Text style={[typography.body, styles.sub]}>
             Тёмная игровая зона для двоих. Янтарь, пыльная роза и раунды с двух телефонов.
@@ -97,19 +109,22 @@ export default function WelcomeScreen() {
             label={pair ? `В комнату «${pair.name}»` : 'Войти в комнату'}
             onPress={() => void enter()}
           />
-          <LpdButton
-            label="У меня есть код пары"
-            variant="ghost"
-            onPress={async () => {
-              void juice.card();
-              await ensureUser();
-              router.push('/pair/join');
-            }}
-          />
+          {pair ? (
+            <>
+              <LpdButton label="Играть вдвоём" variant="ghost" onPress={() => void goPlay()} />
+              <LpdButton
+                label="Войти по другому коду"
+                variant="ghost"
+                onPress={() => void goJoin()}
+              />
+            </>
+          ) : (
+            <LpdButton label="У меня есть код пары" variant="ghost" onPress={() => void goJoin()} />
+          )}
           <Text style={styles.foot}>
             {pair
               ? `Код ${pair.code} сохранён. Можно жечь дальше.`
-              : 'Пара в сборе. Можно жечь.'}
+              : 'Создай пару или войди по коду — два телефона, одна комната.'}
           </Text>
         </Animated.View>
       </View>

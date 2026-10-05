@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Truth Or Spark turn toast · Signal Draw brush juice · Profile scroll + invite  
-- [x] Live miss flashes · Word Veil typing · room rename toast  
-- [x] Join/Music/lobby/Together sync (prior)  
+- [x] Welcome reconnect CTAs · create-pair guard · Soft Duel partner round HUD  
+- [x] Together note snippet toast · ToS turn toast · Profile invite  
+- [x] Live miss flashes · Word Veil typing · rematch sync (prior)  
 
 ## Catalog
 

@@ -40,6 +40,7 @@ export default function SoftDuelScreen() {
   const [flash, setFlash] = useState('');
   const [armed, setArmed] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [partnerRound, setPartnerRound] = useState(0);
   const [matchSeed, setMatchSeed] = useState(seed);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
@@ -65,10 +66,12 @@ export default function SoftDuelScreen() {
         rematch?: boolean;
         seed?: number;
         early?: boolean;
+        round?: number;
       } | undefined;
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
+        setPartnerRound(0);
         startRef.current();
         return;
       }
@@ -87,6 +90,7 @@ export default function SoftDuelScreen() {
         setPartnerScore(payload.score);
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        if (typeof payload.round === 'number') setPartnerRound(payload.round);
         setPartnerFlash(true);
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),
@@ -134,6 +138,7 @@ export default function SoftDuelScreen() {
     myScoreRef.current = 0;
     setMyScore(0);
     setPartnerScore(0);
+    setPartnerRound(0);
     partnerLiveRef.current = false;
     setPartnerLive(false);
     setPhase('playing');
@@ -171,7 +176,11 @@ export default function SoftDuelScreen() {
       void juice.miss();
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
-      pairRealtime.sendGame('soft-duel', { early: true, score: myScoreRef.current });
+      pairRealtime.sendGame('soft-duel', {
+        early: true,
+        score: myScoreRef.current,
+        round: roundRef.current,
+      });
       return;
     }
     const delta = now - armAt.current;
@@ -182,7 +191,11 @@ export default function SoftDuelScreen() {
     setArmed(false);
     flashScale.value = withSpring(1.2, { damping: 10 });
     void (pts === 3 ? juice.perfect() : juice.hit());
-    pairRealtime.sendGame('soft-duel', { score: myScoreRef.current, tap: delta });
+    pairRealtime.sendGame('soft-duel', {
+      score: myScoreRef.current,
+      tap: delta,
+      round: roundRef.current,
+    });
     setTimeout(() => nextRound(roundRef.current + 1), 420);
   };
 
@@ -242,7 +255,7 @@ export default function SoftDuelScreen() {
                 <Animated.Text
                   style={[styles.partnerHud, partnerFlash && styles.partnerHudHot, partnerStyle]}
                 >
-                  партнёр {partnerScore} · live
+                  партнёр {partnerScore} · r{Math.min(ROUNDS, partnerRound + 1)} · live
                 </Animated.Text>
               ) : (
                 <Text style={styles.meta}>партнёр offline</Text>
