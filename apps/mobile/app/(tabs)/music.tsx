@@ -132,7 +132,14 @@ export default function MusicScreen() {
         const payload = msg.payload as { title?: string | null; from?: string } | undefined;
         if (payload?.title) {
           setPartnerNowPlaying(`${payload.from ?? 'Партнёр'}: ${payload.title}`);
-          void juice.hit();
+          const mine = tracks.find((t) => t.id === nowPlayingId);
+          const both = Boolean(mine && mine.title === payload.title);
+          showNote(
+            both
+              ? `Оба слушают «${payload.title}»`
+              : `${payload.from ?? 'Партнёр'}: ${payload.title}`,
+          );
+          void (both ? juice.perfect() : juice.hit());
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
           const both = Date.now() - lastStopAt.current < 2200;
@@ -220,7 +227,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId]);
 
   useEffect(() => {
     if (!pair || !user) return;
