@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Home/Profile room+name dual · Play ждут игру · finish финише  
 - [x] Play «Оба ждут игру» · finish на финише · warmth  
 - [x] Catalog «Оба на финише» escalate · warmth · rematch снова  
-- [x] Home/Together «Оба в тепле» · rematch снова · Music трек  
 
 ## Catalog
 

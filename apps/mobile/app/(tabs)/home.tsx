@@ -35,6 +35,7 @@ export default function HomeScreen() {
   const warmthSeen = React.useRef(0);
   const warmthSentAt = React.useRef(0);
   const warmthToastRef = React.useRef<string | null>(null);
+  const roomToastRef = React.useRef<string | null>(null);
   const nameSeen = React.useRef(pair?.name ?? '');
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
@@ -42,6 +43,10 @@ export default function HomeScreen() {
   const roomSizeSeen = React.useRef(pair?.roomSize ?? 0);
   const lastMoodMatchAt = React.useRef(0);
   const lastMoodMatch = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    roomToastRef.current = roomToast;
+  }, [roomToast]);
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -172,6 +177,48 @@ export default function HomeScreen() {
           setPeerLobby({ game: payload.game, title: payload.title });
           setRoomToast(`Партнёр в лобби: ${payload.title}`);
           void juice.hit();
+          setTimeout(() => setRoomToast(null), 1800);
+        }
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'room-name') {
+        const payload = msg.payload as { name?: string } | undefined;
+        if (typeof payload?.name === 'string' && payload.name.trim()) {
+          const next = payload.name.trim();
+          const both = pair?.name === next;
+          const racing =
+            both &&
+            (roomToastRef.current === 'Оба назвали комнату' ||
+              roomToastRef.current?.startsWith('Комната:'));
+          setRoomToast(
+            racing
+              ? 'Оба в одной комнате'
+              : both
+                ? 'Оба назвали комнату'
+                : `Комната: ${next}`,
+          );
+          void (both ? juice.perfect() : juice.card());
+          setTimeout(() => setRoomToast(null), 1800);
+        }
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'display-name') {
+        const payload = msg.payload as { name?: string; fromId?: string } | undefined;
+        if (
+          payload?.fromId &&
+          payload.fromId !== user?.id &&
+          typeof payload.name === 'string' &&
+          payload.name.trim()
+        ) {
+          const racing =
+            roomToastRef.current?.startsWith('Партнёр теперь:') ||
+            roomToastRef.current === 'Оба обновили имена';
+          setRoomToast(
+            racing
+              ? 'Оба обновили имена'
+              : `Партнёр теперь: ${payload.name.trim()}`,
+          );
+          void (racing ? juice.perfect() : juice.card());
           setTimeout(() => setRoomToast(null), 1800);
         }
         return;

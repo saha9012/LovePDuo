@@ -135,12 +135,15 @@ export default function ProfileScreen() {
             variant="ghost"
             onPress={() => {
               const next = roomDraft.trim() || 'Наша комната';
+              const both = pair?.name === next;
               setPairName(next);
               setRoomSaved(true);
-              setWsToast('Имя комнаты сохранено');
+              setWsToast(
+                both ? 'Оба назвали комнату' : 'Имя комнаты сохранено',
+              );
               setTimeout(() => setWsToast(null), 1600);
               pairRealtime.sendGame('room-name', { name: next });
-              void juice.card();
+              void (both ? juice.perfect() : juice.card());
             }}
           />
           {pair?.code ? (
