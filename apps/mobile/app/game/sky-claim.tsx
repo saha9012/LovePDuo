@@ -244,6 +244,10 @@ export default function SkyClaimScreen() {
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
+    if (delay < 400) {
+      bumpPeerNote('догоняем');
+      void juice.hit();
+    }
     const id = setTimeout(() => startRef.current(), delay);
     return () => clearTimeout(id);
   }, [params.startAt, params.solo]);

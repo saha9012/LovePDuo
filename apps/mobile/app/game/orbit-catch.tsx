@@ -225,7 +225,12 @@ export default function OrbitCatchScreen() {
     if (params.solo === '1') return;
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
-    const id = setTimeout(() => startRef.current(), Math.max(0, at - Date.now()));
+    const delay = Math.max(0, at - Date.now());
+    if (delay < 400) {
+      bumpPeerNote('догоняем');
+      void juice.hit();
+    }
+    const id = setTimeout(() => startRef.current(), delay);
     return () => clearTimeout(id);
   }, [params.startAt, params.solo]);
 

@@ -231,7 +231,13 @@ export default function WordVeilScreen() {
     if (params.solo === '1') return;
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
-    const id = setTimeout(() => setPhase('playing'), Math.max(0, at - Date.now()));
+    const delay = Math.max(0, at - Date.now());
+    if (delay < 400) {
+      setPresenceHint('Догоняем старт');
+      void juice.hit();
+      setTimeout(() => setPresenceHint(null), 1400);
+    }
+    const id = setTimeout(() => setPhase('playing'), delay);
     return () => clearTimeout(id);
   }, [params.startAt, params.solo]);
 

@@ -256,6 +256,12 @@ export default function HeartbeatScreen() {
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
+    if (delay < 400) {
+      setPeerNote('догоняем');
+      if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+      peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+      void juice.hit();
+    }
     const id = setTimeout(() => startRef.current(), delay);
     return () => clearTimeout(id);
   }, [params.startAt, params.solo]);
