@@ -60,13 +60,13 @@ def base(title: str, sub: str, accent=AMBER, show_phones=False):
 
 
 frames = [
-    ("01_welcome.png", "Тёмная зона для двоих", "Янтарь · пыльная роза · два телефона", AMBER, True),
-    ("02_pair.png", "Пара связана", "Код комнаты · cinematic pair link", ROSE, True),
-    ("03_home.png", "Комната пары", "Presence heartbeat · тепло · mood ночи", AMBER, False),
-    ("04_sky_claim.png", "Sky Claim", "Лови огни. Комбо. Реванш вдвоём.", AMBER, False),
-    ("05_heartbeat.png", "Heartbeat Tap", "Ритм вдвоём · sync bonus", ROSE, False),
-    ("06_music.png", "Полка пары", "Upload остаётся в LPD · Spotify meta", AMBER, False),
-    ("07_candle.png", "Together", "Свеча · заметки · искры", ROSE, False),
+    ("01_welcome.png", "Тёмная зона для двоих", "Янтарь · пыльная роза · reconnect sync", AMBER, True),
+    ("02_pair.png", "Пара связана", "Код · peer toast · cinematic pair link", ROSE, True),
+    ("03_home.png", "Комната пары", "Presence · peer lobby · warmth · mood", AMBER, False),
+    ("04_sky_claim.png", "Sky Claim", "Live score · combo notes · finish sync", AMBER, False),
+    ("05_heartbeat.png", "Heartbeat Tap", "Miss HUD · sync bonus · rematch seed", ROSE, False),
+    ("06_music.png", "Полка пары", "Upload cards dual · Spotify stub sync", AMBER, False),
+    ("07_candle.png", "Together", "Свеча 15s sync · notes · hello", ROSE, False),
 ]
 
 for name, title, sub, acc, phones in frames:

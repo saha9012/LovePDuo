@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Lobby WS reconnect toast · Pair success peer arrival  
-- [x] Music track cards sync · Soft rematch flash  
+- [x] Store placeholder frames dual-feel captions · Lobby WS toast  
+- [x] Pair success peer arrival · Music track cards sync  
 
 ## Catalog
 
@@ -15,7 +15,7 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 
 ## Still open (Ideal Bar not closed)
 
-1. Live device screenshot replace (`docs/STORE_SHOTS.md`)  
+1. Live device screenshot replace (`docs/STORE_SHOTS.md`) — placeholders refreshed  
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream — stubs/cards sync dual already  
 4. Optional Skia canvas for Signal Draw  
