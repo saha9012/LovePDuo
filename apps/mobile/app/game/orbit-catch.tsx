@@ -57,6 +57,7 @@ export default function OrbitCatchScreen() {
   const ringPulse = useSharedValue(1);
   const partnerScale = useSharedValue(1);
   const lastAlignSend = useRef(0);
+  const alignedRef = useRef(false);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -161,12 +162,12 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (payload?.align) {
-          bumpPeerNote('align');
+          bumpPeerNote(alignedRef.current ? 'sync align' : 'align');
           ringPulse.value = withSequence(
             withTiming(1.08, { duration: 90 }),
             withTiming(1, { duration: 220 }),
           );
-          void juice.hit();
+          void (alignedRef.current ? juice.perfect() : juice.hit());
           return;
         }
         if (typeof payload?.caught === 'number') {
@@ -273,7 +274,9 @@ export default function OrbitCatchScreen() {
   useEffect(() => {
     if (phase !== 'playing') return;
     const diff = Math.abs(Math.sin(angle - orbAngle));
-    setAligned(diff < 0.22);
+    const next = diff < 0.22;
+    alignedRef.current = next;
+    setAligned(next);
   }, [angle, orbAngle, phase]);
 
   useEffect(() => {
