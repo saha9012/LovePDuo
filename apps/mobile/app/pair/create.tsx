@@ -21,6 +21,7 @@ export default function CreatePairScreen() {
 
   useEffect(() => {
     if (pair?.code) {
+      void juice.sync();
       router.replace('/(tabs)/home');
     }
   }, [pair?.code, router]);
@@ -71,7 +72,13 @@ export default function CreatePairScreen() {
         </View>
         <View style={styles.actions}>
           {pair ? (
-            <LpdButton label="В комнату" onPress={() => router.replace('/(tabs)/home')} />
+            <LpdButton
+              label="В комнату"
+              onPress={() => {
+                void juice.warmth();
+                router.replace('/(tabs)/home');
+              }}
+            />
           ) : (
             <LpdButton label="Создать код" loading={loading} onPress={() => void onCreate()} />
           )}

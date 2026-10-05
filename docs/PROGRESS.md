@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Store placeholder frames dual-feel captions · Lobby WS toast  
-- [x] Pair success peer arrival · Music track cards sync  
+- [x] Join/create already-paired juice · store dual-feel frames  
+- [x] Lobby WS toast · Pair success peer arrival  
 
 ## Catalog
 

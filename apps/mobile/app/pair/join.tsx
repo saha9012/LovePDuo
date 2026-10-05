@@ -26,6 +26,10 @@ export default function JoinPairScreen() {
     setDisplayName(user?.displayName ?? '');
   }, [user?.displayName]);
 
+  useEffect(() => {
+    if (pair?.code) void juice.sync();
+  }, [pair?.code]);
+
   const onJoin = async (nextCode = code) => {
     if (loading) return;
     setLoading(true);
@@ -79,7 +83,13 @@ export default function JoinPairScreen() {
         </View>
         <View style={styles.actions}>
           {pair?.code ? (
-            <LpdButton label="В комнату" onPress={() => router.replace('/(tabs)/home')} />
+            <LpdButton
+              label="В комнату"
+              onPress={() => {
+                void juice.warmth();
+                router.replace('/(tabs)/home');
+              }}
+            />
           ) : null}
           <LpdButton
             label={pair?.code ? 'Сменить пару по коду' : 'Войти'}
