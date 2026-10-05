@@ -6,11 +6,10 @@
 
 ## Latest
 
-- [x] Home room size from WS · partner hydrate from roster  
-- [x] Sky Claim / Heartbeat partner score flash  
-- [x] Truth Or Spark deck progress + reshuffle  
-- [x] Word Veil wait for partner · Soft Duel live HUD · copy code  
-- [x] Profile rename · Signal Draw undo · Memories persist  
+- [x] Music peer now-playing pulse · empty playlist hint  
+- [x] Candle finish → memory · Lobby peer Ready SFX/pulse  
+- [x] CodeInput paste / OTP autofill hints  
+- [x] Room size · partner score flashes · ToS progress · Word Veil wait  
 
 ## Catalog
 
