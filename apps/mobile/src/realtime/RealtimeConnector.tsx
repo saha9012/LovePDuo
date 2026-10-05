@@ -44,11 +44,9 @@ export function RealtimeConnector() {
         const peer = peers?.find((p) => p.userId && p.userId !== user.id && p.name);
         if (peer?.name) {
           setPartnerInfo(peer.name, 'online');
-          sendWarmth();
         }
       }
       if (msg.type === 'peer_joined') {
-        sendWarmth();
         void juice.sync();
         if (typeof msg.name === 'string' && msg.name) {
           setPartnerInfo(msg.name, 'online');

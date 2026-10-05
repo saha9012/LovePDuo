@@ -88,6 +88,8 @@ export default function TogetherScreen() {
     if (candleLeft !== 0 || candleLogged.current) return;
     candleLogged.current = true;
     void juice.postMatch();
+    pairRealtime.sendGame('candle', { end: true, left: 0 });
+    showPeer('Свеча догорела');
     addMemory({
       kind: 'candle',
       title: 'Candle',
@@ -110,6 +112,7 @@ export default function TogetherScreen() {
           left?: number;
           start?: boolean;
           blow?: boolean;
+          end?: boolean;
         } | undefined;
         if (payload?.start) {
           candleLogged.current = false;
@@ -123,7 +126,15 @@ export default function TogetherScreen() {
           showPeer('Партнёр погасил свечу');
           void juice.miss();
         }
-        if (typeof payload?.left === 'number') setCandleLeft(payload.left);
+        if (payload?.end) {
+          candleLogged.current = true;
+          setCandleLeft(0);
+          showPeer('Свеча догорела у партнёра');
+          void juice.postMatch();
+        }
+        if (typeof payload?.left === 'number' && !payload?.end && !payload?.blow) {
+          setCandleLeft(payload.left);
+        }
       }
       if (msg.type === 'game' && msg.gameId === 'spark') {
         const payload = msg.payload as { idx?: number } | undefined;

@@ -110,6 +110,30 @@ export default function MusicScreen() {
           void juice.hit();
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
+          setNote(`${payload.from ?? 'Партнёр'} остановил трек`);
+          void juice.miss();
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'playlist-add') {
+        const payload = msg.payload as {
+          playlistId?: string;
+          title?: string;
+          artist?: string;
+          from?: string;
+        } | undefined;
+        if (!payload?.playlistId || !payload.title) return;
+        const match = tracks.find(
+          (t) =>
+            t.title === payload.title &&
+            (payload.artist ? t.artist === payload.artist : true),
+        );
+        if (match) {
+          addTrackToPlaylist(payload.playlistId, match.id);
+          const plName = playlists.find((p) => p.id === payload.playlistId)?.name;
+          setNote(
+            `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
+          );
+          void juice.hit();
         }
       }
       if (msg.type === 'game' && msg.gameId === 'track-react') {
@@ -141,7 +165,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, user?.id, addTrack]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, tracks, user?.id, addTrack, addTrackToPlaylist]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -322,6 +346,8 @@ export default function MusicScreen() {
               setSound(null);
               setNowPlaying(null);
               pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
+              setNote('Остановили — партнёр видит.');
+              void juice.miss();
             }}
           />
         ) : null}
@@ -362,7 +388,13 @@ export default function MusicScreen() {
                     onPress={() => {
                       if (active) {
                         addTrackToPlaylist(active.id, t.id);
-                        setNote(`В «${active.name}».`);
+                        pairRealtime.sendGame('playlist-add', {
+                          playlistId: active.id,
+                          title: t.title,
+                          artist: t.artist,
+                          from: user?.displayName,
+                        });
+                        setNote(`В «${active.name}» — полка у обоих.`);
                         void juice.hit();
                       }
                     }}

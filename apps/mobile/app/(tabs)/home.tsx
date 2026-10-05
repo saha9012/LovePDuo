@@ -37,6 +37,7 @@ export default function HomeScreen() {
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
   const memorySeen = React.useRef(lastMemory?.id ?? '');
+  const roomSizeSeen = React.useRef(pair?.roomSize ?? 0);
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -120,7 +121,27 @@ export default function HomeScreen() {
   }, [pair?.name]);
 
   useEffect(() => {
+    const size = typeof pair?.roomSize === 'number' ? pair.roomSize : 0;
+    const prev = roomSizeSeen.current;
+    if (prev > 0 && prev < 2 && size >= 2) {
+      setRoomToast('Партнёр вошёл в комнату');
+      void juice.sync();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      roomSizeSeen.current = size;
+      return () => clearTimeout(t);
+    }
+    roomSizeSeen.current = size;
+  }, [pair?.roomSize]);
+
+  useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_joined') {
+        const name = typeof msg.name === 'string' && msg.name ? msg.name : 'Партнёр';
+        setRoomToast(`${name} вошёл`);
+        void juice.sync();
+        setTimeout(() => setRoomToast(null), 1800);
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'play-peek') {
         const payload = msg.payload as {
           game?: string;

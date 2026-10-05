@@ -47,7 +47,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 1. Телефон A: создать пару → код  
 2. Телефон B: join по коду (или `lovepduo://join/CODE`)  
-3. Home: оба online, Warmth доходит, meta показывает «в комнате 2»  
+3. Home: оба online · toast «вошёл» (не warmth) · Warmth отдельно · meta «в комнате 2»  
 4. Play → Lobby → оба Ready (SFX) → countdown → общий seed
 
 ## 5. Smoke checklist
@@ -62,9 +62,10 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Lobby: Ready toast · cancel mid-count · peer_left · peek «партнёр тоже здесь»  
 - [ ] Play: peer-lobby banner → one-tap join  
 - [ ] Welcome reconnect · Profile invite deep link · partner rename toast  
-- [ ] Music: now-playing juice · playlist switch toast · reaction sync  
-- [ ] Together: candle · spark · note · warmth receive toast  
-- [ ] Home: warmth · mood toast · presence online/away · room size 2  
+- [ ] Music: now-playing juice · stop toast · playlist switch · shelf + sync · reaction sync  
+- [ ] Together: candle start/blow/end · spark · note · warmth receive toast  
+- [ ] Home: warmth · peer-join toast · mood toast · presence online/away · room size 2
+- [ ] Lobby: peer_left / unready toast · Ready rebroadcast after WS reconnect  
 
 ## Web dual (без телефонов)
 

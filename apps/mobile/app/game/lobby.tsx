@@ -44,6 +44,7 @@ export default function GameLobbyScreen() {
   const [cancelToast, setCancelToast] = useState<string | null>(null);
   const startSent = useRef(false);
   const countdownRef = useRef<number | null>(null);
+  const readyMeRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasWsOnline = useRef(pairRealtime.connected);
   const countScale = useSharedValue(1);
@@ -66,18 +67,25 @@ export default function GameLobbyScreen() {
   }, [countdown]);
 
   useEffect(() => {
+    readyMeRef.current = readyMe;
+  }, [readyMe]);
+
+  useEffect(() => {
     return pairRealtime.onStatus((online) => {
       setWsOnline(online);
       if (online && !wasWsOnline.current) {
         showCancelToast('WS online');
         void juice.sync();
+        if (readyMeRef.current && user?.id) {
+          pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+        }
       } else if (!online && wasWsOnline.current) {
         showCancelToast('WS offline…');
         void juice.miss();
       }
       wasWsOnline.current = online;
     });
-  }, []);
+  }, [gameId, user?.id]);
 
   useEffect(() => {
     if (!readyPeer) return;
@@ -113,7 +121,9 @@ export default function GameLobbyScreen() {
         setStartAtMs(null);
         startSent.current = false;
         void juice.miss();
-        if (wasCounting) showCancelToast('Партнёр вышел — старт отменён');
+        showCancelToast(
+          wasCounting ? 'Партнёр вышел — старт отменён' : 'Партнёр вышел из лобби',
+        );
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'play-peek') {
@@ -154,7 +164,11 @@ export default function GameLobbyScreen() {
             setMatchSeed(null);
             setStartAtMs(null);
             startSent.current = false;
-            if (wasCounting) showCancelToast('Партнёр снял Ready — старт отменён');
+            showCancelToast(
+              wasCounting
+                ? 'Партнёр снял Ready — старт отменён'
+                : 'Партнёр снял Ready',
+            );
           }
         }
         if (payload?.start && typeof payload.seed === 'number') {
