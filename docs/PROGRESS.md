@@ -6,15 +6,13 @@
 
 ## Latest
 
-- [x] Soft/Sky/HB/Orbit sync-finish PostMatch · Word Veil finish · Music note fade  
+- [x] Sync-finish PostMatch across Soft/Sky/HB/Orbit/Draw · Veil finish · Music fade  
 - [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
-- [x] Word Veil match juice · peer_joined rejoin hello across games  
-
-## Catalog
-
-Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft Duel · Word Veil
+- [x] Mid-match peer_left / peer_joined rejoin hello across games  
 
 ## Still open (Ideal Bar not closed)
+
+Code dual-feel layer is saturated. Remaining blockers need external input:
 
 1. Live device screenshot replace (`docs/STORE_SHOTS.md`) — placeholders refreshed  
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  

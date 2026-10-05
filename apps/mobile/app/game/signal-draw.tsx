@@ -57,10 +57,13 @@ export default function SignalDrawScreen() {
   const [peerPulse, setPeerPulse] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
+  const [syncFinish, setSyncFinish] = useState(false);
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
   const peerCount = useRef(0);
+  const partnerFinishedRef = useRef(false);
+  const phaseRef = useRef<Phase>('ready');
   const lastSend = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
   const peerPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,6 +74,10 @@ export default function SignalDrawScreen() {
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
   const brushW = brush === 'bold' ? 7 : 4;
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   const bumpPeer = () => {
     setPeerPulse(true);
@@ -147,7 +154,11 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.phase === 'finished') {
-        showToast('Партнёр закончил');
+        partnerFinishedRef.current = true;
+        showToast(
+          phaseRef.current === 'finished' ? 'Синхрон финиш' : 'Партнёр закончил',
+        );
+        if (phaseRef.current === 'finished') setSyncFinish(true);
         void juice.sync();
         if (typeof payload.count === 'number') {
           peerCount.current = payload.count;
@@ -229,6 +240,8 @@ export default function SignalDrawScreen() {
     current.current = null;
     myCount.current = 0;
     peerCount.current = 0;
+    partnerFinishedRef.current = false;
+    setSyncFinish(false);
     setPartnerStrokes(0);
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
@@ -414,6 +427,7 @@ export default function SignalDrawScreen() {
           <PostMatchCard
             title="Общий холст закрыт"
             gameId="signal-draw"
+            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
