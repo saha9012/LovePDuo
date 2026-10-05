@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
@@ -24,7 +24,7 @@ const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
-  const { user, pair, notes, addNote, receiveNote, warmthPulse } = useApp();
+  const { user, pair, notes, addNote, removeNote, receiveNote, warmthPulse } = useApp();
   const { items: memories, clearMemories, addMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
@@ -255,12 +255,20 @@ export default function TogetherScreen() {
           );
           void (sameLen || chatty ? juice.perfect() : juice.card());
         }
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'tiny-note-remove') {
+        const payload = msg.payload as { id?: string; from?: string; fromId?: string } | undefined;
+        if (!payload?.id || payload.fromId === user.id) return;
+        removeNote(payload.id);
+        showPeer(`${payload.from ?? 'Партнёр'} удалил заметку`);
+        void juice.miss();
       }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id, receiveNote]);
+  }, [pair?.code, user?.id, receiveNote, removeNote]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -304,19 +312,34 @@ export default function TogetherScreen() {
   const sendNote = () => {
     const text = draft.trim();
     if (!text) return;
-    addNote(text);
-    const note: TinyNote = {
-      id: `note_${Date.now().toString(36)}`,
-      text: text.slice(0, 180),
-      from: user?.displayName ?? 'Ты',
-      at: Date.now(),
-    };
+    const note = addNote(text);
+    if (!note) return;
     lastNoteSentAt.current = Date.now();
     lastNoteLen.current = note.text.trim().length;
     pairRealtime.sendGame('tiny-note', note);
     setDraft('');
     void juice.card();
     track('note_sent');
+  };
+
+  const deleteNote = (note: TinyNote) => {
+    Alert.alert('Удалить заметку?', `«${note.text.slice(0, 80)}${note.text.length > 80 ? '…' : ''}»`, [
+      { text: 'Отмена', style: 'cancel' },
+      {
+        text: 'Удалить',
+        style: 'destructive',
+        onPress: () => {
+          removeNote(note.id);
+          pairRealtime.sendGame('tiny-note-remove', {
+            id: note.id,
+            from: user?.displayName,
+            fromId: user?.id,
+          });
+          showPeer('Заметку удалили');
+          void juice.miss();
+        },
+      },
+    ]);
   };
 
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
@@ -368,9 +391,19 @@ export default function TogetherScreen() {
           />
           <LpdButton label="Отправить заметку" onPress={sendNote} />
           {notes.slice(0, 6).map((n) => (
-            <Text key={n.id} style={styles.noteItem}>
-              {n.from}: {n.text}
-            </Text>
+            <View key={n.id} style={styles.noteRow}>
+              <Text style={styles.noteItem}>
+                {n.from}: {n.text}
+              </Text>
+              <Pressable
+                onPress={() => deleteNote(n)}
+                style={styles.noteDelete}
+                accessibilityLabel="Удалить заметку"
+                hitSlop={8}
+              >
+                <Text style={styles.noteDeleteLabel}>×</Text>
+              </Pressable>
+            </View>
           ))}
         </View>
 
@@ -518,10 +551,33 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
   },
   noteItem: {
+    flex: 1,
     fontFamily: fonts.ui,
     color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 18,
+  },
+  noteRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+  },
+  noteDelete: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(196,92,110,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(196,92,110,0.12)',
+  },
+  noteDeleteLabel: {
+    color: colors.accentRose,
+    fontFamily: fonts.uiSemi,
+    fontSize: 16,
+    lineHeight: 18,
+    marginTop: -1,
   },
   actions: {
     gap: spacing.sm,

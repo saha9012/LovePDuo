@@ -378,6 +378,19 @@ export default function MusicScreen() {
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
       const next = new Audio.Sound();
       await next.loadAsync({ uri: track.uri });
+      next.setOnPlaybackStatusUpdate((status) => {
+        if (!status.isLoaded || !status.didJustFinish) return;
+        void next.unloadAsync();
+        setSound(null);
+        setNowPlaying(null);
+        lastStopAt.current = Date.now();
+        pairRealtime.sendGame('now-playing', {
+          title: null,
+          from: user?.displayName,
+        });
+        showNote('Трек доиграл.');
+        void juice.miss();
+      });
       await next.playAsync();
       setSound(next);
       setNowPlaying(track.id);

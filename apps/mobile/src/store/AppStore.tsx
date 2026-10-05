@@ -90,7 +90,8 @@ type AppState = {
   setNowPlaying: (id: string | null) => void;
   partnerNowPlaying: string | null;
   setPartnerNowPlaying: (title: string | null) => void;
-  addNote: (text: string) => void;
+  addNote: (text: string) => TinyNote | null;
+  removeNote: (id: string) => void;
   receiveNote: (note: TinyNote) => void;
   setActivePlaylist: (id: string | null) => void;
   addTrackToPlaylist: (playlistId: string, trackId: string) => void;
@@ -343,9 +344,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addNote = useCallback(
-    (text: string) => {
+    (text: string): TinyNote | null => {
       const clean = text.trim();
-      if (!clean) return;
+      if (!clean) return null;
       const note: TinyNote = {
         id: makeId('note'),
         text: clean.slice(0, 180),
@@ -353,9 +354,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         at: Date.now(),
       };
       setNotes((prev) => [note, ...prev].slice(0, 50));
+      return note;
     },
     [user?.displayName],
   );
+
+  const removeNote = useCallback((id: string) => {
+    setNotes((prev) => prev.filter((n) => n.id !== id));
+  }, []);
 
   const receiveNote = useCallback((note: TinyNote) => {
     setNotes((prev) => {
@@ -419,6 +425,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       partnerNowPlaying,
       setPartnerNowPlaying,
       addNote,
+      removeNote,
       receiveNote,
       setActivePlaylist,
       addTrackToPlaylist,
@@ -453,6 +460,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setNowPlaying,
       partnerNowPlaying,
       addNote,
+      removeNote,
       receiveNote,
       setActivePlaylist,
       addTrackToPlaylist,
