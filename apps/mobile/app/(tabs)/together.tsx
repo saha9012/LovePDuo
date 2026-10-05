@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
@@ -19,6 +19,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { track } from '../../src/analytics/track';
+import { confirmDestructive } from '../../src/utils/confirmDestructive';
 
 const CANDLE_SEC = 120;
 
@@ -323,23 +324,42 @@ export default function TogetherScreen() {
   };
 
   const deleteNote = (note: TinyNote) => {
-    Alert.alert('Удалить заметку?', `«${note.text.slice(0, 80)}${note.text.length > 80 ? '…' : ''}»`, [
-      { text: 'Отмена', style: 'cancel' },
-      {
-        text: 'Удалить',
-        style: 'destructive',
-        onPress: () => {
-          removeNote(note.id);
-          pairRealtime.sendGame('tiny-note-remove', {
-            id: note.id,
-            from: user?.displayName,
-            fromId: user?.id,
-          });
-          showPeer('Заметку удалили');
-          void juice.miss();
-        },
-      },
-    ]);
+    void (async () => {
+      const ok = await confirmDestructive('Удалить заметку?', note.text.slice(0, 120));
+      if (!ok) return;
+      removeNote(note.id);
+      pairRealtime.sendGame('tiny-note-remove', {
+        id: note.id,
+        from: user?.displayName,
+        fromId: user?.id,
+      });
+      showPeer('Заметку удалили');
+      void juice.miss();
+    })();
+  };
+
+  const performDeleteNote = (note: TinyNote) => {
+    removeNote(note.id);
+    pairRealtime.sendGame('tiny-note-remove', {
+      id: note.id,
+      from: user?.displayName,
+      fromId: user?.id,
+    });
+    showPeer('Заметку удалили');
+    void juice.miss();
+  };
+
+  const deleteMemory = (id: string, title: string, detail: string) => {
+    void (async () => {
+      const ok = await confirmDestructive(
+        'Удалить memory?',
+        `«${title}» — ${detail.slice(0, 100)}`,
+      );
+      if (!ok) return;
+      removeMemory(id);
+      showPeer(`Memory «${title}» удалена`);
+      void juice.miss();
+    })();
   };
 
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
@@ -397,9 +417,11 @@ export default function TogetherScreen() {
               </Text>
               <Pressable
                 onPress={() => deleteNote(n)}
+                onLongPress={() => performDeleteNote(n)}
+                delayLongPress={380}
                 style={styles.noteDelete}
                 accessibilityLabel="Удалить заметку"
-                hitSlop={8}
+                hitSlop={12}
               >
                 <Text style={styles.noteDeleteLabel}>×</Text>
               </Pressable>
@@ -440,22 +462,16 @@ export default function TogetherScreen() {
                   {m.title} — {m.detail}
                 </Text>
                 <Pressable
-                  onPress={() => {
-                    Alert.alert('Удалить memory?', `${m.title}\n${m.detail}`, [
-                      { text: 'Отмена', style: 'cancel' },
-                      {
-                        text: 'Удалить',
-                        style: 'destructive',
-                        onPress: () => {
-                          removeMemory(m.id);
-                          void juice.miss();
-                        },
-                      },
-                    ]);
+                  onPress={() => deleteMemory(m.id, m.title, m.detail)}
+                  onLongPress={() => {
+                    removeMemory(m.id);
+                    showPeer(`Memory «${m.title}» удалена`);
+                    void juice.miss();
                   }}
+                  delayLongPress={380}
                   style={styles.noteDelete}
                   accessibilityLabel="Удалить memory"
-                  hitSlop={8}
+                  hitSlop={12}
                 >
                   <Text style={styles.noteDeleteLabel}>×</Text>
                 </Pressable>
@@ -465,17 +481,14 @@ export default function TogetherScreen() {
               label="Очистить memories"
               variant="ghost"
               onPress={() => {
-                Alert.alert('Очистить все memories?', 'Локальная история партии.', [
-                  { text: 'Отмена', style: 'cancel' },
-                  {
-                    text: 'Очистить',
-                    style: 'destructive',
-                    onPress: () => {
-                      clearMemories();
-                      void juice.miss();
-                    },
-                  },
-                ]);
+                void confirmDestructive(
+                  'Очистить все memories?',
+                  'Локальная история партии.',
+                ).then((ok) => {
+                  if (!ok) return;
+                  clearMemories();
+                  void juice.miss();
+                });
               }}
             />
           </View>
@@ -594,8 +607,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   noteDelete: {
-    width: 26,
-    height: 26,
+    width: 32,
+    height: 32,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(196,92,110,0.45)',

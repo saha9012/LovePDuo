@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import Animated, {
@@ -19,6 +19,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
 import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
+import { confirmDestructive } from '../../src/utils/confirmDestructive';
 
 export default function MusicScreen() {
   const insets = useSafeAreaInsets();
@@ -490,88 +491,78 @@ export default function MusicScreen() {
 
   const clearLibrary = () => {
     if (tracks.length === 0) return;
-    Alert.alert(
+    void confirmDestructive(
       'Очистить библиотеку?',
       `Удалить все ${tracks.length} трек(ов) у тебя и у партнёра? Полки тоже опустеют.`,
-      [
-        { text: 'Отмена', style: 'cancel' },
-        {
-          text: 'Очистить',
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              try {
-                await sound?.stopAsync();
-                await sound?.unloadAsync();
-              } catch {
-                /* ignore */
-              }
-              setSound(null);
-              setNowPlaying(null);
-              setProgress(null);
-              setPartnerNowPlaying(null);
-              lastStopAt.current = Date.now();
-              clearTracks();
-              pairRealtime.sendGame('now-playing', {
-                title: null,
-                from: user?.displayName,
-              });
-              pairRealtime.sendGame('track-clear', {
-                from: user?.displayName,
-                fromId: user?.id,
-              });
-              showNote('Библиотека очищена.');
-              void juice.miss();
-              trackEvent('track_removed', { source: 'clear_all' });
-            })();
-          },
-        },
-      ],
-    );
+    ).then((ok) => {
+      if (!ok) return;
+      void (async () => {
+        try {
+          await soundRef.current?.stopAsync();
+          await soundRef.current?.unloadAsync();
+        } catch {
+          /* ignore */
+        }
+        setSound(null);
+        setNowPlaying(null);
+        setProgress(null);
+        setPartnerNowPlaying(null);
+        lastStopAt.current = Date.now();
+        clearTracks();
+        pairRealtime.sendGame('now-playing', {
+          title: null,
+          from: user?.displayName,
+        });
+        pairRealtime.sendGame('track-clear', {
+          from: user?.displayName,
+          fromId: user?.id,
+        });
+        showNote('Библиотека очищена.');
+        void juice.miss();
+        trackEvent('track_removed', { source: 'clear_all' });
+      })();
+    });
   };
 
+  const performDeleteTrack = async (track: TrackItem) => {
+    if (nowPlayingId === track.id || nowPlayingRef.current === track.id) {
+      try {
+        await soundRef.current?.stopAsync();
+        await soundRef.current?.unloadAsync();
+      } catch {
+        /* ignore */
+      }
+      setSound(null);
+      setNowPlaying(null);
+      setProgress(null);
+      lastStopAt.current = Date.now();
+      pairRealtime.sendGame('now-playing', {
+        title: null,
+        from: user?.displayName,
+      });
+    }
+    removeTrack(track.id);
+    pairRealtime.sendGame('track-remove', {
+      title: track.title,
+      artist: track.artist,
+      from: user?.displayName,
+      fromId: user?.id,
+    });
+    showNote(`Удалили «${track.title}»`);
+    void juice.miss();
+    trackEvent('track_removed', { source: track.sourceType });
+  };
+
+  /** Tap → confirm (window.confirm on web). Long-press → delete now. */
   const deleteTrack = (track: TrackItem) => {
-    Alert.alert(
-      'Удалить трек?',
-      `«${track.title}» — ${track.artist}\nУйдёт из комнаты и со всех полок.`,
-      [
-        { text: 'Отмена', style: 'cancel' },
-        {
-          text: 'Удалить',
-          style: 'destructive',
-          onPress: () => {
-            void (async () => {
-              if (nowPlayingId === track.id) {
-                try {
-                  await sound?.stopAsync();
-                  await sound?.unloadAsync();
-                } catch {
-                  /* ignore */
-                }
-                setSound(null);
-                setNowPlaying(null);
-                setProgress(null);
-                lastStopAt.current = Date.now();
-                pairRealtime.sendGame('now-playing', {
-                  title: null,
-                  from: user?.displayName,
-                });
-              }
-              removeTrack(track.id);
-              pairRealtime.sendGame('track-remove', {
-                title: track.title,
-                artist: track.artist,
-                from: user?.displayName,
-                fromId: user?.id,
-              });
-              showNote(`Удалили «${track.title}»`);
-              void juice.miss();
-              trackEvent('track_removed', { source: track.sourceType });
-            })();
-          },
-        },
-      ],
-    );
+    void (async () => {
+      const ok = await confirmDestructive(
+        'Удалить трек?',
+        `«${track.title}» — ${track.artist} исчезнет из библиотеки и полок.`,
+      );
+      if (!ok) return;
+      await performDeleteTrack(track);
+    })();
   };
 
   const shelfRemove = (track: TrackItem) => {
@@ -737,7 +728,7 @@ export default function MusicScreen() {
         ) : null}
         {active && active.trackIds.length === 0 && tracks.length > 0 ? (
           <Text style={styles.playlistHint}>
-            «{active.name}» пуст — жми + у трека, чтобы положить на полку. Повторный тап по ✓ убирает с полки; × удаляет трек.
+            «{active.name}» пуст — жми + у трека на полку. × удаляет трек (long-press — сразу).
           </Text>
         ) : null}
         {nowPlayingId ? (
@@ -903,9 +894,13 @@ export default function MusicScreen() {
                   </View>
                   <Pressable
                     onPress={() => deleteTrack(t)}
+                    onLongPress={() => {
+                      void performDeleteTrack(t);
+                    }}
+                    delayLongPress={380}
                     style={styles.deleteBtn}
                     accessibilityLabel={`Удалить ${t.title}`}
-                    hitSlop={8}
+                    hitSlop={12}
                   >
                     <Text style={styles.deleteLabel}>×</Text>
                   </Pressable>
@@ -1053,8 +1048,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
   },
   deleteBtn: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: 'rgba(196,92,110,0.45)',

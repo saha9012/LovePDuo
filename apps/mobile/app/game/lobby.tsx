@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { confirmDestructive } from '../../src/utils/confirmDestructive';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -365,16 +366,14 @@ export default function GameLobbyScreen() {
       router.back();
     };
     if (countdown != null || readyMe) {
-      Alert.alert(
+      void confirmDestructive(
         countdown != null ? 'Уйти из старта?' : 'Снять Ready и выйти?',
         countdown != null
           ? 'Countdown уже идёт — партнёр останется один в лобби.'
           : 'Ты в Ready. Выход снимет готовность.',
-        [
-          { text: 'Остаться', style: 'cancel' },
-          { text: 'Выйти', style: 'destructive', onPress: leave },
-        ],
-      );
+      ).then((ok) => {
+        if (ok) leave();
+      });
       return;
     }
     leave();
