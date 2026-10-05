@@ -14,12 +14,15 @@ import {
   BeatJudgement,
 } from '../../src/games/heartbeat';
 import { pickPostMatchLine } from '../../src/content/postMatch';
+import { useApp } from '../../src/store/AppStore';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
 export default function HeartbeatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, pair } = useApp();
   const chart = useMemo(() => buildHeartbeatChart(3), []);
   const [phase, setPhase] = useState<Phase>('ready');
   const [elapsed, setElapsed] = useState(0);
@@ -27,10 +30,30 @@ export default function HeartbeatScreen() {
   const [syncBonus, setSyncBonus] = useState(0);
   const [last, setLast] = useState<BeatJudgement | null>(null);
   const [partnerScore, setPartnerScore] = useState(0);
+  const [partnerLive, setPartnerLive] = useState(false);
   const startAt = useRef(0);
   const cursor = useRef(0);
   const scoreRef = useRef(0);
   const syncRef = useRef(0);
+  const partnerLiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!pair || !user) return;
+    pairRealtime.connect(pair.code, user.id, user.displayName);
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'heartbeat') {
+        const payload = msg.payload as { total?: number } | undefined;
+        if (typeof payload?.total === 'number') {
+          setPartnerScore(payload.total);
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
+        }
+      }
+    });
+    return () => {
+      off();
+    };
+  }, [pair?.code, user?.id]);
 
   const start = () => {
     setPhase('playing');
@@ -41,7 +64,10 @@ export default function HeartbeatScreen() {
     cursor.current = 0;
     scoreRef.current = 0;
     syncRef.current = 0;
+    partnerLiveRef.current = false;
+    setPartnerLive(false);
     startAt.current = Date.now();
+    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0 });
   };
 
   useEffect(() => {
@@ -53,18 +79,26 @@ export default function HeartbeatScreen() {
         cursor.current < chart.length &&
         chart[cursor.current].atMs < t - heartbeatConfig.windowGreatMs
       ) {
-        // missed note
         cursor.current += 1;
         setLast('miss');
       }
       if (t >= heartbeatConfig.durationMs) {
         clearInterval(id);
-        const partner = Math.max(
-          0,
-          Math.round((scoreRef.current + syncRef.current) * (0.8 + Math.random() * 0.35)),
-        );
-        setPartnerScore(partner);
+        const total = scoreRef.current + syncRef.current;
+        pairRealtime.sendGame('heartbeat', { phase: 'finished', total });
+        if (!partnerLiveRef.current) {
+          const partner = Math.max(
+            0,
+            Math.round(total * (0.8 + Math.random() * 0.35)),
+          );
+          setPartnerScore(partner);
+        }
         setPhase('finished');
+      } else if (Math.floor(t / 1000) % 4 === 0) {
+        pairRealtime.sendGame('heartbeat', {
+          phase: 'playing',
+          total: scoreRef.current + syncRef.current,
+        });
       }
     }, 32);
     return () => clearInterval(id);
@@ -108,6 +142,7 @@ export default function HeartbeatScreen() {
           <Text style={styles.title}>Heartbeat Tap</Text>
           <Text style={styles.meta}>
             Ты {total} · Партнёр {partnerScore} · sync +{syncBonus}
+            {partnerLive ? ' · live' : ' · demo'}
           </Text>
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}

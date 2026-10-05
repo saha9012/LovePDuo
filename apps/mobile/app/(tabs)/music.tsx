@@ -5,6 +5,7 @@ import { Audio } from 'expo-av';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
@@ -108,12 +109,10 @@ export default function MusicScreen() {
 
         <View style={styles.list}>
           {tracks.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Пока тихо</Text>
-              <Text style={typography.body}>
-                Загрузите первый трек — он останется в комнате после перезахода.
-              </Text>
-            </View>
+            <EmptyState
+              title="Пока тихо"
+              body="Загрузите первый трек — он останется в комнате после перезахода. Это ваша полка, не список ссылок."
+            />
           ) : (
             tracks.map((t) => (
               <Pressable
