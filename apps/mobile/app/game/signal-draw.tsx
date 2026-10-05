@@ -70,6 +70,9 @@ export default function SignalDrawScreen() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
   const endWarned = useRef(false);
+  const lastClearAt = useRef(0);
+  const lastUndoAt = useRef(0);
+  const brushRef = useRef<'fine' | 'bold'>('fine');
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
@@ -78,6 +81,10 @@ export default function SignalDrawScreen() {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  useEffect(() => {
+    brushRef.current = brush;
+  }, [brush]);
 
   const bumpPeer = () => {
     setPeerPulse(true);
@@ -170,14 +177,24 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.brush === 'fine' || payload.brush === 'bold') {
-        showToast(payload.brush === 'bold' ? 'Партнёр: жирная кисть' : 'Партнёр: тонкая кисть');
-        void juice.hit();
+        const both = brushRef.current === payload.brush;
+        showToast(
+          both
+            ? payload.brush === 'bold'
+              ? 'Оба: жирная кисть'
+              : 'Оба: тонкая кисть'
+            : payload.brush === 'bold'
+              ? 'Партнёр: жирная кисть'
+              : 'Партнёр: тонкая кисть',
+        );
+        void (both ? juice.perfect() : juice.hit());
         return;
       }
       if (payload.clear) {
         setStrokes((prev) => prev.filter((s) => s.by === 'me'));
-        showToast('Партнёр стёр свои линии');
-        void juice.miss();
+        const both = Date.now() - lastClearAt.current < 1600;
+        showToast(both ? 'Оба стёрли' : 'Партнёр стёр свои линии');
+        void (both ? juice.sync() : juice.miss());
         return;
       }
       if (payload.undo) {
@@ -190,8 +207,9 @@ export default function SignalDrawScreen() {
         peerCount.current = Math.max(0, peerCount.current - 1);
         setPartnerStrokes(peerCount.current);
         bumpPeer();
-        showToast('Партнёр отменил штрих');
-        void juice.hit();
+        const both = Date.now() - lastUndoAt.current < 1200;
+        showToast(both ? 'Оба undo' : 'Партнёр отменил штрих');
+        void (both ? juice.sync() : juice.hit());
         return;
       }
       if (payload.stroke) {
@@ -349,6 +367,7 @@ export default function SignalDrawScreen() {
   const clearMine = () => {
     setStrokes((prev) => prev.filter((s) => s.by !== 'me'));
     myCount.current = 0;
+    lastClearAt.current = Date.now();
     pairRealtime.sendGame('signal-draw', { clear: true });
     void juice.miss();
   };
@@ -359,6 +378,7 @@ export default function SignalDrawScreen() {
       const last = mineIdx[mineIdx.length - 1];
       if (last == null) return prev;
       myCount.current = Math.max(0, myCount.current - 1);
+      lastUndoAt.current = Date.now();
       pairRealtime.sendGame('signal-draw', { undo: true, count: myCount.current });
       void juice.hit();
       return prev.filter((_, i) => i !== last);

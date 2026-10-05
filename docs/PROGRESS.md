@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Draw dual brush/clear/undo · Word Veil dual lock · Orbit dual miss  
 - [x] Word Veil dual lock · Orbit dual miss · Sky dual miss/decoy  
 - [x] Orbit dual miss · Sky dual miss/decoy · Soft dual OK  
-- [x] Sky dual miss/decoy · Soft dual OK · Profile WS presets  
 
 ## Catalog
 
