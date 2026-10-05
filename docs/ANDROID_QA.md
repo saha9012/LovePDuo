@@ -63,7 +63,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Play: peer-lobby banner → one-tap join · leave toast  
 - [ ] Music: now-playing · stop · shelf · reaction sync · reaction match · leave/rejoin  
 - [ ] Together: candle · sync-light · named spark · note · переписка · warmth · leave/rejoin  
-- [ ] Home: warmth send/receive · peer-join · mood sync · presence · room size 2  
+- [ ] Home: warmth send/receive · тепло встречное · peer-join · mood sync · presence · room size 2  
 - [ ] Welcome reconnect · Profile invite deep link · partner rename toast · display-name sync 
 
 ## Web dual (без телефонов)
