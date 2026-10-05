@@ -60,6 +60,7 @@ export default function HeartbeatScreen() {
   const partnerLiveRef = useRef(false);
   const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
+  const lastRematchAt = useRef(0);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
@@ -157,10 +158,11 @@ export default function HeartbeatScreen() {
         partnerLiveRef.current = true;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
-        setPeerNote('ещё раунд');
+        const both = Date.now() - lastRematchAt.current < 2500;
+        setPeerNote(both ? 'оба ещё раунд' : 'ещё раунд');
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
-        void juice.sync();
+        void (both ? juice.perfect() : juice.sync());
         // delay start until chart memo updates
         setTimeout(() => startRef.current(), 0);
         return;
@@ -276,6 +278,7 @@ export default function HeartbeatScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame('heartbeat', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };

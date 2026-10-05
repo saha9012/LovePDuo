@@ -60,6 +60,7 @@ export default function OrbitCatchScreen() {
   const alignedRef = useRef(false);
   const lastCatchAt = useRef(0);
   const lastMissAt = useRef(0);
+  const lastRematchAt = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -132,8 +133,9 @@ export default function OrbitCatchScreen() {
           setPeerSeen(true);
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
-          bumpPeerNote('ещё раунд');
-          void juice.sync();
+          const both = Date.now() - lastRematchAt.current < 2500;
+          bumpPeerNote(both ? 'оба ещё раунд' : 'ещё раунд');
+          void (both ? juice.perfect() : juice.sync());
           startRef.current();
           return;
         }
@@ -226,6 +228,7 @@ export default function OrbitCatchScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next, hello: true });
     start();
   };

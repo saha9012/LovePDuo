@@ -72,6 +72,7 @@ export default function SignalDrawScreen() {
   const endWarned = useRef(false);
   const lastClearAt = useRef(0);
   const lastUndoAt = useRef(0);
+  const lastRematchAt = useRef(0);
   const brushRef = useRef<'fine' | 'bold'>('fine');
 
   const myColor = colors.accentAmber;
@@ -155,8 +156,9 @@ export default function SignalDrawScreen() {
       }
       if (payload.rematch) {
         setPeerSeen(true);
-        showToast('Партнёр: ещё раунд');
-        void juice.sync();
+        const both = Date.now() - lastRematchAt.current < 2500;
+        showToast(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
+        void (both ? juice.perfect() : juice.sync());
         startRef.current();
         return;
       }
@@ -279,6 +281,7 @@ export default function SignalDrawScreen() {
   startRef.current = start;
 
   const rematch = () => {
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame('signal-draw', { rematch: true, seed: Date.now() % 100000, hello: true });
     start();
   };

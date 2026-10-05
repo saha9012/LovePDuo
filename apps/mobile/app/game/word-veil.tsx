@@ -57,6 +57,7 @@ export default function WordVeilScreen() {
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastRematchAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
 
@@ -189,10 +190,11 @@ export default function WordVeilScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
-        setPresenceHint('Партнёр: ещё раунд');
+        const both = Date.now() - lastRematchAt.current < 2500;
+        setPresenceHint(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         setTimeout(() => setPresenceHint(null), 1600);
         resetRef.current();
-        void juice.sync();
+        void (both ? juice.perfect() : juice.sync());
         return;
       }
       if (typeof payload?.typing === 'boolean') {
@@ -319,6 +321,7 @@ export default function WordVeilScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame('word-veil', { rematch: true, seed: next, hello: true });
     resetRound();
   };
