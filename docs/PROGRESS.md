@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ANDROID_QA оба финиш · Catalog PostMatch dual · Soft dual finish  
 - [x] Catalog «Оба финиш» PostMatch · Soft dual finish · candle dual end  
 - [x] Soft «Оба финиш» · Together dual candle end · ToS dual deck wrap  
-- [x] Together dual candle end · ToS dual deck wrap · Word Veil одно слово  
 
 ## Catalog
 
