@@ -248,6 +248,41 @@ export default function ProfileScreen() {
               }}
             />
             <LpdButton
+              label="Проверить соединение"
+              variant="ghost"
+              onPress={() => {
+                void (async () => {
+                  if (!pair || !user) {
+                    wsToastRef.current = 'Сначала войди в пару';
+                    setWsToast('Сначала войди в пару');
+                    setTimeout(() => setWsToast(null), 1800);
+                    void juice.miss();
+                    return;
+                  }
+                  if (!pairRealtime.connected) {
+                    pairRealtime.connect(pair.code, user.id, user.displayName);
+                    wsToastRef.current = 'Offline — reconnect…';
+                    setWsToast('Offline — reconnect…');
+                    setTimeout(() => setWsToast(null), 1800);
+                    void juice.miss();
+                    return;
+                  }
+                  setWsToast('Ping…');
+                  const ms = await pairRealtime.ping();
+                  if (ms == null) {
+                    wsToastRef.current = 'Ping timeout — проверь URL/Wi‑Fi';
+                    setWsToast('Ping timeout — проверь URL/Wi‑Fi');
+                    void juice.miss();
+                  } else {
+                    wsToastRef.current = `Realtime ok · ${ms} ms`;
+                    setWsToast(`Realtime ok · ${ms} ms`);
+                    void juice.sync();
+                  }
+                  setTimeout(() => setWsToast(null), 2200);
+                })();
+              }}
+            />
+            <LpdButton
               label="Сбросить на default"
               variant="ghost"
               onPress={async () => {

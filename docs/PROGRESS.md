@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music Prev/Next · stop if peer deletes playing track · Profile WS ping  
 - [x] Backend: rate limit · max payload · reconnect replaces stale socket  
 - [x] Music auto-advance + clear library sync · Together memory delete  
-- [x] Music auto-stop on finish · Together note delete + sync · fix note id mismatch  
 
 ## Catalog
 

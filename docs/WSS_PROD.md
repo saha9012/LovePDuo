@@ -43,6 +43,7 @@ Copy the printed `https://….trycloudflare.com` URL, convert to `wss://….tryc
 - per-socket rate limit `LPD_RATE_MAX` msgs/sec (default 48)
 - same `userId` reconnect replaces stale socket (room stays 1–2)
 - empty rooms deleted on last leave
+- `ping` / `pong` for Profile «Проверить соединение» RTT
 
 ## Not done yet
 

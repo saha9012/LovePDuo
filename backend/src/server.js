@@ -7,6 +7,7 @@ import { WebSocketServer } from 'ws';
  *  { type: 'presence', status }
  *  { type: 'game', gameId, payload }
  *  { type: 'warmth' }
+ *  { type: 'ping', token?, t? } → { type: 'pong', token, t, serverAt }
  *  server → { type: 'joined', code, peers, size }
  *  server → { type: 'peer_joined' | 'peer_left', userId, name?, size }
  */
@@ -124,6 +125,18 @@ wss.on('connection', (socket) => {
           code,
           peers,
           size,
+        }),
+      );
+      return;
+    }
+
+    if (msg.type === 'ping') {
+      socket.send(
+        JSON.stringify({
+          type: 'pong',
+          token: typeof msg.token === 'string' ? msg.token : null,
+          t: typeof msg.t === 'number' ? msg.t : null,
+          serverAt: Date.now(),
         }),
       );
       return;

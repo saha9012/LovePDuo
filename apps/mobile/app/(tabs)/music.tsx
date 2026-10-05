@@ -46,6 +46,7 @@ export default function MusicScreen() {
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const soundRef = React.useRef<Audio.Sound | null>(null);
+  const nowPlayingRef = React.useRef<string | null>(null);
   const peerPulse = useSharedValue(1);
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const noteRef = React.useRef('');
@@ -83,6 +84,10 @@ export default function MusicScreen() {
   useEffect(() => {
     soundRef.current = sound;
   }, [sound]);
+
+  useEffect(() => {
+    nowPlayingRef.current = nowPlayingId;
+  }, [nowPlayingId]);
 
   useEffect(() => {
     return () => {
@@ -294,8 +299,25 @@ export default function MusicScreen() {
           fromId?: string;
         } | undefined;
         if (!payload?.title || payload.fromId === user?.id) return;
+        const playing = tracks.find((t) => t.id === nowPlayingRef.current);
+        const hitPlaying =
+          playing &&
+          playing.title === payload.title &&
+          (!payload.artist || playing.artist === payload.artist);
         const ok = removeTrackMeta(payload.title, payload.artist);
         if (ok) {
+          if (hitPlaying) {
+            void (async () => {
+              try {
+                await soundRef.current?.stopAsync();
+                await soundRef.current?.unloadAsync();
+              } catch {
+                /* ignore */
+              }
+              setSound(null);
+              setNowPlaying(null);
+            })();
+          }
           if (
             partnerNowPlaying &&
             partnerNowPlaying.toLowerCase().includes(payload.title.toLowerCase())
@@ -698,6 +720,24 @@ export default function MusicScreen() {
         ) : null}
         {nowPlayingId ? (
           <View style={styles.playbackRow}>
+            <LpdButton
+              label="Предыдущий"
+              variant="ghost"
+              onPress={() => {
+                const list = visibleTracksRef.current;
+                const idx = list.findIndex((t) => t.id === nowPlayingId);
+                const before = idx > 0 ? list.slice(0, idx).reverse() : [];
+                const prevLocal = before.find(
+                  (t) => Boolean(t.uri) && t.playbackMode === 'local',
+                );
+                if (!prevLocal) {
+                  showNote('Раньше локальных треков нет.');
+                  void juice.miss();
+                  return;
+                }
+                void playTrackRef.current(prevLocal);
+              }}
+            />
             <LpdButton
               label="Стоп"
               variant="ghost"

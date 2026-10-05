@@ -179,6 +179,34 @@ export class PairRealtime {
     this.send({ type: 'game', gameId, payload });
   }
 
+  /** Round-trip probe. Resolves with latency ms, or null on timeout/offline. */
+  ping(timeoutMs = 2500): Promise<number | null> {
+    return new Promise((resolve) => {
+      if (!this.connected) {
+        resolve(null);
+        return;
+      }
+      const t0 = Date.now();
+      const token = `p_${t0}_${Math.random().toString(36).slice(2, 7)}`;
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        off();
+        resolve(null);
+      }, timeoutMs);
+      const off = this.onMessage((msg) => {
+        if (msg.type !== 'pong' || msg.token !== token) return;
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        off();
+        resolve(Math.max(0, Date.now() - t0));
+      });
+      this.send({ type: 'ping', token, t: t0 });
+    });
+  }
+
   disconnect(clearJoin = true) {
     this.intentionalClose = true;
     this.clearReconnect();
