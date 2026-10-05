@@ -230,6 +230,7 @@ export default function ProfileScreen() {
             label="Отвязать пару"
             variant="ghost"
             onPress={async () => {
+              void juice.miss();
               await unlinkPair();
               router.replace('/pair/create');
             }}
@@ -238,6 +239,7 @@ export default function ProfileScreen() {
             label="Выйти"
             variant="danger"
             onPress={async () => {
+              void juice.miss();
               clearMemories();
               await signOut();
               router.replace('/welcome');

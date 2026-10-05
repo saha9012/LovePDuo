@@ -92,12 +92,23 @@ export default function SoftDuelScreen() {
         round?: number;
         phase?: string;
         hello?: boolean;
+        arm?: boolean;
       } | undefined;
       if (payload?.hello) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setFlash('Партнёр в игре');
         void juice.sync();
+        return;
+      }
+      if (payload?.arm) {
+        setPartnerFlash(true);
+        partnerScale.value = withSequence(
+          withSpring(1.1, { damping: 10 }),
+          withTiming(1, { duration: 200 }),
+        );
+        setTimeout(() => setPartnerFlash(false), 420);
+        void juice.beat();
         return;
       }
       if (payload?.phase === 'start') {
@@ -196,6 +207,7 @@ export default function SoftDuelScreen() {
       setArmed(true);
       flashScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
       void juice.beat();
+      pairRealtime.sendGame('soft-duel', { arm: true, round: roundRef.current });
     }, wait);
   };
 

@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Deep-link join juice · Home memory toast · Code paste  
-- [x] Join/create already-paired reconnect  
+- [x] Soft Duel arm pulse sync · Profile unlink/signOut juice  
+- [x] Deep-link join juice · Home memory toast  
 
 ## Catalog
 
