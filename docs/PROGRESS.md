@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sync-finish perfect juice when partner closes after you  
 - [x] Welcome room-size foot · ANDROID_QA sync-finish · display-name dual  
 - [x] Profile display-name dual sync · Word Veil typing clear on lock  
-- [x] Sync-finish PostMatch across Soft/Sky/HB/Orbit/Draw · Veil finish · Music fade  
 
 ## Catalog
 

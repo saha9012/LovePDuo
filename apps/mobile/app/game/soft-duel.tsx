@@ -178,7 +178,7 @@ export default function SoftDuelScreen() {
         } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
           partnerFinishedRef.current = true;
           setSyncFinish(true);
-          void juice.sync();
+          void juice.perfect();
         } else if (typeof payload.tap === 'number') {
           const label =
             payload.tap < 180 ? 'Партнёр PERFECT' : payload.tap < 420 ? 'Партнёр GOOD' : 'Партнёр OK';

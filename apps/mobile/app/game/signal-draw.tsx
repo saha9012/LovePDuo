@@ -155,14 +155,17 @@ export default function SignalDrawScreen() {
       }
       if (payload.phase === 'finished') {
         partnerFinishedRef.current = true;
-        showToast(
-          phaseRef.current === 'finished' ? 'Синхрон финиш' : 'Партнёр закончил',
-        );
-        if (phaseRef.current === 'finished') setSyncFinish(true);
-        void juice.sync();
         if (typeof payload.count === 'number') {
           peerCount.current = payload.count;
           setPartnerStrokes(payload.count);
+        }
+        if (phaseRef.current === 'finished') {
+          setSyncFinish(true);
+          showToast('Синхрон финиш');
+          void juice.perfect();
+        } else {
+          showToast('Партнёр закончил');
+          void juice.sync();
         }
         return;
       }

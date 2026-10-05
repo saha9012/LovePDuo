@@ -137,12 +137,16 @@ export default function OrbitCatchScreen() {
         if (payload?.phase === 'finished') {
           partnerFinishedRef.current = true;
           bumpPeerNote('финиш');
-          void juice.sync();
           if (typeof payload.caught === 'number') {
             partnerRef.current = payload.caught;
             setPartnerCaught(payload.caught);
           }
-          if (phaseRef.current === 'finished') setSyncFinish(true);
+          if (phaseRef.current === 'finished') {
+            setSyncFinish(true);
+            void juice.perfect();
+          } else {
+            void juice.sync();
+          }
           return;
         }
         if (payload?.miss) {

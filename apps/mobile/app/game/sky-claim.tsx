@@ -193,7 +193,7 @@ export default function SkyClaimScreen() {
           } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
             partnerFinishedRef.current = true;
             setSyncFinish(true);
-            void juice.sync();
+            void juice.perfect();
           }
         }
       }

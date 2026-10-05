@@ -182,8 +182,12 @@ export default function HeartbeatScreen() {
           setPartnerLive(true);
           partnerLiveRef.current = true;
         }
-        if (phaseRef.current === 'finished') setSyncFinish(true);
-        void juice.sync();
+        if (phaseRef.current === 'finished') {
+          setSyncFinish(true);
+          void juice.perfect();
+        } else {
+          void juice.sync();
+        }
         return;
       }
       if (typeof payload?.total === 'number') {
