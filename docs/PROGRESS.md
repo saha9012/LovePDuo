@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Backend hello/peek logs for LAN QA  
-- [x] Draw/Orbit peerSeen on start · Soft/Sky/HB partnerLive fix  
+- [x] Sync Spotify/VK stubs to partner · Soft rematch flash  
+- [x] Backend hello/peek logs · peerSeen/partnerLive fixes  
 
 ## Catalog
 
@@ -17,6 +17,6 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 
 1. Live device screenshot replace (`docs/STORE_SHOTS.md`)  
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
-3. Spotify OAuth keys + App Remote stream  
+3. Spotify OAuth keys + App Remote stream — stubs sync dual already  
 4. Optional Skia canvas for Signal Draw  
 5. Production `wss://` deploy (`docs/WSS_PROD.md`) — tunnel path documented

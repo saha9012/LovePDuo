@@ -83,6 +83,26 @@ export default function MusicScreen() {
         void juice.hit();
         return;
       }
+      if (msg.type === 'game' && msg.gameId === 'track-meta') {
+        const payload = msg.payload as {
+          title?: string;
+          artist?: string;
+          sourceType?: TrackItem['sourceType'];
+          from?: string;
+          fromId?: string;
+        } | undefined;
+        if (!payload?.title || payload.fromId === user?.id) return;
+        addTrack({
+          title: payload.title,
+          artist: payload.artist ?? 'Партнёр',
+          sourceType: payload.sourceType ?? 'link',
+          playbackMode: payload.sourceType === 'spotify' ? 'spotify' : 'link',
+          addedBy: payload.from ?? 'Партнёр',
+        });
+        setNote(`${payload.from ?? 'Партнёр'} добавил «${payload.title}»`);
+        void juice.sync();
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'now-playing') {
         const payload = msg.payload as { title?: string | null; from?: string } | undefined;
         if (payload?.title) {
@@ -121,7 +141,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, user?.id]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists, user?.id, addTrack]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -179,29 +199,49 @@ export default function MusicScreen() {
     void juice.sync();
   };
   const addSpotifyStub = () => {
+    const title = 'Midnight Orbit (demo)';
+    const artist = 'Spotify metadata';
     addTrack({
-      title: 'Midnight Orbit (demo)',
-      artist: 'Spotify metadata',
+      title,
+      artist,
       sourceType: 'spotify',
       playbackMode: 'spotify',
       addedBy: user?.displayName ?? 'Ты',
     });
+    pairRealtime.sendGame('track-meta', {
+      title,
+      artist,
+      sourceType: 'spotify',
+      from: user?.displayName,
+      fromId: user?.id,
+    });
     setNote(
       spotifyConfigured()
-        ? 'Spotify: метаданные сохранены. Keys есть — стрим через App Remote / OAuth следующий шаг.'
-        : spotifyStatusLabel(),
+        ? 'Spotify: метаданные сохранены и отправлены партнёру. Стрим — OAuth / App Remote.'
+        : `${spotifyStatusLabel()} · stub ушёл партнёру.`,
     );
+    void juice.card();
   };
 
   const addVkStub = () => {
+    const title = 'Dusty Rose Night (demo)';
+    const artist = 'VK link fallback';
     addTrack({
-      title: 'Dusty Rose Night (demo)',
-      artist: 'VK link fallback',
+      title,
+      artist,
       sourceType: 'vk',
       playbackMode: 'link',
       addedBy: user?.displayName ?? 'Ты',
     });
-    setNote('VK: официальный audio pull ограничен — сохранены metadata + fallback upload.');
+    pairRealtime.sendGame('track-meta', {
+      title,
+      artist,
+      sourceType: 'vk',
+      from: user?.displayName,
+      fromId: user?.id,
+    });
+    setNote('VK: metadata + fallback. Stub ушёл партнёру.');
+    void juice.card();
   };
 
   const react = (id: string, reaction: NonNullable<TrackItem['reaction']>) => {
