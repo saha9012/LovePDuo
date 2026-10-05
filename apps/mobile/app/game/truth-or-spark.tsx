@@ -68,6 +68,7 @@ export default function TruthOrSparkScreen() {
   const lastFilterChoice = useRef<SparkFilter>('soft');
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lastDeckWrapAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
@@ -202,8 +203,13 @@ export default function TruthOrSparkScreen() {
         setTurnMine(true);
         const who = payload.fromName || 'Партнёр';
         if (payload.deckWrap) {
-          showTurnToast(`${who}: колода по кругу — твой ход`);
-          void juice.sync();
+          const both = Date.now() - lastDeckWrapAt.current < 2800;
+          showTurnToast(
+            both
+              ? 'Оба: колода по кругу'
+              : `${who}: колода по кругу — твой ход`,
+          );
+          void (both ? juice.perfect() : juice.sync());
         } else if (payload.skipped) {
           const both = Date.now() - lastSkipAt.current < 2200;
           showTurnToast(both ? 'Оба скипнули' : `${who} скипнул — твой ход`);

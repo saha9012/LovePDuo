@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ToS dual deck wrap · Word Veil одно слово · Soft Наравне  
 - [x] Word Veil «Оба: одно слово» · Soft Наравне · Lobby оба в лобби  
 - [x] Soft local «Наравне» catch-up · Lobby оба в лобби · Profile SFX  
-- [x] Lobby «Оба в этом лобби» · Profile SFX toast · Together dual hello  
 
 ## Catalog
 
