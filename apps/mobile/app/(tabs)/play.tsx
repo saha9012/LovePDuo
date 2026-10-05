@@ -53,7 +53,7 @@ export default function PlayScreen() {
             title="Signal Draw"
             subtitle="Общий холст. Янтарь и роза рисуют сигнал вместе."
             accent="amber"
-            cover="sky"
+            cover="draw"
             badge="NEW"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
           />
@@ -61,7 +61,7 @@ export default function PlayScreen() {
             title="Orbit Catch"
             subtitle="Co-op орбита. Ловите совпадение маркера и орба."
             accent="mist"
-            cover="sky"
+            cover="orbit"
             badge="NEW"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
           />

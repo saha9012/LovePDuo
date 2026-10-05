@@ -51,12 +51,18 @@ export default function HomeScreen() {
         <View style={styles.room}>
           <Text style={styles.roomName}>{pair?.name ?? 'Комната'}</Text>
           <View style={styles.pairRow}>
-            <PairAvatar name={user?.displayName ?? 'Ты'} presence="online" />
+            <View style={styles.person}>
+              <PairAvatar name={user?.displayName ?? 'Ты'} presence="online" />
+              <Text style={styles.personName}>{user?.displayName ?? 'Ты'}</Text>
+            </View>
             <View style={styles.linkLine} />
-            <PairAvatar
-              name={pair?.partnerName ?? 'Партнёр'}
-              presence={pair?.partnerPresence ?? 'offline'}
-            />
+            <View style={styles.person}>
+              <PairAvatar
+                name={pair?.partnerName ?? 'Партнёр'}
+                presence={pair?.partnerPresence ?? 'offline'}
+              />
+              <Text style={styles.personName}>{pair?.partnerName ?? 'Партнёр'}</Text>
+            </View>
           </View>
           <Text style={typography.body}>
             {pair?.partnerPresence === 'online'
@@ -121,6 +127,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  person: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  personName: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 12,
+    color: colors.textSecondary,
+    maxWidth: 88,
+    textAlign: 'center',
   },
   linkLine: {
     flex: 1,

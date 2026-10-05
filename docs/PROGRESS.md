@@ -6,25 +6,19 @@
 
 ## Latest
 
-- [x] **Signal Draw** — dual canvas, amber/rose strokes, WS sync
-- [x] **Mood playlists** — Ночь / Тёплый свет / Дождь / Пульс + add track (+)
-- [x] Soft Duel, Word Veil, Tiny Notes, Memories, SFX, brand icon
-- [x] MVP trio dual-ready (Sky / Heartbeat / Truth Or Spark)
+- [x] Signal Draw denser strokes, brush fine/bold, clear mine, WS throttle
+- [x] Orbit Catch co-op + mood playlists + Tiny Notes
+- [x] Store marketing frames in `assets/store/` (7× 1080×1920)
+- [x] Game covers draw/orbit · Home names under avatars
+- [x] Peer presence name via WS
 
 ## Catalog
 
-| Game | Status |
-|------|--------|
-| Sky Claim | MVP polished |
-| Heartbeat Tap | MVP + live sync |
-| Truth Or Spark | MVP + shared deck |
-| Signal Draw | NEW shared canvas |
-| Soft Duel | NEW reaction |
-| Word Veil | NEW associations |
+Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft Duel · Word Veil
 
-## Open Ideal Bar
+## Still open
 
-1. Android dual-device Expo Go + LAN `EXPO_PUBLIC_LPD_WS_URL`
-2. Spotify OAuth keys
-3. Store screenshot shoot
-4. denser Signal Draw (SVG path / Skia later)
+1. Live device screenshot replace for store frames  
+2. Android Expo Go dual QA with LAN WS  
+3. Spotify OAuth keys  
+4. Optional Skia canvas for Signal Draw

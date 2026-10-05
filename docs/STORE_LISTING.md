@@ -15,13 +15,15 @@ LovePDuo — тёмная игровая зона для двоих.
 Не ванильная love-app. Янтарь, пыльная роза, ночь.
 
 ## Screenshots to shoot
-1. Welcome / brand hero
-2. Pair link cinematic + code
-3. Home room
-4. Sky Claim gameplay
-5. Heartbeat Tap
-6. Music library
-7. Candle / Together
+Live device captures preferred. Draft marketing frames already in `assets/store/`:
+
+1. Welcome / brand hero — `01_welcome.png`
+2. Pair link cinematic + code — `02_pair.png`
+3. Home room — `03_home.png`
+4. Sky Claim gameplay — `04_sky_claim.png`
+5. Heartbeat Tap — `05_heartbeat.png`
+6. Music library — `06_music.png`
+7. Candle / Together — `07_candle.png`
 
 ## Data safety notes
 - Pair content private
