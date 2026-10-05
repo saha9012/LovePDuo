@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Soft Duel round-ahead flash · Heartbeat mid-match presence  
-- [x] Word Veil typing juice on first peer keystroke  
-- [x] Play peer-lobby peek · Signal Draw brush toast  
+- [x] ToS named turn/filter toasts · Soft Duel phaseRef finish/ahead  
+- [x] Home toast when partner renames  
+- [x] Soft Duel round-ahead · Word Veil typing juice  
 
 ## Catalog
 

@@ -123,8 +123,12 @@ export default function TruthOrSparkScreen() {
         setFilter(payload.filter);
         if (typeof payload.index === 'number') setIndex(payload.index);
         if (typeof payload.skips === 'number') setSkips(payload.skips);
+        if (payload.fromName) setPeerName(payload.fromName);
         setTurnMine(true);
-        showTurnToast(payload.filter === 'spicy' ? 'Партнёр: spicy' : 'Партнёр: soft');
+        const who = payload.fromName || 'Партнёр';
+        showTurnToast(
+          payload.filter === 'spicy' ? `${who}: spicy` : `${who}: soft`,
+        );
         void juice.card();
         return;
       }
@@ -134,11 +138,12 @@ export default function TruthOrSparkScreen() {
       if (payload.fromName) setPeerName(payload.fromName);
       if (payload.fromId && payload.fromId !== user.id) {
         setTurnMine(true);
+        const who = payload.fromName || 'Партнёр';
         if (payload.skipped) {
-          showTurnToast('Партнёр скипнул — твой ход');
+          showTurnToast(`${who} скипнул — твой ход`);
           void juice.miss();
         } else {
-          showTurnToast('Твой ход');
+          showTurnToast(`${who} передал ход`);
           void juice.hit();
         }
       }

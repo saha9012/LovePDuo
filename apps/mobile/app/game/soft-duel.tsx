@@ -45,6 +45,7 @@ export default function SoftDuelScreen() {
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const roundRef = useRef(0);
+  const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
@@ -56,6 +57,10 @@ export default function SoftDuelScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -114,7 +119,7 @@ export default function SoftDuelScreen() {
         const ahead =
           typeof payload.round === 'number' &&
           payload.round > roundRef.current &&
-          phase === 'playing';
+          phaseRef.current === 'playing';
         if (typeof payload.round === 'number') setPartnerRound(payload.round);
         setPartnerFlash(true);
         partnerScale.value = withSequence(
@@ -122,7 +127,7 @@ export default function SoftDuelScreen() {
           withTiming(1, { duration: 220 }),
         );
         setTimeout(() => setPartnerFlash(false), 450);
-        if (payload.phase === 'finished' && phase === 'playing') {
+        if (payload.phase === 'finished' && phaseRef.current === 'playing') {
           setFlash('Партнёр финиш');
         } else if (typeof payload.tap === 'number') {
           const label =

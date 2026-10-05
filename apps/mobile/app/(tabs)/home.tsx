@@ -34,6 +34,7 @@ export default function HomeScreen() {
   const warmthSeen = React.useRef(0);
   const nameSeen = React.useRef(pair?.name ?? '');
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
+  const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -41,6 +42,25 @@ export default function HomeScreen() {
       off();
     };
   }, []);
+
+  useEffect(() => {
+    const name = pair?.partnerName ?? '';
+    if (!name || name === partnerNameSeen.current) return;
+    if (
+      partnerNameSeen.current &&
+      partnerNameSeen.current !== 'Ожидание партнёра' &&
+      partnerNameSeen.current !== 'Партнёр' &&
+      name !== 'Партнёр' &&
+      name !== 'Ожидание партнёра'
+    ) {
+      setRoomToast(`Партнёр теперь: ${name}`);
+      void juice.card();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      partnerNameSeen.current = name;
+      return () => clearTimeout(t);
+    }
+    partnerNameSeen.current = name;
+  }, [pair?.partnerName]);
 
   useEffect(() => {
     const cur = pair?.partnerPresence ?? 'offline';
