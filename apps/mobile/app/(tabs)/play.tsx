@@ -199,19 +199,24 @@ export default function PlayScreen() {
       }
       if (payload.game && payload.title) {
         setPeerLobby({ game: payload.game, title: payload.title });
+        const afterLeave =
+          peekToastRef.current === 'Партнёр ушёл из лобби' ||
+          peekToastRef.current === 'Оба снова в лобби';
         const both = lastGameRef.current === payload.game;
         const racing =
           both &&
           (peekToastRef.current?.startsWith('Оба в «') ||
             peekToastRef.current === 'Оба ждут игру');
         showPeek(
-          racing
-            ? 'Оба ждут игру'
-            : both
-              ? `Оба в «${payload.title}»`
-              : `Партнёр в лобби: ${payload.title}`,
+          afterLeave
+            ? 'Оба снова в лобби'
+            : racing
+              ? 'Оба ждут игру'
+              : both
+                ? `Оба в «${payload.title}»`
+                : `Партнёр в лобби: ${payload.title}`,
         );
-        void (racing || both ? juice.perfect() : juice.hit());
+        void (afterLeave || racing || both ? juice.perfect() : juice.hit());
       }
     });
     return () => {

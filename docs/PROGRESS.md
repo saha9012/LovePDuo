@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Welcome/Play rejoin dual · Оба снова дома/в лобби  
 - [x] Catalog/Lobby rejoin «Оба снова здесь/в лобби»  
 - [x] Home/Soft/Music rejoin dual · Music hello dup fix  
-- [x] Together rejoin «Оба снова вместе» · Profile room escalate  
 
 ## Catalog
 
