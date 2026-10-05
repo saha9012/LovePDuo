@@ -9,6 +9,8 @@ import { CodeInput } from '../../src/components/CodeInput';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
+import { juice } from '../../src/audio/juice';
+import { track } from '../../src/analytics/track';
 
 export default function JoinPairScreen() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function JoinPairScreen() {
     try {
       if (!user) await signIn('Партнёр');
       await joinPair(code);
+      track('pair_joined');
       router.replace('/pair/success');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не вышло войти');

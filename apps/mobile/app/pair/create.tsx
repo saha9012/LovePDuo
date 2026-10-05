@@ -8,6 +8,7 @@ import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
+import { track } from '../../src/analytics/track';
 
 export default function CreatePairScreen() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function CreatePairScreen() {
     try {
       const profile = user ?? (await signIn(displayName || 'Ты'));
       await createPair(name, profile.id);
+      track('pair_created');
       router.replace('/pair/success');
     } finally {
       setLoading(false);

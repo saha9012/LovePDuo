@@ -9,6 +9,7 @@ import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { setMatchSession } from '../../src/realtime/matchSession';
+import { track } from '../../src/analytics/track';
 
 const routes = {
   'sky-claim': '/game/sky-claim',
@@ -95,6 +96,7 @@ export default function GameLobbyScreen() {
     setMatchSession({ gameId, seed, startAtMs: startAt });
     pairRealtime.sendGame(gameId, { start: true, seed, startAtMs: startAt });
     setCountdown(3);
+    track('game_started', { game: gameId });
   }, [readyMe, readyPeer, countdown, gameId, isHost]);
 
   const onReady = () => {
