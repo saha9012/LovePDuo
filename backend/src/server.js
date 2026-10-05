@@ -113,8 +113,14 @@ wss.on('connection', (socket) => {
     }
 
     if (msg.type === 'game' || msg.type === 'warmth') {
-      if (msg.type === 'game' && msg.payload?.rematch) {
-        console.log(`[LPD] rematch ${socket.lpd.code} · ${msg.gameId ?? '?'}`);
+      if (msg.type === 'game') {
+        if (msg.payload?.rematch) {
+          console.log(`[LPD] rematch ${socket.lpd.code} · ${msg.gameId ?? '?'}`);
+        } else if (msg.payload?.hello || msg.gameId === 'play-peek') {
+          console.log(
+            `[LPD] ${msg.payload?.hello ? 'hello' : 'peek'} ${socket.lpd.code} · ${msg.gameId ?? '?'} · ${socket.lpd.name}`,
+          );
+        }
       }
       broadcast(socket.lpd.code, { ...msg, from: socket.lpd.userId }, socket);
     }

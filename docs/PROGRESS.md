@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Draw/Orbit start keeps peerSeen · Soft/Sky/HB partnerLive fix  
-- [x] Word Veil ready wait · Tunnel preset · candle sync  
+- [x] Backend hello/peek logs for LAN QA  
+- [x] Draw/Orbit peerSeen on start · Soft/Sky/HB partnerLive fix  
 
 ## Catalog
 
