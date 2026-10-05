@@ -219,7 +219,13 @@ export default function HeartbeatScreen() {
         partnerLiveRef.current = true;
         setPartnerFlash(true);
         if (payload.judgement === 'perfect' || payload.judgement === 'great') {
+          const both = lastRef.current === payload.judgement;
           setLast(payload.judgement);
+          if (both) {
+            setPeerNote(`оба ${payload.judgement}`);
+            setTimeout(() => setPeerNote(null), 1000);
+            void juice.perfect();
+          }
         }
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),
