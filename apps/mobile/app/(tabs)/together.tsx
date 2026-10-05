@@ -43,6 +43,7 @@ export default function TogetherScreen() {
   const lastNoteSentAt = useRef(0);
   const lastNoteLen = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerToastRef = useRef<string | null>(null);
   const warmthSeen = useRef(0);
   const warmthSentAt = useRef(0);
 
@@ -51,9 +52,13 @@ export default function TogetherScreen() {
   }, [lit]);
 
   const showPeer = (text: string) => {
+    peerToastRef.current = text;
     setPeerToast(text);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setPeerToast(null), 1800);
+    toastTimer.current = setTimeout(() => {
+      peerToastRef.current = null;
+      setPeerToast(null);
+    }, 1800);
   };
 
   useEffect(() => {
