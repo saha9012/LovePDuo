@@ -369,6 +369,13 @@ export default function OrbitCatchScreen() {
           bumpPeerNote('оба на очках');
           void juice.sync();
         }, 320);
+      } else if (caughtRef.current > partnerRef.current + 1) {
+        setTimeout(() => {
+          const racing =
+            peerNoteRef.current === 'я впереди' || peerNoteRef.current === 'гонка';
+          bumpPeerNote(racing ? 'гонка' : 'я впереди');
+          void (racing ? juice.sync() : juice.hit());
+        }, 320);
       }
     } else {
       lastMissAt.current = Date.now();
