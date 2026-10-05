@@ -23,9 +23,19 @@ Profile surfaces online/offline reconnect juice when the socket flaps.
 
 ## Suggested first deploy
 
-1. Cloudflare Tunnel → local `:8787` for a weekend pilot  
+1. Quick tunnel (no account needed for trycloud):
+
+```bash
+cd backend
+npm start
+# other terminal:
+npx --yes cloudflared tunnel --url http://localhost:8787
+```
+
+Copy the printed `https://….trycloudflare.com` URL, convert to `wss://….trycloudflare.com`, paste in Profile → Realtime URL on both phones.
+
 2. Or Fly/Railway single node with sticky websocket  
-3. Point both phones at `wss://…` in Profile → confirm Home room size 2  
+3. Point both phones at `wss://…` in Profile → confirm Home room size 2 · Play peek · lobby Ready  
 
 ## Not done yet
 
@@ -33,4 +43,4 @@ Profile surfaces online/offline reconnect juice when the socket flaps.
 - Token auth / rate limits
 - Sticky rooms across multi-instance
 
-Until then: LAN `ws://` only.
+Until then: LAN `ws://` or temporary Cloudflare Tunnel.

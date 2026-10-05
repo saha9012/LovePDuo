@@ -351,6 +351,7 @@ export default function HeartbeatScreen() {
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
             <Text style={styles.body}>
               Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.
+              {params.solo !== '1' && !partnerLive ? ' Ждём партнёра на бите…' : ''}
             </Text>
             <Pressable onPress={start} style={styles.btn}>
               <Text style={styles.btnLabel}>Старт</Text>

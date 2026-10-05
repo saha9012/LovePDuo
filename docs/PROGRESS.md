@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Home peer-lobby CTA · WSS_PROD Ideal Bar notes  
-- [x] Music/Together tab hello · STORE_SHOTS dual capture  
-- [x] Minigame hello pings  
+- [x] Cloudflare Tunnel one-liner in WSS_PROD · Soft/Sky/HB wait copy  
+- [x] Home peer-lobby CTA  
+- [x] Music/Together hello  
 
 ## Catalog
 
@@ -20,4 +20,4 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream  
 4. Optional Skia canvas for Signal Draw  
-5. Production `wss://` deploy (`docs/WSS_PROD.md`)
+5. Production `wss://` deploy (`docs/WSS_PROD.md`) — tunnel path documented

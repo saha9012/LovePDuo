@@ -301,6 +301,9 @@ export default function SoftDuelScreen() {
             <Text style={styles.hero}>Реакция на двоих</Text>
             <Text style={styles.body}>
               Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. {ROUNDS} раундов.
+              {params.solo !== '1' && !partnerLive
+                ? ' Ждём, пока партнёр зайдёт в Soft Duel…'
+                : ''}
             </Text>
             <Pressable onPress={start} style={styles.btn}>
               <Text style={styles.btnLabel}>Старт</Text>

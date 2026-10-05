@@ -404,6 +404,7 @@ export default function SkyClaimScreen() {
             <Text style={styles.readyTitle}>Лови огни</Text>
             <Text style={styles.readyBody}>
               Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд.
+              {params.solo !== '1' && !partnerLive ? ' Ждём партнёра в Sky…' : ''}
             </Text>
             <Pressable onPress={start} style={styles.startBtn}>
               <Text style={styles.startLabel}>Старт</Text>
