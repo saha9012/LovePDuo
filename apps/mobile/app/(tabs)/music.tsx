@@ -158,6 +158,12 @@ export default function MusicScreen() {
             `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
           );
           void juice.hit();
+        } else {
+          showNote(
+            `${payload.from ?? 'Партнёр'} положил «${payload.title}» — добавь тот же трек`,
+            2400,
+          );
+          void juice.miss();
         }
       }
       if (msg.type === 'game' && msg.gameId === 'track-react') {

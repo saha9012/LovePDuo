@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music shelf-add miss hint when track missing locally · Draw brush on start  
 - [x] Signal Draw start shares brush · Soft rematch cleanup  
 - [x] Soft rematch flash «партнёру» · late-start catch-up across games  
-- [x] Late-start «догоняем» flash in Soft/Sky/HB/Orbit/Draw/Veil · lobby drift  
 
 ## Catalog
 
