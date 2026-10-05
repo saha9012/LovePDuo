@@ -48,7 +48,17 @@ export default function PairSuccessScreen() {
       -1,
       true,
     );
-  }, [opacity, scale, spin, pulse]);
+    // Soft auto-offer invite once so partner can join without hunting the button
+    const t = setTimeout(() => {
+      void copyText(pairInviteMessage(code)).then((ok) => {
+        if (ok) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2200);
+        }
+      });
+    }, 900);
+    return () => clearTimeout(t);
+  }, [opacity, scale, spin, pulse, code]);
 
   const style = useAnimatedStyle(() => ({
     opacity: opacity.value,

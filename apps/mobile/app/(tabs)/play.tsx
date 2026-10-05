@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -9,7 +10,10 @@ import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
 
 type GameTag = 'mvp' | 'new';
+type Filter = 'all' | GameTag;
 type Cover = 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit' | 'duel' | 'veil';
+
+const FILTER_KEY = 'lovepduo.play_filter';
 
 type CatalogItem = {
   id: string;
@@ -95,13 +99,21 @@ const CATALOG: CatalogItem[] = [
   },
 ];
 
-type Filter = 'all' | GameTag;
-
 export default function PlayScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
+
+  useEffect(() => {
+    void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
+      if (raw === 'all' || raw === 'mvp' || raw === 'new') setFilter(raw);
+    });
+  }, []);
+
+  useEffect(() => {
+    void AsyncStorage.setItem(FILTER_KEY, filter);
+  }, [filter]);
 
   const games = useMemo(() => {
     const query = q.trim().toLowerCase();
