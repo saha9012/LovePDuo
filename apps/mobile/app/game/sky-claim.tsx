@@ -81,11 +81,24 @@ export default function SkyClaimScreen() {
           phase?: string;
           rematch?: boolean;
           seed?: number;
+          miss?: boolean;
+          decoy?: boolean;
         } | undefined;
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
           setTimeout(() => startRef.current(), 0);
+          return;
+        }
+        if (payload?.miss || payload?.decoy) {
+          setFlash(payload.decoy ? 'decoy' : 'miss');
+          setPartnerFlash(true);
+          partnerScale.value = withSequence(
+            withSpring(0.94, { damping: 10 }),
+            withTiming(1, { duration: 200 }),
+          );
+          setTimeout(() => setPartnerFlash(false), 420);
+          void (payload.decoy ? juice.decoy() : juice.miss());
           return;
         }
         if (typeof payload?.score === 'number') {
@@ -246,6 +259,7 @@ export default function SkyClaimScreen() {
           setCombo(0);
           setFlash('miss');
           void juice.miss();
+          pairRealtime.sendGame('sky-claim', { miss: true, score: scoreRef.current });
           return prev;
         }
         const result = scoreCatch(comboRef.current, hit.points);
@@ -256,10 +270,13 @@ export default function SkyClaimScreen() {
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
         if (hit.type === 'decoy') {
           void juice.decoy();
+          pairRealtime.sendGame('sky-claim', { decoy: true, score: scoreRef.current });
         } else if (result.combo > 0 && result.combo % 5 === 0) {
           void juice.perfect();
+          pairRealtime.sendGame('sky-claim', { score: scoreRef.current });
         } else {
           void juice.catch();
+          pairRealtime.sendGame('sky-claim', { score: scoreRef.current });
         }
         return rest;
       });

@@ -60,11 +60,26 @@ export default function OrbitCatchScreen() {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'game' && msg.gameId === 'orbit-catch') {
-        const payload = msg.payload as { caught?: number; rematch?: boolean; seed?: number } | undefined;
+        const payload = msg.payload as {
+          caught?: number;
+          rematch?: boolean;
+          seed?: number;
+          miss?: boolean;
+        } | undefined;
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
           startRef.current();
+          return;
+        }
+        if (payload?.miss) {
+          setPartnerFlash(true);
+          partnerScale.value = withSequence(
+            withSpring(0.94, { damping: 10 }),
+            withTiming(1, { duration: 200 }),
+          );
+          setTimeout(() => setPartnerFlash(false), 400);
+          void juice.miss();
           return;
         }
         if (typeof payload?.caught === 'number') {
@@ -163,10 +178,11 @@ export default function OrbitCatchScreen() {
         withTiming(1, { duration: 40 }),
         withTiming(0, { duration: 280 }),
       );
-      setOrbAngle(orbAngle + Math.PI * (0.6 + (seed % 5) * 0.08));
+      setOrbAngle(orbAngle + Math.PI * (0.6 + (seedRef.current % 5) * 0.08));
       setAligned(false);
     } else {
       void juice.miss();
+      pairRealtime.sendGame('orbit-catch', { miss: true });
       flash.value = withSpring(0);
     }
   };

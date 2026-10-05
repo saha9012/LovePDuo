@@ -29,8 +29,10 @@ export default function HomeScreen() {
   const [wsOnline, setWsOnline] = useState(false);
   const [copied, setCopied] = useState(false);
   const [warmthToast, setWarmthToast] = useState<string | null>(null);
+  const [roomToast, setRoomToast] = useState<string | null>(null);
   const lastMemory = memories[0];
   const warmthSeen = React.useRef(0);
+  const nameSeen = React.useRef(pair?.name ?? '');
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -38,6 +40,19 @@ export default function HomeScreen() {
       off();
     };
   }, []);
+
+  useEffect(() => {
+    const name = pair?.name ?? '';
+    if (!name || name === nameSeen.current) return;
+    if (nameSeen.current) {
+      setRoomToast(`Комната: ${name}`);
+      void juice.card();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      nameSeen.current = name;
+      return () => clearTimeout(t);
+    }
+    nameSeen.current = name;
+  }, [pair?.name]);
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
@@ -124,6 +139,7 @@ export default function HomeScreen() {
             </Text>
           ) : null}
           {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
+          {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>
@@ -252,5 +268,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
     fontSize: 14,
     color: colors.accentRose,
+  },
+  roomToast: {
+    marginTop: 4,
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    color: colors.accentAmber,
   },
 });

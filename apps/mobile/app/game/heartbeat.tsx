@@ -79,12 +79,25 @@ export default function HeartbeatScreen() {
         phase?: string;
         rematch?: boolean;
         seed?: number;
+        miss?: boolean;
+        judgement?: BeatJudgement;
       } | undefined;
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         // delay start until chart memo updates
         setTimeout(() => startRef.current(), 0);
+        return;
+      }
+      if (payload?.miss) {
+        setLast('miss');
+        setPartnerFlash(true);
+        partnerScale.value = withSequence(
+          withSpring(0.94, { damping: 10 }),
+          withTiming(1, { duration: 200 }),
+        );
+        setTimeout(() => setPartnerFlash(false), 400);
+        void juice.miss();
         return;
       }
       if (typeof payload?.total === 'number') {
@@ -196,6 +209,7 @@ export default function HeartbeatScreen() {
     if (Math.abs(delta) > heartbeatConfig.windowGreatMs + 40) {
       setLast('miss');
       void juice.miss();
+      pairRealtime.sendGame('heartbeat', { miss: true, judgement: 'miss' });
       return;
     }
     const j = judgeTap(delta);

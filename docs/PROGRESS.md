@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Join auto-submit · deep-link wait for hydrate  
-- [x] Music reaction + playlist mood sync over WS  
-- [x] Lobby/Together/mood/rematch batch (prior)  
+- [x] Live miss/decoy flashes: Orbit · Heartbeat · Sky Claim · Soft Duel  
+- [x] Home room-rename toast · join deep-link · Music reaction sync  
+- [x] Lobby/Together/mood/rematch (prior)  
 
 ## Catalog
 
