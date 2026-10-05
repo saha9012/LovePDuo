@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { pairRealtime } from '../realtime/PairRealtime';
 
 export type Presence = 'online' | 'away' | 'offline';
 
@@ -121,6 +122,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    pairRealtime.disconnect();
     setUser(null);
     setPair(null);
     setTracks([]);
