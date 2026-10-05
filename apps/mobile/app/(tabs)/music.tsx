@@ -174,9 +174,19 @@ export default function MusicScreen() {
           from?: string;
         } | undefined;
         if (!payload?.title || !payload.reaction) return;
+        const local = tracks.find(
+          (t) =>
+            t.title === payload.title &&
+            (payload.artist ? t.artist === payload.artist : true),
+        );
+        const same = local?.reaction === payload.reaction;
         reactTrackMeta(payload.title, payload.artist ?? '', payload.reaction);
-        showNote(`${payload.from ?? 'Партнёр'} отметил «${payload.title}»`);
-        void juice.card();
+        showNote(
+          same
+            ? `Синхрон: «${payload.title}»`
+            : `${payload.from ?? 'Партнёр'} отметил «${payload.title}»`,
+        );
+        void (same ? juice.perfect() : juice.card());
       }
       if (msg.type === 'game' && msg.gameId === 'playlist') {
         const payload = msg.payload as {
