@@ -180,7 +180,11 @@ export default function HomeScreen() {
           setMood(payload.mood);
           setRoomToast(
             same
-              ? 'Синхрон настроения'
+              ? payload.mood === 'night'
+                ? 'Оба: Ночь'
+                : payload.mood === 'warm'
+                  ? 'Оба: Тёплый свет'
+                  : 'Оба: Дождь'
               : payload.mood === 'night'
                 ? 'Партнёр: Ночь'
                 : payload.mood === 'warm'
@@ -222,9 +226,19 @@ export default function HomeScreen() {
     setMood(m);
     pairRealtime.sendGame('mood', { mood: m });
     setRoomToast(
-      m === 'night' ? 'Настроение: Ночь' : m === 'warm' ? 'Настроение: Тёплый свет' : 'Настроение: Дождь',
+      same
+        ? m === 'night'
+          ? 'Оба: Ночь'
+          : m === 'warm'
+            ? 'Оба: Тёплый свет'
+            : 'Оба: Дождь'
+        : m === 'night'
+          ? 'Настроение: Ночь'
+          : m === 'warm'
+            ? 'Настроение: Тёплый свет'
+            : 'Настроение: Дождь',
     );
-    void (same ? juice.sync() : juice.hit());
+    void (same ? juice.perfect() : juice.hit());
     setTimeout(() => setRoomToast(null), 1400);
   };
 
