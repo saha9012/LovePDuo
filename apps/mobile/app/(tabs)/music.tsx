@@ -117,15 +117,26 @@ export default function MusicScreen() {
           fromId?: string;
         } | undefined;
         if (!payload?.title || payload.fromId === user?.id) return;
-        addTrack({
-          title: payload.title,
-          artist: payload.artist ?? 'Партнёр',
-          sourceType: payload.sourceType ?? 'link',
-          playbackMode: payload.sourceType === 'spotify' ? 'spotify' : 'link',
-          addedBy: payload.from ?? 'Партнёр',
-        });
-        showNote(`${payload.from ?? 'Партнёр'} добавил «${payload.title}»`);
-        void juice.sync();
+        const already = tracks.some(
+          (t) =>
+            t.title === payload.title &&
+            (payload.artist ? t.artist === payload.artist : true),
+        );
+        if (!already) {
+          addTrack({
+            title: payload.title,
+            artist: payload.artist ?? 'Партнёр',
+            sourceType: payload.sourceType ?? 'link',
+            playbackMode: payload.sourceType === 'spotify' ? 'spotify' : 'link',
+            addedBy: payload.from ?? 'Партнёр',
+          });
+        }
+        showNote(
+          already
+            ? `Оба добавили «${payload.title}»`
+            : `${payload.from ?? 'Партнёр'} добавил «${payload.title}»`,
+        );
+        void (already ? juice.perfect() : juice.sync());
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'now-playing') {
