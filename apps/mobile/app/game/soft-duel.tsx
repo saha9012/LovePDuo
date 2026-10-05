@@ -423,6 +423,12 @@ export default function SoftDuelScreen() {
         flashScale.value = withSpring(1.14, { damping: 10 });
         void juice.perfect();
       }, 320);
+    } else if (partnerLiveRef.current && myScoreRef.current === partnerScore) {
+      setTimeout(() => {
+        setFlash('Оба на очках');
+        flashScale.value = withSpring(1.12, { damping: 10 });
+        void juice.sync();
+      }, 320);
     }
     setTimeout(() => nextRound(roundRef.current + 1), 420);
   };

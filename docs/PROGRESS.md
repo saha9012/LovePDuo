@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft local «Оба на очках» · peer score tie · QA dual hellos  
 - [x] Soft «Оба на очках» · QA dual hello Music/Together · Lobby догоняют  
 - [x] QA dual hello Music/Together · Lobby оба догоняют · Word Veil late-start  
-- [x] Lobby «Оба догоняют» · Word Veil late-start · ANDROID_QA догоняют  
 
 ## Catalog
 
