@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
@@ -51,6 +58,8 @@ export default function HeartbeatScreen() {
   const partnerLiveRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
   const startRef = useRef<() => void>(() => undefined);
+  const padScale = useSharedValue(1);
+  const syncGlow = useSharedValue(0);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -145,6 +154,10 @@ export default function HeartbeatScreen() {
 
   const onTap = () => {
     if (phase !== 'playing') return;
+    padScale.value = withSequence(
+      withTiming(0.92, { duration: 50 }),
+      withSpring(1, { damping: 12, stiffness: 240 }),
+    );
     const t = Date.now() - startAt.current;
     const note = chart[cursor.current];
     if (!note) return;
@@ -177,6 +190,10 @@ export default function HeartbeatScreen() {
     if (realSync || demoSync) {
       syncRef.current += 40;
       setSyncBonus(syncRef.current);
+      syncGlow.value = withSequence(
+        withTiming(1, { duration: 80 }),
+        withTiming(0, { duration: 420 }),
+      );
       void juice.sync();
     } else if (j === 'perfect') {
       void juice.perfect();
@@ -188,6 +205,12 @@ export default function HeartbeatScreen() {
   const total = score + syncBonus;
   const line = pickPostMatchLine(total, partnerScore, seed + (elapsed || 1));
   const beatPulse = Math.sin((elapsed / (60000 / heartbeatConfig.bpm)) * Math.PI * 2);
+  const padStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: padScale.value }],
+  }));
+  const syncStyle = useAnimatedStyle(() => ({
+    opacity: syncGlow.value * 0.45,
+  }));
 
   if (phase === 'finished') {
     return (
@@ -234,6 +257,7 @@ export default function HeartbeatScreen() {
               </Text>
             </View>
             <View style={styles.stage}>
+              <Animated.View style={[styles.syncFlash, syncStyle]} />
               <View
                 style={[
                   styles.ring,
@@ -252,9 +276,11 @@ export default function HeartbeatScreen() {
               />
               <Text style={styles.judgement}>{last?.toUpperCase() ?? 'TAP'}</Text>
             </View>
-            <Pressable onPress={onTap} style={styles.pad}>
-              <Text style={styles.padLabel}>TAP</Text>
-            </Pressable>
+            <Animated.View style={padStyle}>
+              <Pressable onPress={onTap} style={styles.pad}>
+                <Text style={styles.padLabel}>TAP</Text>
+              </Pressable>
+            </Animated.View>
           </>
         )}
       </View>
@@ -314,6 +340,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  syncFlash: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: colors.accentMist,
   },
   ring: {
     width: 180,
