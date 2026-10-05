@@ -6,18 +6,18 @@
 
 ## Latest
 
-- [x] Shared rematch seed: Soft Duel · Orbit Catch · Heartbeat  
-- [x] Warmth toast · WS reconnect backoff · AppState away  
+- [x] Shared rematch seed: Soft Duel · Orbit · Heartbeat · Sky Claim  
+- [x] Warmth toast · WS reconnect backoff · AppState away · Profile WS label  
 - [x] SFX mute persist · presence ping · store capture helpers  
 
 ## Catalog
 
 Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft Duel · Word Veil
 
-## Still open
+## Still open (Ideal Bar not closed)
 
-1. Live device screenshot replace for store frames (`docs/STORE_SHOTS.md`)  
-2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`) — PC IP `192.168.0.120`  
+1. Live device screenshot replace (`docs/STORE_SHOTS.md`)  
+2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream  
 4. Optional Skia canvas for Signal Draw  
 5. Production `wss://` + auth

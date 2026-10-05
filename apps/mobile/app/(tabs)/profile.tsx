@@ -57,7 +57,7 @@ export default function ProfileScreen() {
             <Text style={typography.caption}>Код: {pair?.code ?? '—'}</Text>
             <Text style={typography.caption}>{pair?.name}</Text>
             <Text style={[styles.wsBadge, wsOnline ? styles.wsOn : styles.wsOff]}>
-              WS {wsOnline ? 'online' : 'offline'}
+              WS {wsOnline ? 'online' : 'переподключение…'}
             </Text>
           </View>
         </View>
