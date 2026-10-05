@@ -534,8 +534,16 @@ export default function HeartbeatScreen() {
     ) {
       setTimeout(() => {
         const racing =
-          peerNoteRef.current === 'я впереди' || peerNoteRef.current === 'гонка';
-        bumpPeerNote(racing ? 'гонка' : 'я впереди');
+          peerNoteRef.current === 'я впереди' ||
+          peerNoteRef.current === 'гонка' ||
+          peerNoteRef.current === 'оба в гонке';
+        bumpPeerNote(
+          peerNoteRef.current === 'гонка' || peerNoteRef.current === 'оба в гонке'
+            ? 'оба в гонке'
+            : racing
+              ? 'гонка'
+              : 'я впереди',
+        );
         void (racing ? juice.sync() : juice.hit());
       }, 320);
       if (j === 'perfect') void juice.perfect();
