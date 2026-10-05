@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Orbit finish sync + memory kind · Signal Draw 5s / peer finish  
-- [x] Together warmth receive toast · Word Veil memory kind  
-- [x] Sky partner finish · WV/ToS presence  
+- [x] Heartbeat partner-finish note · Lobby READY/start toasts  
+- [x] Orbit/Signal finish sync · Together warmth receive  
+- [x] Memory kinds orbit/veil  
 
 ## Catalog
 

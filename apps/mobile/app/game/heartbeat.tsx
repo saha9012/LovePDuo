@@ -130,6 +130,18 @@ export default function HeartbeatScreen() {
         void juice.miss();
         return;
       }
+      if (payload?.phase === 'finished') {
+        setPeerNote('финиш');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+        if (typeof payload.total === 'number') {
+          setPartnerScore(payload.total);
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
+        }
+        void juice.sync();
+        return;
+      }
       if (typeof payload?.total === 'number') {
         setPartnerScore(payload.total);
         setPartnerLive(true);

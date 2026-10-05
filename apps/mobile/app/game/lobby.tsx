@@ -135,6 +135,7 @@ export default function GameLobbyScreen() {
           setReadyPeer(payload.ready);
           if (payload.ready) {
             void juice.sync();
+            showCancelToast('Партнёр READY');
           } else {
             const wasCounting = countdownRef.current != null;
             void juice.miss();
@@ -151,6 +152,7 @@ export default function GameLobbyScreen() {
           setStartAtMs(at);
           setMatchSession({ gameId, seed: payload.seed, startAtMs: at });
           setCountdown(3);
+          showCancelToast('Старт!');
         }
       }
     });
@@ -208,6 +210,7 @@ export default function GameLobbyScreen() {
     setMatchSession({ gameId, seed, startAtMs: startAt });
     pairRealtime.sendGame(gameId, { start: true, seed, startAtMs: startAt });
     setCountdown(3);
+    showCancelToast('Старт для обоих');
     track('game_started', { game: gameId });
   }, [readyMe, readyPeer, countdown, gameId, isHost]);
 
