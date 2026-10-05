@@ -104,6 +104,7 @@ export default function ProfileScreen() {
             onPress={() => {
               setPairName(roomDraft);
               setRoomSaved(true);
+              pairRealtime.sendGame('room-name', { name: roomDraft.trim() || 'Наша комната' });
               void juice.card();
             }}
           />

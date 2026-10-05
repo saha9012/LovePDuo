@@ -7,7 +7,7 @@ const PING_MS = 18000;
 
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
-  const { user, pair, sendWarmth, setPartnerInfo, setRoomSize } = useApp();
+  const { user, pair, sendWarmth, setPartnerInfo, setRoomSize, setPairName } = useApp();
 
   useEffect(() => {
     void juice.hydrateMuted();
@@ -31,6 +31,12 @@ export function RealtimeConnector() {
               ? msg.name
               : pair.partnerName || 'Партнёр';
           setPartnerInfo(name, status);
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'room-name') {
+        const payload = msg.payload as { name?: string } | undefined;
+        if (typeof payload?.name === 'string' && payload.name.trim()) {
+          setPairName(payload.name);
         }
       }
       if (msg.type === 'joined') {
@@ -76,6 +82,7 @@ export function RealtimeConnector() {
     sendWarmth,
     setPartnerInfo,
     setRoomSize,
+    setPairName,
     user?.displayName,
   ]);
 
