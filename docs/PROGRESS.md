@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music «Оба чувствуют» · Together «Оба на буквах» · Orbit/HB lead  
 - [x] Orbit/HB я впереди/гонка · Draw/Sky lead · Soft lead  
 - [x] Draw/Sky я впереди/гонка · Soft lead · ToS листают  
-- [x] Soft «Я впереди»/гонка · ToS листают · Orbit/HB race  
 
 ## Catalog
 

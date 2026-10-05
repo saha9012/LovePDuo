@@ -45,6 +45,8 @@ export default function MusicScreen() {
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastStopAt = React.useRef(0);
   const lastHelloAt = React.useRef(0);
+  const lastReactMatchAt = React.useRef(0);
+  const lastReactChoice = React.useRef<string | null>(null);
 
   const showNote = (text: string, ms = 1800) => {
     setNote(text);
@@ -212,12 +214,23 @@ export default function MusicScreen() {
         );
         const same = local?.reaction === payload.reaction;
         reactTrackMeta(payload.title, payload.artist ?? '', payload.reaction);
+        const key = `${payload.title}|${payload.reaction}`;
+        const again =
+          same &&
+          lastReactChoice.current === key &&
+          Date.now() - lastReactMatchAt.current < 2800;
+        if (same) {
+          lastReactMatchAt.current = Date.now();
+          lastReactChoice.current = key;
+        }
         showNote(
-          same
-            ? `Синхрон: «${payload.title}»`
-            : `${payload.from ?? 'Партнёр'} отметил «${payload.title}»`,
+          again
+            ? `Оба чувствуют «${payload.title}»`
+            : same
+              ? `Синхрон: «${payload.title}»`
+              : `${payload.from ?? 'Партнёр'} отметил «${payload.title}»`,
         );
-        void (same ? juice.perfect() : juice.card());
+        void (again || same ? juice.perfect() : juice.card());
       }
       if (msg.type === 'game' && msg.gameId === 'playlist') {
         const payload = msg.payload as {
@@ -363,6 +376,8 @@ export default function MusicScreen() {
     reactTrack(id, reaction);
     const t = tracks.find((x) => x.id === id);
     if (t) {
+      lastReactChoice.current = `${t.title}|${reaction}`;
+      lastReactMatchAt.current = Date.now();
       pairRealtime.sendGame('track-react', {
         title: t.title,
         artist: t.artist,
