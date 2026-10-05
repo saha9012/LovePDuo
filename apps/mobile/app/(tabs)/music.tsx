@@ -261,7 +261,10 @@ export default function MusicScreen() {
         }
         showNote(
           again
-            ? `Оба чувствуют «${payload.title}»`
+            ? noteRef.current.startsWith('Оба чувствуют') ||
+              noteRef.current.startsWith('Оба в эмоции')
+              ? `Оба в эмоции «${payload.title}»`
+              : `Оба чувствуют «${payload.title}»`
             : same
               ? `Синхрон: «${payload.title}»`
               : `${payload.from ?? 'Партнёр'} отметил «${payload.title}»`,

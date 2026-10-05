@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music «Оба в эмоции» · Soft ждут вместе QA · race QA  
 - [x] ANDROID_QA гонка escalate · Soft rematch/arm dual · Draw гонка  
 - [x] Soft rematch local dual · Soft arm dual · Draw гонка  
-- [x] Soft local Жди/ЖМИ dual · Draw гонка · Sky гонка  
 
 ## Catalog
 
