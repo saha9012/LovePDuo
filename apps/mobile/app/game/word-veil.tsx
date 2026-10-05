@@ -279,11 +279,21 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.phase === 'finished') {
-        if (typeof payload.score === 'number') setTheirScore(payload.score);
+        const peerPts = typeof payload.score === 'number' ? payload.score : 0;
+        setTheirScore(peerPts);
         setPresenceHint('Партнёр закрыл раунд');
         setTimeout(() => setPresenceHint(null), 1600);
-        setPhase('finished');
-        void juice.postMatch();
+        // Don't skip reveal — show comparison if we still have a local word
+        if (
+          phaseRef.current === 'playing' &&
+          (lockedRef.current || mineRef.current.trim().length > 0)
+        ) {
+          const peer = partnerWordRef.current || mineRef.current;
+          doRevealRef.current(peer);
+        } else if (phaseRef.current !== 'reveal' && phaseRef.current !== 'finished') {
+          setPhase('finished');
+          void juice.postMatch();
+        }
         return;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {

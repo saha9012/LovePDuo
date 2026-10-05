@@ -828,8 +828,30 @@ export default function MusicScreen() {
         <Text style={styles.kicker}>Music</Text>
         <Text style={typography.headline}>Полка пары</Text>
         <Text style={typography.body}>
-          Музыка остаётся в LovePDuo. Long-press на чип полки — своё имя (синхрон у партнёра).
+          {tracks.length} треков · {playlists.length} полок ·{' '}
+          {playlists.reduce((n, p) => n + p.trackIds.length, 0)} на полках ·{' '}
+          {tracks.filter((t) => t.reaction).length} реакций
+          {nowPlayingId ? ' · играет' : ''}
         </Text>
+        <View style={styles.statStrip}>
+          {(
+            [
+              ['all', String(tracks.length), 'всего'],
+              ['up', String(tracks.filter((t) => t.sourceType === 'upload').length), 'upload'],
+              ['sp', String(tracks.filter((t) => t.sourceType === 'spotify').length), 'spotify'],
+              ['vk', String(tracks.filter((t) => t.sourceType === 'vk').length), 'vk'],
+              ['rx', String(tracks.filter((t) => t.reaction).length), '♥✦≈'],
+              ['pl', String(active?.trackIds.length ?? 0), active?.name ?? 'полка'],
+            ] as const
+          ).map(([k, n, l]) => (
+            <View key={k} style={styles.statPill}>
+              <Text style={styles.statPillNum}>{n}</Text>
+              <Text style={styles.statPillLabel} numberOfLines={1}>
+                {l}
+              </Text>
+            </View>
+          ))}
+        </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.moods}>
           {playlists.map((pl) =>
@@ -1085,6 +1107,32 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.accentAmber,
     fontSize: 12,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  statPill: {
+    minWidth: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  statPillNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  statPillLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
+    maxWidth: 64,
   },
   moods: {
     gap: spacing.sm,

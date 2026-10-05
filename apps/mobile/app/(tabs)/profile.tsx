@@ -18,8 +18,9 @@ import { confirmDestructive } from '../../src/utils/confirmDestructive';
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, unlinkPair, signOut, updateDisplayName, setPairName } = useApp();
-  const { clearMemories } = useMemories();
+  const { user, pair, unlinkPair, signOut, updateDisplayName, setPairName, tracks, notes, warmthPulse } =
+    useApp();
+  const { clearMemories, items: memories } = useMemories();
   const [sfxMuted, setSfxMuted] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
   const [roomDraft, setRoomDraft] = useState(pair?.name ?? '');
@@ -85,6 +86,32 @@ export default function ProfileScreen() {
       >
         <Text style={styles.kicker}>Profile</Text>
         <Text style={typography.headline}>Пара и настройки</Text>
+        <Text style={typography.body}>
+          Локальный профиль · Google Sign-In пока нет · привязка к коду пары
+        </Text>
+        <View style={styles.statStrip}>
+          {(
+            [
+              [
+                'd',
+                pair?.pairedAt
+                  ? String(Math.max(1, Math.floor((Date.now() - pair.pairedAt) / 86_400_000) + 1))
+                  : '0',
+                'дней',
+              ],
+              ['t', String(tracks.length), 'треков'],
+              ['n', String(notes.length), 'заметок'],
+              ['m', String(memories.length), 'memory'],
+              ['w', String(warmthPulse), 'тепла'],
+              ['r', pair?.code ?? '—', 'код'],
+            ] as const
+          ).map(([k, n, l]) => (
+            <View key={k} style={styles.statPill}>
+              <Text style={styles.statPillNum}>{n}</Text>
+              <Text style={styles.statPillLabel}>{l}</Text>
+            </View>
+          ))}
+        </View>
 
         <View style={styles.row}>
           <PairAvatar name={user?.displayName ?? 'Ты'} presence="online" size={64} />
@@ -364,6 +391,31 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.accentMist,
     fontSize: 12,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  statPill: {
+    minWidth: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  statPillNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  statPillLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
   },
   row: {
     flexDirection: 'row',

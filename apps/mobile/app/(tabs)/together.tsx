@@ -440,7 +440,26 @@ export default function TogetherScreen() {
       >
         <Text style={styles.kicker}>Together</Text>
         <Text style={typography.headline}>Ритуалы и искры</Text>
-        <Text style={typography.body}>Daily Spark, свеча, заметки и тепло.</Text>
+        <Text style={typography.body}>
+          {notes.length} заметок · {memories.length} memory · искра {idx + 1}/{soft.length || 1}
+          {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
+        </Text>
+        <View style={styles.statStrip}>
+          {(
+            [
+              ['n', String(notes.length), 'notes'],
+              ['m', String(memories.length), 'memory'],
+              ['s', String(idx + 1), 'искра'],
+              ['c', lit ? `${mins}:${secs.toString().padStart(2, '0')}` : 'off', 'свеча'],
+              ['w', String(warmthPulse), 'тепло'],
+            ] as const
+          ).map(([k, n, l]) => (
+            <View key={k} style={styles.statPill}>
+              <Text style={styles.statPillNum}>{n}</Text>
+              <Text style={styles.statPillLabel}>{l}</Text>
+            </View>
+          ))}
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
@@ -585,6 +604,31 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.accentRose,
     fontSize: 12,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  statPill: {
+    minWidth: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  statPillNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  statPillLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
   },
   card: {
     marginTop: spacing.sm,
