@@ -259,12 +259,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   ring: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: SIZE / 2,
     borderWidth: 1.5,
   },
   flash: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     borderRadius: SIZE / 2,
     backgroundColor: colors.accentAmber,
   },

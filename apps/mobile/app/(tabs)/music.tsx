@@ -11,6 +11,7 @@ import { typography } from '../../src/theme/typography';
 import { useApp, TrackItem } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
+import { track as trackEvent } from '../../src/analytics/track';
 
 export default function MusicScreen() {
   const insets = useSafeAreaInsets();
@@ -108,9 +109,10 @@ export default function MusicScreen() {
       addedBy: user?.displayName ?? 'Ты',
       uri: asset.uri,
     });
+    trackEvent('track_uploaded', { source: 'upload' });
     setNote('Трек сохранён в библиотеке пары. Никуда не денется.');
+    void juice.sync();
   };
-
   const addSpotifyStub = () => {
     addTrack({
       title: 'Midnight Orbit (demo)',
@@ -176,6 +178,19 @@ export default function MusicScreen() {
         {partnerNowPlaying ? (
           <Text style={styles.nowPlaying}>♪ {partnerNowPlaying}</Text>
         ) : null}
+        {nowPlayingId ? (
+          <LpdButton
+            label="Стоп"
+            variant="ghost"
+            onPress={async () => {
+              await sound?.stopAsync();
+              await sound?.unloadAsync();
+              setSound(null);
+              setNowPlaying(null);
+              pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
+            }}
+          />
+        ) : null}
 
         <View style={styles.actions}>
           <LpdButton label="Загрузить трек" onPress={() => void upload()} />
@@ -194,8 +209,10 @@ export default function MusicScreen() {
             visibleTracks.map((t) => {
               const inActive = active?.trackIds.includes(t.id);
               return (
-                <View key={t.id} style={styles.row}>
-                  <Pressable style={{ flex: 1, gap: 4 }} onPress={() => void playTrack(t)}>
+                <View
+                  key={t.id}
+                  style={[styles.row, nowPlayingId === t.id && styles.rowPlaying]}
+                >                  <Pressable style={{ flex: 1, gap: 4 }} onPress={() => void playTrack(t)}>
                     <Text style={styles.trackTitle}>
                       {nowPlayingId === t.id ? '▶ ' : ''}
                       {t.title}
@@ -306,6 +323,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     padding: spacing.lg,
     backgroundColor: 'rgba(36,28,49,0.55)',
+  },
+  rowPlaying: {
+    borderColor: 'rgba(226,176,122,0.55)',
+    backgroundColor: 'rgba(196,92,110,0.16)',
   },
   trackTitle: {
     fontFamily: fonts.uiSemi,
