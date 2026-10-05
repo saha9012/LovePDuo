@@ -203,6 +203,10 @@ export default function TruthOrSparkScreen() {
 
   const next = () => {
     const ni = index + 1;
+    if (ni > 0 && ni % deck.length === 0) {
+      showTurnToast('Колода по кругу');
+      void juice.sync();
+    }
     setIndex(ni);
     setTurnMine(false);
     broadcast(ni, filter, skips);

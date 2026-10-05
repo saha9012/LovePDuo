@@ -153,6 +153,7 @@ export default function SoftDuelScreen() {
         setTimeout(() => setPartnerFlash(false), 450);
         if (payload.phase === 'finished' && phaseRef.current === 'playing') {
           setFlash('Партнёр финиш');
+          void juice.sync();
         } else if (typeof payload.tap === 'number') {
           const label =
             payload.tap < 180 ? 'Партнёр PERFECT' : payload.tap < 420 ? 'Партнёр GOOD' : 'Партнёр OK';

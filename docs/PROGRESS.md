@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Soft arm «Партнёр ЖМИ» · Word Veil start hello · ANDROID_QA arm check  
-- [x] Profile unlink juice · deep-link join juice  
+- [x] ToS deck-wrap toast · Soft partner-finish juice  
+- [x] Soft arm ЖМИ · Word Veil start hello · ANDROID_QA  
 
 ## Catalog
 
