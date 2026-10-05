@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Soft Duel arm pulse sync · Profile unlink/signOut juice  
-- [x] Deep-link join juice · Home memory toast  
+- [x] Soft Duel «Партнёр ЖМИ» · Word Veil start hello  
+- [x] Profile unlink juice · Soft arm pulse  
 
 ## Catalog
 

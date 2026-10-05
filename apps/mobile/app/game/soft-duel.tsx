@@ -103,6 +103,7 @@ export default function SoftDuelScreen() {
       }
       if (payload?.arm) {
         setPartnerFlash(true);
+        setFlash((cur) => (cur === 'ЖМИ' || cur === 'Жди…' ? cur : 'Партнёр ЖМИ'));
         partnerScale.value = withSequence(
           withSpring(1.1, { damping: 10 }),
           withTiming(1, { duration: 200 }),

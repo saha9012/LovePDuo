@@ -287,7 +287,16 @@ export default function WordVeilScreen() {
                 ? ' Ждём партнёра за вуалью…'
                 : ''}
             </Text>
-            <LpdButton label="Старт" onPress={() => setPhase('playing')} />
+            <LpdButton
+              label="Старт"
+              onPress={() => {
+                setPhase('playing');
+                if (pair && user && params.solo !== '1') {
+                  pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+                }
+                void juice.beat();
+              }}
+            />
           </View>
         ) : (
           <>
