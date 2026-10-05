@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Welcome room-size foot · ANDROID_QA sync-finish · display-name dual  
 - [x] Profile display-name dual sync · Word Veil typing clear on lock  
 - [x] Sync-finish PostMatch across Soft/Sky/HB/Orbit/Draw · Veil finish · Music fade  
-- [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
 
 ## Catalog
 

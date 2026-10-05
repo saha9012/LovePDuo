@@ -125,7 +125,9 @@ export default function WelcomeScreen() {
           )}
           <Text style={styles.foot}>
             {pair
-              ? `Код ${pair.code} сохранён. Можно жечь дальше.`
+              ? `Код ${pair.code} сохранён${
+                  typeof pair.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''
+                }. Можно жечь дальше.`
               : 'Создай пару или войди по коду — два телефона, одна комната.'}
           </Text>
         </Animated.View>
