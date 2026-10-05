@@ -129,7 +129,11 @@ export default function TogetherScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        showPeer('Партнёр снова рядом');
+        const racing =
+          peerToastRef.current === 'Партнёр снова рядом' ||
+          peerToastRef.current === 'Оба снова вместе' ||
+          peerToastRef.current === 'Партнёр ушёл с Together';
+        showPeer(racing ? 'Оба снова вместе' : 'Партнёр снова рядом');
         void juice.warmth();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('together-hello', {

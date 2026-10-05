@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Together rejoin «Оба снова вместе» · Profile room escalate  
 - [x] PostMatch «Оба на финише» dual label · Soft/Sky/Orbit/HB/Draw  
 - [x] Music «Оба в эмоции» · Soft ждут вместе QA · race QA  
-- [x] ANDROID_QA гонка escalate · Soft rematch/arm dual · Draw гонка  
 
 ## Catalog
 

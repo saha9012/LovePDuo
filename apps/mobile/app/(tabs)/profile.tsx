@@ -30,6 +30,11 @@ export default function ProfileScreen() {
   const [inviteCopied, setInviteCopied] = useState(false);
   const [wsToast, setWsToast] = useState<string | null>(null);
   const wasOnline = useRef(pairRealtime.connected);
+  const wsToastRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    wsToastRef.current = wsToast;
+  }, [wsToast]);
 
   useEffect(() => {
     setNameDraft(user?.displayName ?? '');
@@ -136,11 +141,19 @@ export default function ProfileScreen() {
             onPress={() => {
               const next = roomDraft.trim() || 'Наша комната';
               const both = pair?.name === next;
+              const racing =
+                both &&
+                (wsToastRef.current === 'Оба назвали комнату' ||
+                  wsToastRef.current === 'Оба в одной комнате');
               setPairName(next);
               setRoomSaved(true);
-              setWsToast(
-                both ? 'Оба назвали комнату' : 'Имя комнаты сохранено',
-              );
+              const toast = racing
+                ? 'Оба в одной комнате'
+                : both
+                  ? 'Оба назвали комнату'
+                  : 'Имя комнаты сохранено';
+              wsToastRef.current = toast;
+              setWsToast(toast);
               setTimeout(() => setWsToast(null), 1600);
               pairRealtime.sendGame('room-name', { name: next });
               void (both ? juice.perfect() : juice.card());
