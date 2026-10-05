@@ -41,7 +41,10 @@ export default function GameLobbyScreen() {
   const [matchSeed, setMatchSeed] = useState<number | null>(null);
   const [startAtMs, setStartAtMs] = useState<number | null>(null);
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
+  const [cancelToast, setCancelToast] = useState<string | null>(null);
   const startSent = useRef(false);
+  const countdownRef = useRef<number | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const countScale = useSharedValue(1);
   const countOpacity = useSharedValue(1);
 
@@ -50,6 +53,16 @@ export default function GameLobbyScreen() {
   );
 
   const peerReadyScale = useSharedValue(1);
+
+  const showCancelToast = (text: string) => {
+    setCancelToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setCancelToast(null), 1800);
+  };
+
+  useEffect(() => {
+    countdownRef.current = countdown;
+  }, [countdown]);
 
   useEffect(() => {
     return pairRealtime.onStatus(setWsOnline);
@@ -68,12 +81,14 @@ export default function GameLobbyScreen() {
     pairRealtime.connect(pair.code, user.id, user.displayName);
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
+        const wasCounting = countdownRef.current != null;
         setReadyPeer(false);
         setCountdown(null);
         setMatchSeed(null);
         setStartAtMs(null);
         startSent.current = false;
         void juice.miss();
+        if (wasCounting) showCancelToast('Партнёр вышел — старт отменён');
         return;
       }
       if (msg.type === 'game' && msg.gameId === gameId) {
@@ -97,11 +112,13 @@ export default function GameLobbyScreen() {
           if (payload.ready) {
             void juice.sync();
           } else {
+            const wasCounting = countdownRef.current != null;
             void juice.miss();
             setCountdown(null);
             setMatchSeed(null);
             setStartAtMs(null);
             startSent.current = false;
+            if (wasCounting) showCancelToast('Партнёр снял Ready — старт отменён');
           }
         }
         if (payload?.start && typeof payload.seed === 'number') {
@@ -115,6 +132,7 @@ export default function GameLobbyScreen() {
     });
     return () => {
       off();
+      if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, [pair?.code, user?.id, gameId, user?.displayName, pair]);
 
@@ -232,6 +250,8 @@ export default function GameLobbyScreen() {
           </Animated.Text>
         ) : null}
 
+        {cancelToast ? <Text style={styles.cancelToast}>{cancelToast}</Text> : null}
+
         <View style={styles.actions}>
           {!readyMe ? (
             <LpdButton label="Ready" onPress={onReady} disabled={countdown != null} />
@@ -291,6 +311,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.display,
     fontSize: 84,
     color: colors.accentRose,
+    textAlign: 'center',
+  },
+  cancelToast: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 14,
+    color: colors.accentAmber,
     textAlign: 'center',
   },
   actions: {

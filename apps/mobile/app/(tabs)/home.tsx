@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const lastMemory = memories[0];
   const warmthSeen = React.useRef(0);
   const nameSeen = React.useRef(pair?.name ?? '');
+  const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -40,6 +41,35 @@ export default function HomeScreen() {
       off();
     };
   }, []);
+
+  useEffect(() => {
+    const cur = pair?.partnerPresence ?? 'offline';
+    const prev = presenceSeen.current;
+    if (prev !== cur) {
+      if (prev === 'offline' && cur === 'online') {
+        setRoomToast('Партнёр online');
+        void juice.sync();
+        const t = setTimeout(() => setRoomToast(null), 1600);
+        presenceSeen.current = cur;
+        return () => clearTimeout(t);
+      }
+      if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+        setRoomToast(cur === 'away' ? 'Партнёр away' : 'Партнёр offline');
+        void juice.miss();
+        const t = setTimeout(() => setRoomToast(null), 1600);
+        presenceSeen.current = cur;
+        return () => clearTimeout(t);
+      }
+      if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+        setRoomToast('Партнёр снова рядом');
+        void juice.hit();
+        const t = setTimeout(() => setRoomToast(null), 1600);
+        presenceSeen.current = cur;
+        return () => clearTimeout(t);
+      }
+      presenceSeen.current = cur;
+    }
+  }, [pair?.partnerPresence]);
 
   useEffect(() => {
     const name = pair?.name ?? '';
@@ -60,7 +90,15 @@ export default function HomeScreen() {
         const payload = msg.payload as { mood?: 'night' | 'warm' | 'rain' } | undefined;
         if (payload?.mood === 'night' || payload?.mood === 'warm' || payload?.mood === 'rain') {
           setMood(payload.mood);
+          setRoomToast(
+            payload.mood === 'night'
+              ? 'Партнёр: Ночь'
+              : payload.mood === 'warm'
+                ? 'Партнёр: Тёплый свет'
+                : 'Партнёр: Дождь',
+          );
           void juice.card();
+          setTimeout(() => setRoomToast(null), 1600);
         }
       }
     });

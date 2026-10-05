@@ -106,6 +106,7 @@ export default function TruthOrSparkScreen() {
         rematch?: boolean;
         seed?: number;
         skipped?: boolean;
+        filterChange?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
@@ -116,6 +117,15 @@ export default function TruthOrSparkScreen() {
         setTurnMine(true);
         showTurnToast('Новая колода — твой ход');
         void juice.sync();
+        return;
+      }
+      if (payload.filterChange && (payload.filter === 'soft' || payload.filter === 'spicy')) {
+        setFilter(payload.filter);
+        if (typeof payload.index === 'number') setIndex(payload.index);
+        if (typeof payload.skips === 'number') setSkips(payload.skips);
+        setTurnMine(true);
+        showTurnToast(payload.filter === 'spicy' ? 'Партнёр: spicy' : 'Партнёр: soft');
+        void juice.card();
         return;
       }
       if (typeof payload.index === 'number') setIndex(payload.index);
@@ -142,7 +152,7 @@ export default function TruthOrSparkScreen() {
     nextIndex: number,
     nextFilter: SparkFilter,
     nextSkips: number,
-    opts?: { skipped?: boolean },
+    opts?: { skipped?: boolean; filterChange?: boolean },
   ) => {
     pairRealtime.sendGame(GAME_ID, {
       index: nextIndex,
@@ -152,6 +162,7 @@ export default function TruthOrSparkScreen() {
       fromId: user?.id,
       seed: matchSeed,
       skipped: opts?.skipped === true,
+      filterChange: opts?.filterChange === true,
     });
   };
 
@@ -179,7 +190,7 @@ export default function TruthOrSparkScreen() {
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
-    broadcast(0, f, SKIP_LIMIT);
+    broadcast(0, f, SKIP_LIMIT, { filterChange: true });
     void juice.card();
   };
 
