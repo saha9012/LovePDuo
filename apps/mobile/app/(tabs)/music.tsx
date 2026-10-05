@@ -43,6 +43,7 @@ export default function MusicScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const peerPulse = useSharedValue(1);
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const noteRef = React.useRef('');
   const lastStopAt = React.useRef(0);
   const lastHelloAt = React.useRef(0);
   const lastReactMatchAt = React.useRef(0);
@@ -51,9 +52,13 @@ export default function MusicScreen() {
   const lastListenTitle = React.useRef<string | null>(null);
 
   const showNote = (text: string, ms = 1800) => {
+    noteRef.current = text;
     setNote(text);
     if (noteTimer.current) clearTimeout(noteTimer.current);
-    noteTimer.current = setTimeout(() => setNote(''), ms);
+    noteTimer.current = setTimeout(() => {
+      noteRef.current = '';
+      setNote('');
+    }, ms);
   };
 
   const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
@@ -111,7 +116,14 @@ export default function MusicScreen() {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId && payload.fromId === user?.id) return;
         const both = Date.now() - lastHelloAt.current < 2500;
-        showNote(both ? 'Оба на Music' : `${payload?.from ?? 'Партнёр'} на Music`);
+        const both = Date.now() - lastHelloAt.current < 2500;
+        showNote(
+          both
+            ? noteRef.current === 'Оба на Music' || noteRef.current === 'Оба слушают полку'
+              ? 'Оба слушают полку'
+              : 'Оба на Music'
+            : `${payload?.from ?? 'Партнёр'} на Music`,
+        );
         void (both ? juice.perfect() : juice.hit());
         return;
       }
@@ -200,10 +212,16 @@ export default function MusicScreen() {
           const alreadyIn = Boolean(pl?.trackIds.includes(match.id));
           if (!alreadyIn) addTrackToPlaylist(payload.playlistId, match.id);
           const plName = pl?.name;
+          const racing =
+            alreadyIn &&
+            (noteRef.current.startsWith('Оба на полке') ||
+              noteRef.current.startsWith('Оба в полке'));
           showNote(
-            alreadyIn
-              ? `Оба на полке «${payload.title}»`
-              : `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
+            racing
+              ? `Оба в полке «${payload.title}»`
+              : alreadyIn
+                ? `Оба на полке «${payload.title}»`
+                : `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
           );
           void (alreadyIn ? juice.perfect() : juice.hit());
         } else {
@@ -259,9 +277,13 @@ export default function MusicScreen() {
           const name = playlists.find((p) => p.id === payload.playlistId)?.name;
           showNote(
             both
-              ? name
-                ? `Оба на «${name}»`
-                : 'Оба на одной полке'
+              ? noteRef.current.startsWith('Оба на «') ||
+                noteRef.current === 'Оба на одной полке' ||
+                noteRef.current === 'Оба в полке'
+                ? 'Оба в полке'
+                : name
+                  ? `Оба на «${name}»`
+                  : 'Оба на одной полке'
               : name
                 ? `Партнёр переключил «${name}»`
                 : 'Партнёр сменил плейлист',
