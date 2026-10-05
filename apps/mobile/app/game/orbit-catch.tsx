@@ -163,7 +163,11 @@ export default function OrbitCatchScreen() {
           }
           if (phaseRef.current === 'finished') {
             setSyncFinish(true);
-            bumpPeerNote('оба финиш');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+                ? 'оба на финише'
+                : 'оба финиш',
+            );
             void juice.perfect();
           } else {
             bumpPeerNote('финиш');
@@ -306,7 +310,11 @@ export default function OrbitCatchScreen() {
           clearInterval(tick);
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
-            bumpPeerNote('оба финиш');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+                ? 'оба на финише'
+                : 'оба финиш',
+            );
             void juice.perfect();
           }
           setPhase('finished');

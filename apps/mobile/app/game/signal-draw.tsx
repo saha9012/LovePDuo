@@ -186,7 +186,11 @@ export default function SignalDrawScreen() {
         }
         if (phaseRef.current === 'finished') {
           setSyncFinish(true);
-          showToast('Оба финиш');
+          showToast(
+            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише'
+              ? 'Оба на финише'
+              : 'Оба финиш',
+          );
           void juice.perfect();
         } else {
           showToast('Партнёр закончил');
@@ -361,7 +365,11 @@ export default function SignalDrawScreen() {
           clearInterval(id);
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
-            showToast('Оба финиш');
+            showToast(
+            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише'
+              ? 'Оба на финише'
+              : 'Оба финиш',
+          );
             void juice.perfect();
           }
           setPhase('finished');

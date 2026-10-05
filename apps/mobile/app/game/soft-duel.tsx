@@ -228,7 +228,9 @@ export default function SoftDuelScreen() {
         } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
           partnerFinishedRef.current = true;
           setSyncFinish(true);
-          setFlash('Оба финиш');
+          const racing =
+            flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
+          setFlash(racing ? 'Оба на финише' : 'Оба финиш');
           void juice.perfect();
         } else if (typeof payload.tap === 'number') {
           const grade =
@@ -314,7 +316,9 @@ export default function SoftDuelScreen() {
           : `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
       });
       if (partnerFinishedRef.current) {
-        setFlash('Оба финиш');
+        const racing =
+          flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
+        setFlash(racing ? 'Оба на финише' : 'Оба финиш');
         setSyncFinish(true);
         void juice.perfect();
       }

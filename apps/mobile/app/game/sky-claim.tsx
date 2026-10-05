@@ -224,7 +224,11 @@ export default function SkyClaimScreen() {
           } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
             partnerFinishedRef.current = true;
             setSyncFinish(true);
-            bumpPeerNote('оба финиш');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+                ? 'оба на финише'
+                : 'оба финиш',
+            );
             void juice.perfect();
           } else if (
             !payload.phase &&
@@ -388,7 +392,11 @@ export default function SkyClaimScreen() {
           }
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
-            bumpPeerNote('оба финиш');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+                ? 'оба на финише'
+                : 'оба финиш',
+            );
             void juice.perfect();
           }
           setPhase('finished');

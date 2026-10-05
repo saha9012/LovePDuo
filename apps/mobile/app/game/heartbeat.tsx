@@ -233,14 +233,17 @@ export default function HeartbeatScreen() {
         }
         if (phaseRef.current === 'finished') {
           setSyncFinish(true);
-          setPeerNote('оба финиш');
+          bumpPeerNote(
+            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+              ? 'оба на финише'
+              : 'оба финиш',
+            1200,
+          );
           void juice.perfect();
         } else {
-          setPeerNote('финиш');
+          bumpPeerNote('финиш', 1200);
           void juice.sync();
         }
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
         return;
       }
       if (typeof payload?.total === 'number') {
@@ -400,7 +403,11 @@ export default function HeartbeatScreen() {
         }
         if (partnerFinishedRef.current) {
           setSyncFinish(true);
-          setPeerNote('оба финиш');
+          bumpPeerNote(
+            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
+              ? 'оба на финише'
+              : 'оба финиш',
+          );
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
           peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
           void juice.perfect();

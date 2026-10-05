@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Catalog «Оба на финише» escalate · warmth · rematch снова  
 - [x] Home/Together «Оба в тепле» · rematch снова · Music трек  
 - [x] Catalog rematch «Оба снова» · Music трек · Together свеча  
-- [x] Music «Оба в треке»/тишина · Together свеча/искра · Soft early  
 
 ## Catalog
 
