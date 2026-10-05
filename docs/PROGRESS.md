@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Music + Together tab hello · STORE_SHOTS dual-feel capture notes  
-- [x] Hello ping across all dual minigames  
-- [x] PostMatch rematch juice  
+- [x] Home peer-lobby CTA · WSS_PROD Ideal Bar notes  
+- [x] Music/Together tab hello · STORE_SHOTS dual capture  
+- [x] Minigame hello pings  
 
 ## Catalog
 

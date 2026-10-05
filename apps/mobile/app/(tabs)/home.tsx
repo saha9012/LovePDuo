@@ -30,6 +30,7 @@ export default function HomeScreen() {
   const [copied, setCopied] = useState(false);
   const [warmthToast, setWarmthToast] = useState<string | null>(null);
   const [roomToast, setRoomToast] = useState<string | null>(null);
+  const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const lastMemory = memories[0];
   const warmthSeen = React.useRef(0);
   const nameSeen = React.useRef(pair?.name ?? '');
@@ -106,6 +107,26 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'play-peek') {
+        const payload = msg.payload as {
+          game?: string;
+          title?: string;
+          fromId?: string;
+          leave?: boolean;
+        } | undefined;
+        if (!payload || payload.fromId === user?.id) return;
+        if (payload.leave) {
+          setPeerLobby(null);
+          return;
+        }
+        if (payload.game && payload.title) {
+          setPeerLobby({ game: payload.game, title: payload.title });
+          setRoomToast(`Партнёр в лобби: ${payload.title}`);
+          void juice.hit();
+          setTimeout(() => setRoomToast(null), 1800);
+        }
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'mood') {
         const payload = msg.payload as { mood?: 'night' | 'warm' | 'rain' } | undefined;
         if (payload?.mood === 'night' || payload?.mood === 'warm' || payload?.mood === 'rain') {
@@ -125,7 +146,7 @@ export default function HomeScreen() {
     return () => {
       off();
     };
-  }, [setMood]);
+  }, [setMood, user?.id]);
 
   useEffect(() => {
     if (!warmthPulse) return;
@@ -198,10 +219,27 @@ export default function HomeScreen() {
           ) : null}
           {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
           {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
+          {peerLobby ? (
+            <Text
+              style={styles.peerLobby}
+              onPress={() =>
+                router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
+              }
+            >
+              Партнёр ждёт в {peerLobby.title} — тапни
+            </Text>
+          ) : null}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>
-          <LpdButton label="Играть вдвоём" onPress={() => router.push('/(tabs)/play')} />
+          <LpdButton
+            label={peerLobby ? `К партнёру · ${peerLobby.title}` : 'Играть вдвоём'}
+            onPress={() =>
+              peerLobby
+                ? router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
+                : router.push('/(tabs)/play')
+            }
+          />
           <LpdButton
             label="Отправить тепло"
             variant="ghost"
@@ -332,5 +370,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiMedium,
     fontSize: 13,
     color: colors.accentAmber,
+  },
+  peerLobby: {
+    marginTop: 10,
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.accentAmber,
+    textDecorationLine: 'underline',
   },
 });

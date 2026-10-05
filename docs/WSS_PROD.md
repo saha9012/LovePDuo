@@ -1,6 +1,7 @@
 # Production realtime (wss) — draft
 
 MVP uses local `ws://IP:8787` (see `docs/ANDROID_QA.md`).
+Ideal Bar dual-feel (hello pings, lobby cancel, finish notes, Music/Together hellos) uses the same JSON protocol — no client fork for prod.
 
 ## Target
 
@@ -18,6 +19,13 @@ EXPO_PUBLIC_LPD_WS_URL=wss://realtime.lovepduo.app
 ```
 
 `PairRealtime` already reconnects with backoff and sends presence heartbeats.
+Profile surfaces online/offline reconnect juice when the socket flaps.
+
+## Suggested first deploy
+
+1. Cloudflare Tunnel → local `:8787` for a weekend pilot  
+2. Or Fly/Railway single node with sticky websocket  
+3. Point both phones at `wss://…` in Profile → confirm Home room size 2  
 
 ## Not done yet
 
