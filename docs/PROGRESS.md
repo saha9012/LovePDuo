@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Word Veil совпали/в длине · Lobby готовы · HB sync  
 - [x] Lobby «Оба готовы» · HB sync · Orbit sync  
 - [x] HB «оба sync» · Orbit sync · Draw кисть  
-- [x] Orbit «оба sync» · Draw кисть escalate · ToS мимо карт  
 
 ## Catalog
 

@@ -129,18 +129,30 @@ export default function WordVeilScreen() {
     revealOp.value = withTiming(1, { duration: 280 });
     veil.value = withDelay(80, withTiming(1, { duration: 320 }));
     if (pts >= 5) {
-      setPresenceHint('Оба: одно слово');
+      setPresenceHint(
+        hintRef.current === 'Оба: одно слово' || hintRef.current === 'Оба совпали'
+          ? 'Оба совпали'
+          : 'Оба: одно слово',
+      );
       void juice.perfect();
       setTimeout(() => setPresenceHint(null), 1800);
     } else if (
       mineRef.current.trim().length > 0 &&
       mineRef.current.trim().length === peer.trim().length
     ) {
-      setPresenceHint('Оба на буквах');
+      setPresenceHint(
+        hintRef.current === 'Оба на буквах' || hintRef.current === 'Оба в длине'
+          ? 'Оба в длине'
+          : 'Оба на буквах',
+      );
       void juice.sync();
       setTimeout(() => setPresenceHint(null), 1600);
     } else if (pts >= 3) {
-      setPresenceHint('Почти наравне…');
+      setPresenceHint(
+        hintRef.current === 'Почти наравне…' || hintRef.current === 'Оба почти'
+          ? 'Оба почти'
+          : 'Почти наравне…',
+      );
       void juice.sync();
       setTimeout(() => setPresenceHint(null), 1600);
     } else {
