@@ -40,6 +40,21 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'mood') {
+        const payload = msg.payload as { mood?: 'night' | 'warm' | 'rain' } | undefined;
+        if (payload?.mood === 'night' || payload?.mood === 'warm' || payload?.mood === 'rain') {
+          setMood(payload.mood);
+          void juice.card();
+        }
+      }
+    });
+    return () => {
+      off();
+    };
+  }, [setMood]);
+
+  useEffect(() => {
     if (!warmthPulse) return;
     pulse.value = withSequence(
       withTiming(1.08, { duration: 180 }),
@@ -57,6 +72,12 @@ export default function HomeScreen() {
   const warmthStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }],
   }));
+
+  const pickMood = (m: 'night' | 'warm' | 'rain') => {
+    setMood(m);
+    pairRealtime.sendGame('mood', { mood: m });
+    void juice.hit();
+  };
 
   return (
     <LpdBackground mood={pair?.mood ?? 'night'}>
@@ -133,7 +154,7 @@ export default function HomeScreen() {
             {(['night', 'warm', 'rain'] as const).map((m) => (
               <Text
                 key={m}
-                onPress={() => setMood(m)}
+                onPress={() => pickMood(m)}
                 style={[styles.moodChip, pair?.mood === m && styles.moodActive]}
               >
                 {m === 'night' ? 'Ночь' : m === 'warm' ? 'Тёплый свет' : 'Дождь'}
