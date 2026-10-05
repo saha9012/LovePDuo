@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ToS «Оба скипнули» · Heartbeat оба miss · Orbit оба catch  
 - [x] Heartbeat «оба miss» · Orbit оба catch · Sky оба ловят  
 - [x] Orbit «оба catch» · Sky оба ловят · Soft dual PERFECT  
-- [x] Sky «оба ловят» · Soft dual PERFECT · Play filter toast  
 
 ## Catalog
 
