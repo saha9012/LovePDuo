@@ -38,11 +38,19 @@ export type TrackItem = {
   reaction?: 'heart' | 'fire' | 'rain';
 };
 
+export type TinyNote = {
+  id: string;
+  text: string;
+  from: string;
+  at: number;
+};
+
 type AppState = {
   hydrated: boolean;
   user: UserProfile | null;
   pair: PairState | null;
   tracks: TrackItem[];
+  notes: TinyNote[];
   signIn: (name: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
   createPair: (pairName?: string, hostUserId?: string) => Promise<PairState>;
@@ -57,6 +65,8 @@ type AppState = {
   setNowPlaying: (id: string | null) => void;
   partnerNowPlaying: string | null;
   setPartnerNowPlaying: (title: string | null) => void;
+  addNote: (text: string) => void;
+  receiveNote: (note: TinyNote) => void;
 };
 
 const STORAGE_KEY = 'lovepduo.v1';
@@ -81,6 +91,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [pair, setPair] = useState<PairState | null>(null);
   const [tracks, setTracks] = useState<TrackItem[]>([]);
+  const [notes, setNotes] = useState<TinyNote[]>([]);
   const [warmthPulse, setWarmthPulse] = useState(0);
   const [nowPlayingId, setNowPlayingId] = useState<string | null>(null);
   const [partnerNowPlaying, setPartnerNowPlaying] = useState<string | null>(null);
@@ -94,6 +105,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             user?: UserProfile | null;
             pair?: PairState | null;
             tracks?: TrackItem[];
+            notes?: TinyNote[];
           };
           setUser(parsed.user ?? null);
           if (parsed.pair) {
@@ -106,6 +118,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             setPair(null);
           }
           setTracks(parsed.tracks ?? []);
+          setNotes(parsed.notes ?? []);
         }
       } finally {
         setHydrated(true);
@@ -117,9 +130,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     void AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ user, pair, tracks }),
+      JSON.stringify({ user, pair, tracks, notes }),
     );
-  }, [hydrated, user, pair, tracks]);
+  }, [hydrated, user, pair, tracks, notes]);
 
   const signIn = useCallback(async (name: string) => {
     const clean = name.trim() || 'Игрок';
@@ -133,6 +146,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setPair(null);
     setTracks([]);
+    setNotes([]);
     await AsyncStorage.removeItem(STORAGE_KEY);
   }, []);
 
@@ -197,12 +211,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setNowPlayingId(id);
   }, []);
 
+  const addNote = useCallback(
+    (text: string) => {
+      const clean = text.trim();
+      if (!clean) return;
+      const note: TinyNote = {
+        id: makeId('note'),
+        text: clean.slice(0, 180),
+        from: user?.displayName ?? 'Ты',
+        at: Date.now(),
+      };
+      setNotes((prev) => [note, ...prev].slice(0, 50));
+    },
+    [user?.displayName],
+  );
+
+  const receiveNote = useCallback((note: TinyNote) => {
+    setNotes((prev) => {
+      if (prev.some((n) => n.id === note.id)) return prev;
+      return [note, ...prev].slice(0, 50);
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       hydrated,
       user,
       pair,
       tracks,
+      notes,
       signIn,
       signOut,
       createPair,
@@ -217,12 +254,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setNowPlaying,
       partnerNowPlaying,
       setPartnerNowPlaying,
+      addNote,
+      receiveNote,
     }),
     [
       hydrated,
       user,
       pair,
       tracks,
+      notes,
       signIn,
       signOut,
       createPair,
@@ -236,6 +276,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       nowPlayingId,
       setNowPlaying,
       partnerNowPlaying,
+      addNote,
+      receiveNote,
     ],
   );
 

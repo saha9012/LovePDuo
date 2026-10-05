@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
@@ -8,17 +8,18 @@ import { typography } from '../../src/theme/typography';
 import { sparksRu } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { useApp } from '../../src/store/AppStore';
+import { TinyNote, useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 
 const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
-  const { user, pair, sendWarmth } = useApp();
+  const { user, pair, sendWarmth, notes, addNote, receiveNote } = useApp();
   const { items: memories } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
+  const [draft, setDraft] = useState('');
   const soft = useMemo(() => sparksRu.filter((s) => s.filter === 'soft'), []);
   const card = soft[idx % soft.length];
 
@@ -36,11 +37,15 @@ export default function TogetherScreen() {
         if (payload?.start) setCandleLeft(CANDLE_SEC);
         if (typeof payload?.left === 'number') setCandleLeft(payload.left);
       }
+      if (msg.type === 'game' && msg.gameId === 'tiny-note') {
+        const payload = msg.payload as TinyNote | undefined;
+        if (payload?.id && payload.text) receiveNote(payload);
+      }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, receiveNote]);
 
   const startCandle = () => {
     setCandleLeft(CANDLE_SEC);
@@ -53,15 +58,35 @@ export default function TogetherScreen() {
     void juice.card();
   };
 
+  const sendNote = () => {
+    const text = draft.trim();
+    if (!text) return;
+    addNote(text);
+    const note: TinyNote = {
+      id: `note_${Date.now().toString(36)}`,
+      text: text.slice(0, 180),
+      from: user?.displayName ?? 'Ты',
+      at: Date.now(),
+    };
+    pairRealtime.sendGame('tiny-note', note);
+    setDraft('');
+    void juice.card();
+  };
+
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
   const secs = candleLeft != null ? candleLeft % 60 : 0;
 
   return (
     <LpdBackground mood="warm">
-      <View style={[styles.root, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 28 },
+        ]}
+      >
         <Text style={styles.kicker}>Together</Text>
         <Text style={typography.headline}>Ритуалы и искры</Text>
-        <Text style={typography.body}>Daily Spark, свеча и тепло — маленькие якоря вечера.</Text>
+        <Text style={typography.body}>Daily Spark, свеча, заметки и тепло.</Text>
 
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
@@ -85,6 +110,24 @@ export default function TogetherScreen() {
               ]}
             />
           </View>
+        </View>
+
+        <View style={styles.noteBlock}>
+          <Text style={styles.candleTitle}>Tiny Notes</Text>
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder="Короткая записка партнёру…"
+            placeholderTextColor={colors.textMuted}
+            style={styles.noteInput}
+            maxLength={180}
+          />
+          <LpdButton label="Отправить заметку" onPress={sendNote} />
+          {notes.slice(0, 6).map((n) => (
+            <Text key={n.id} style={styles.noteItem}>
+              {n.from}: {n.text}
+            </Text>
+          ))}
         </View>
 
         <View style={styles.actions}>
@@ -116,14 +159,13 @@ export default function TogetherScreen() {
             ))}
           </View>
         ) : null}
-      </View>
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
   },
@@ -135,14 +177,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   card: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
     borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: 'rgba(226,176,122,0.22)',
     backgroundColor: 'rgba(36,28,49,0.7)',
     padding: spacing.xl,
     gap: spacing.md,
-    minHeight: 160,
+    minHeight: 140,
   },
   kind: {
     fontFamily: fonts.uiMedium,
@@ -196,14 +238,35 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.9,
     shadowRadius: 12,
   },
+  noteBlock: {
+    gap: spacing.sm,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    padding: spacing.lg,
+    backgroundColor: 'rgba(36,28,49,0.45)',
+  },
+  noteInput: {
+    minHeight: 48,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    paddingHorizontal: spacing.md,
+    color: colors.textPrimary,
+    fontFamily: fonts.ui,
+  },
+  noteItem: {
+    fontFamily: fonts.ui,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+  },
   actions: {
-    marginTop: 'auto',
     gap: spacing.sm,
   },
   memories: {
     gap: 6,
     marginTop: spacing.sm,
-    paddingBottom: spacing.md,
   },
   memTitle: {
     fontFamily: fonts.uiMedium,
