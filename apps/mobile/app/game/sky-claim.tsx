@@ -481,6 +481,17 @@ export default function SkyClaimScreen() {
             bumpPeerNote('оба на очках');
             void juice.sync();
           }, 320);
+        } else if (
+          hit.type !== 'decoy' &&
+          partnerLiveRef.current &&
+          scoreRef.current > partnerScoreRef.current + 5
+        ) {
+          setTimeout(() => {
+            const racing =
+              peerNoteRef.current === 'я впереди' || peerNoteRef.current === 'гонка';
+            bumpPeerNote(racing ? 'гонка' : 'я впереди');
+            void (racing ? juice.sync() : juice.hit());
+          }, 320);
         }
         return rest;
       });

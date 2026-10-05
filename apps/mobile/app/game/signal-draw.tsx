@@ -76,6 +76,7 @@ export default function SignalDrawScreen() {
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
   const brushRef = useRef<'fine' | 'bold'>('fine');
+  const toastRef = useRef<string | null>(null);
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
@@ -96,9 +97,13 @@ export default function SignalDrawScreen() {
   };
 
   const showToast = (text: string) => {
+    toastRef.current = text;
     setToast(text);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 1600);
+    toastTimer.current = setTimeout(() => {
+      toastRef.current = null;
+      setToast(null);
+    }, 1600);
   };
 
   useEffect(() => {
@@ -246,6 +251,11 @@ export default function SignalDrawScreen() {
         } else if (peerCount.current === myCount.current && myCount.current > 0) {
           showToast('Оба на штрихах');
           void juice.sync();
+        } else if (peerCount.current > myCount.current + 1) {
+          const racing =
+            toastRef.current === 'Партнёр впереди' || toastRef.current === 'Гонка';
+          showToast(racing ? 'Гонка' : 'Партнёр впереди');
+          void (racing ? juice.sync() : juice.hit());
         }
       }
       if (payload.point) {
@@ -434,6 +444,13 @@ export default function SignalDrawScreen() {
             setTimeout(() => {
               showToast('Оба на штрихах');
               void juice.sync();
+            }, 320);
+          } else if (myCount.current > peerCount.current + 1) {
+            setTimeout(() => {
+              const racing =
+                toastRef.current === 'Я впереди' || toastRef.current === 'Гонка';
+              showToast(racing ? 'Гонка' : 'Я впереди');
+              void (racing ? juice.sync() : juice.hit());
             }, 320);
           }
         },
