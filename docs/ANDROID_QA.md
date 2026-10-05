@@ -53,10 +53,10 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 ## 5. Smoke checklist
 
 - [ ] Sky Claim: очки партнёра · miss/decoy/combo · sync-finish PostMatch · rematch hello · peer_left  
-- [ ] Heartbeat: sync · miss HUD · sync-finish PostMatch · rematch hello · presence · peer_left  
-- [ ] Truth Or Spark: named turn · skip juice · filter-change · deck-wrap peer toast · Перетасовать · peer_left  
-- [ ] Signal Draw: first stroke · brush · 5s · sync-finish PostMatch · rematch hello · peer_left  
-- [ ] Orbit Catch: miss/align · sync-finish PostMatch · rematch hello · presence · peer_left  
+- [ ] Heartbeat: sync! dual · miss HUD · sync-finish PostMatch · rematch hello · presence · peer_left  
+- [ ] Truth Or Spark: named turn · skip · filter-change · deck-wrap peer · Перетасовать · peer_left  
+- [ ] Signal Draw: first stroke · brush on start · 5s · sync-finish PostMatch · rematch · peer_left  
+- [ ] Orbit Catch: miss/align · sync-align perfect · sync-finish PostMatch · rematch hello · peer_left  
 - [ ] Soft Duel: tap grade · arm ЖМИ · sync-finish PostMatch · rematch hello · late-start · peer_left · presence  
 - [ ] Word Veil: typing juice · typing clear on lock · peer-locked hint · match juice · finish sync · rematch · peer_left  
 - [ ] Lobby: Ready toast · cancel mid-count · peer leave/rejoin · Ready rebroadcast · late-start «догоняем» · peek  

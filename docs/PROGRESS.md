@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ANDROID_QA sync! / sync-align · Heartbeat dual sync ping  
 - [x] Heartbeat dual sync! ping · Orbit sync-align perfect  
 - [x] Orbit sync-align perfect when both rings aligned · Music shelf miss hint  
-- [x] Music shelf-add miss hint when track missing locally · Draw brush on start  
 
 ## Catalog
 
