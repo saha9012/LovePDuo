@@ -195,17 +195,23 @@ export default function WordVeilScreen() {
         void juice.sync();
         return;
       }
-      if (payload?.typing) {
-        setPeerTyping((was) => {
-          if (!was) void juice.hit();
-          return true;
-        });
+      if (typeof payload?.typing === 'boolean') {
+        if (payload.typing) {
+          setPeerTyping((was) => {
+            if (!was) void juice.hit();
+            return true;
+          });
+        } else {
+          setPeerTyping(false);
+        }
         return;
       }
       if (payload?.word) {
         setPartnerWord(payload.word);
         setPeerTyping(false);
         if (!lockedRef.current) {
+          setPresenceHint('Партнёр закрыл слово');
+          setTimeout(() => setPresenceHint(null), 1400);
           void juice.hit();
         }
       }
@@ -239,7 +245,8 @@ export default function WordVeilScreen() {
     if (!mine.trim() || locked) return;
     setLocked(true);
     veil.value = withTiming(0.35, { duration: 400 });
-    pairRealtime.sendGame('word-veil', { word: mine.trim() });
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    pairRealtime.sendGame('word-veil', { word: mine.trim(), typing: false });
     void juice.card();
 
     const useDemo = params.solo === '1' || !pair;

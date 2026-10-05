@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Word Veil lock clears typing · peer «закрыл слово» toast  
 - [x] Sync-finish PostMatch across Soft/Sky/HB/Orbit/Draw · Veil finish · Music fade  
 - [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
-- [x] Mid-match peer_left / peer_joined rejoin hello across games  
 
 ## Catalog
 

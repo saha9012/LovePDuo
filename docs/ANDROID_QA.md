@@ -58,7 +58,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Signal Draw: first stroke toast · brush toast · 5s warning · peer finish · rematch hello · peer_left  
 - [ ] Orbit Catch: miss/align notes · finish sync · rematch hello · presence · peer_left  
 - [ ] Soft Duel: tap grade mirror · round-ahead · arm ЖМИ · partner finish juice · rematch hello · peer_left · presence  
-- [ ] Word Veil: typing juice · peer-locked hint · start hello · presence · rematch hello · peer_left  
+- [ ] Word Veil: typing juice · typing clear on lock · peer-locked hint · match juice · start hello · rematch · peer_left  
 - [ ] Lobby: Ready toast · cancel mid-count · peer_left / unready · peer_joined rejoin · Ready rebroadcast · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast  
 - [ ] Music: now-playing juice · stop toast · playlist switch · shelf + sync · reaction sync · leave/rejoin  
