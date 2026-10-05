@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Orbit/HB «оба на очках» · Sky score-tie · Soft local tie  
 - [x] Sky «оба на очках» · Soft local score-tie · QA dual hellos  
 - [x] Soft local «Оба на очках» · peer score tie · QA dual hellos  
-- [x] Soft «Оба на очках» · QA dual hello Music/Together · Lobby догоняют  
 
 ## Catalog
 

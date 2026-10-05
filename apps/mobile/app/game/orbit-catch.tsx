@@ -197,6 +197,15 @@ export default function OrbitCatchScreen() {
           if (grew && Date.now() - lastCatchAt.current < 900) {
             bumpPeerNote('оба catch');
             void juice.perfect();
+            if (payload.caught === caughtRef.current && caughtRef.current > 0) {
+              setTimeout(() => {
+                bumpPeerNote('оба на очках');
+                void juice.sync();
+              }, 380);
+            }
+          } else if (payload.caught === caughtRef.current && caughtRef.current > 0) {
+            bumpPeerNote('оба на очках');
+            void juice.sync();
           }
         }
       }
@@ -345,6 +354,12 @@ export default function OrbitCatchScreen() {
       );
       setOrbAngle(orbAngle + Math.PI * (0.6 + (seedRef.current % 5) * 0.08));
       setAligned(false);
+      if (caughtRef.current === partnerRef.current && caughtRef.current > 0) {
+        setTimeout(() => {
+          bumpPeerNote('оба на очках');
+          void juice.sync();
+        }, 320);
+      }
     } else {
       lastMissAt.current = Date.now();
       void juice.miss();

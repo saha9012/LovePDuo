@@ -58,6 +58,7 @@ export default function HeartbeatScreen() {
   const scoreRef = useRef(0);
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const partnerScoreRef = useRef(0);
   const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
   const lastRematchAt = useRef(0);
@@ -82,6 +83,10 @@ export default function HeartbeatScreen() {
   useEffect(() => {
     lastRef.current = last;
   }, [last]);
+
+  useEffect(() => {
+    partnerScoreRef.current = partnerScore;
+  }, [partnerScore]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -231,6 +236,7 @@ export default function HeartbeatScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setPartnerFlash(true);
+        const myTotal = scoreRef.current + syncRef.current;
         if (payload.judgement === 'perfect' || payload.judgement === 'great') {
           const both = lastRef.current === payload.judgement;
           setLast(payload.judgement);
@@ -238,7 +244,25 @@ export default function HeartbeatScreen() {
             setPeerNote(`оба ${payload.judgement}`);
             setTimeout(() => setPeerNote(null), 1000);
             void juice.perfect();
+            if (payload.total === myTotal && myTotal > 0) {
+              setTimeout(() => {
+                setPeerNote('оба на очках');
+                if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+                peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+                void juice.sync();
+              }, 380);
+            }
+          } else if (payload.total === myTotal && myTotal > 0) {
+            setPeerNote('оба на очках');
+            if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+            peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+            void juice.sync();
           }
+        } else if (payload.total === myTotal && myTotal > 0) {
+          setPeerNote('оба на очках');
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+          void juice.sync();
         }
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),
@@ -433,6 +457,19 @@ export default function HeartbeatScreen() {
           total: scoreRef.current + syncRef.current,
         });
       }
+    } else if (
+      partnerLiveRef.current &&
+      scoreRef.current + syncRef.current === partnerScoreRef.current &&
+      partnerScoreRef.current > 0
+    ) {
+      setTimeout(() => {
+        setPeerNote('оба на очках');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+        void juice.sync();
+      }, 320);
+      if (j === 'perfect') void juice.perfect();
+      else void juice.hit();
     } else if (j === 'perfect') {
       void juice.perfect();
     } else {
