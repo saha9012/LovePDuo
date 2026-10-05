@@ -222,7 +222,10 @@ export default function HomeScreen() {
     if (warmthPulse > warmthSeen.current) {
       warmthSeen.current = warmthPulse;
       const meet = Date.now() - warmthSentAt.current < 2800;
-      setWarmthToast(meet ? 'Тепло встречное' : 'Тепло в комнате');
+      const racing =
+        meet &&
+        (warmthToast === 'Тепло встречное' || warmthToast === 'Оба в тепле');
+      setWarmthToast(racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло в комнате');
       void (meet ? juice.perfect() : juice.warmth());
       const t = setTimeout(() => setWarmthToast(null), 1600);
       return () => clearTimeout(t);

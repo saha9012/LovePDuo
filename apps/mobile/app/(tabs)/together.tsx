@@ -65,7 +65,11 @@ export default function TogetherScreen() {
     if (!warmthPulse || warmthPulse <= warmthSeen.current) return;
     warmthSeen.current = warmthPulse;
     const meet = Date.now() - warmthSentAt.current < 2800;
-    showPeer(meet ? 'Тепло встречное' : 'Тепло от партнёра');
+    const racing =
+      meet &&
+      (peerToastRef.current === 'Тепло встречное' ||
+        peerToastRef.current === 'Оба в тепле');
+    showPeer(racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло от партнёра');
     void (meet ? juice.perfect() : juice.warmth());
   }, [warmthPulse]);
 
