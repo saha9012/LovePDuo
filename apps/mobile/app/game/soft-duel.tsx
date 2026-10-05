@@ -275,7 +275,7 @@ export default function SoftDuelScreen() {
         kind: 'duel',
         title: 'Soft Duel',
         detail: partnerFinishedRef.current
-          ? `Синхрон финиш · ты ${myScoreRef.current}`
+          ? `Оба финиш · ты ${myScoreRef.current}`
           : `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
       });
       if (partnerFinishedRef.current) {
