@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Backend: rate limit · max payload · reconnect replaces stale socket  
 - [x] Music auto-advance + clear library sync · Together memory delete  
 - [x] Music auto-stop on finish · Together note delete + sync · fix note id mismatch  
-- [x] Signal Draw: Svg path canvas (no View-dot strokes)  
 
 ## Catalog
 
@@ -22,4 +22,4 @@ Remaining blockers need external input / real product work (not toast layers):
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream  
 4. Signal Draw smoother canvas — Svg paths shipped; Skia optional later  
-5. Production `wss://` deploy (`docs/WSS_PROD.md`)
+5. Production `wss://` deploy (`docs/WSS_PROD.md`) — stub has rate/size limits + reconnect replace; host still external  

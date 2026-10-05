@@ -37,10 +37,17 @@ Copy the printed `https://….trycloudflare.com` URL, convert to `wss://….tryc
 2. Or Fly/Railway single node with sticky websocket  
 3. Point both phones at `wss://…` in Profile → confirm Home room size 2 · Play peek · lobby Ready  
 
+## Server hardening (shipped in stub)
+
+- `maxPayload` / `LPD_MAX_MSG_BYTES` (default 48KB)
+- per-socket rate limit `LPD_RATE_MAX` msgs/sec (default 48)
+- same `userId` reconnect replaces stale socket (room stays 1–2)
+- empty rooms deleted on last leave
+
 ## Not done yet
 
 - Deployed host
-- Token auth / rate limits
+- Token auth
 - Sticky rooms across multi-instance
 
 Until then: LAN `ws://` or temporary Cloudflare Tunnel.

@@ -12,6 +12,9 @@ import { WebSocketServer } from 'ws';
  */
 
 const PORT = Number(process.env.PORT || 8787);
+const MAX_MSG_BYTES = Number(process.env.LPD_MAX_MSG_BYTES || 48_000);
+const RATE_WINDOW_MS = 1000;
+const RATE_MAX = Number(process.env.LPD_RATE_MAX || 48);
 const rooms = new Map();
 
 function roomOf(code) {
@@ -41,14 +44,34 @@ function broadcast(code, data, except) {
   }
 }
 
-const wss = new WebSocketServer({ port: PORT });
+function allowMessage(socket) {
+  const now = Date.now();
+  if (!socket.lpdRate || now - socket.lpdRate.windowStart >= RATE_WINDOW_MS) {
+    socket.lpdRate = { windowStart: now, count: 0 };
+  }
+  socket.lpdRate.count += 1;
+  return socket.lpdRate.count <= RATE_MAX;
+}
+
+const wss = new WebSocketServer({ port: PORT, maxPayload: MAX_MSG_BYTES });
 console.log(`[LPD] realtime listening on :${PORT}`);
 console.log('[LPD] Android LAN: set Profile WS URL to ws://YOUR_PC_IP:8787');
+console.log(`[LPD] limits: msg≤${MAX_MSG_BYTES}B · rate≤${RATE_MAX}/s`);
 
 wss.on('connection', (socket) => {
   socket.lpd = { code: null, userId: null, name: null };
+  socket.lpdRate = { windowStart: Date.now(), count: 0 };
 
   socket.on('message', (buf) => {
+    if (buf.byteLength > MAX_MSG_BYTES) {
+      console.warn('[LPD] drop oversized message');
+      return;
+    }
+    if (!allowMessage(socket)) {
+      console.warn(`[LPD] rate-limit ${socket.lpd?.code ?? '?'} · ${socket.lpd?.name ?? '?'}`);
+      return;
+    }
+
     let msg;
     try {
       msg = JSON.parse(String(buf));
@@ -58,18 +81,35 @@ wss.on('connection', (socket) => {
 
     if (msg.type === 'join') {
       if (socket.lpd.code) roomOf(socket.lpd.code).delete(socket);
+      const code = String(msg.code || '').toUpperCase();
+      const userId = msg.userId ?? null;
+      const room = roomOf(code);
+
+      // Same user reconnecting: replace stale socket so room size stays 1–2.
+      if (userId != null) {
+        for (const client of [...room]) {
+          if (client !== socket && client.lpd?.userId === userId) {
+            room.delete(client);
+            try {
+              client.close(4000, 'replaced');
+            } catch {
+              /* ignore */
+            }
+          }
+        }
+      }
+
       socket.lpd = {
-        code: String(msg.code || '').toUpperCase(),
-        userId: msg.userId,
+        code,
+        userId,
         name: msg.name,
       };
-      const room = roomOf(socket.lpd.code);
       room.add(socket);
       const size = room.size;
-      const peers = roomPeers(socket.lpd.code, socket);
-      console.log(`[LPD] join ${socket.lpd.code} · ${socket.lpd.name} · size=${size}`);
+      const peers = roomPeers(code, socket);
+      console.log(`[LPD] join ${code} · ${socket.lpd.name} · size=${size}`);
       broadcast(
-        socket.lpd.code,
+        code,
         {
           type: 'peer_joined',
           userId: socket.lpd.userId,
@@ -81,7 +121,7 @@ wss.on('connection', (socket) => {
       socket.send(
         JSON.stringify({
           type: 'joined',
-          code: socket.lpd.code,
+          code,
           peers,
           size,
         }),
