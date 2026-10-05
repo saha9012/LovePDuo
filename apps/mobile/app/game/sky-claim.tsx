@@ -129,9 +129,11 @@ export default function SkyClaimScreen() {
           partnerLiveRef.current = true;
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
-          bumpPeerNote('новый раунд');
+          bumpPeerNote('ещё раунд');
           void juice.sync();
           setTimeout(() => startRef.current(), 0);
           return;
@@ -209,7 +211,7 @@ export default function SkyClaimScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    pairRealtime.sendGame('sky-claim', { rematch: true, seed: next });
+    pairRealtime.sendGame('sky-claim', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

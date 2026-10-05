@@ -121,9 +121,11 @@ export default function HeartbeatScreen() {
         partnerLiveRef.current = true;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
-        setPeerNote('новый раунд');
+        setPeerNote('ещё раунд');
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
         void juice.sync();
@@ -211,7 +213,7 @@ export default function HeartbeatScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    pairRealtime.sendGame('heartbeat', { rematch: true, seed: next });
+    pairRealtime.sendGame('heartbeat', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

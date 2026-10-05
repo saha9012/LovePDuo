@@ -117,10 +117,12 @@ export default function SoftDuelScreen() {
         partnerLiveRef.current = true;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setPartnerRound(0);
-        setFlash('Новый раунд');
+        setFlash('Партнёр: ещё раунд');
         void juice.sync();
         startRef.current();
         return;
@@ -235,7 +237,7 @@ export default function SoftDuelScreen() {
     seedRef.current = next;
     setFlash('Новый раунд');
     void juice.sync();
-    pairRealtime.sendGame('soft-duel', { rematch: true, seed: next });
+    pairRealtime.sendGame('soft-duel', { rematch: true, seed: next, hello: true });
     start();
   };
 

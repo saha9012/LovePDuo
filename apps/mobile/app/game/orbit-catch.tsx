@@ -106,9 +106,10 @@ export default function OrbitCatchScreen() {
           }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
+          setPeerSeen(true);
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
-          bumpPeerNote('новый раунд');
+          bumpPeerNote('ещё раунд');
           void juice.sync();
           startRef.current();
           return;
@@ -188,7 +189,7 @@ export default function OrbitCatchScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next });
+    pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next, hello: true });
     start();
   };
 

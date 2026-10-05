@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radii, spacing } from '../theme/tokens';
 import { typography } from '../theme/typography';
 import { juice } from '../audio/juice';
+import { track } from '../analytics/track';
 
 type Props = {
   title: string;

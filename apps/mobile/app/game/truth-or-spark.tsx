@@ -136,7 +136,7 @@ export default function TruthOrSparkScreen() {
         setIndex(0);
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
-        showTurnToast('Новая колода — твой ход');
+        showTurnToast('Партнёр: новая колода — твой ход');
         void juice.sync();
         return;
       }
@@ -245,6 +245,7 @@ export default function TruthOrSparkScreen() {
       index: 0,
       filter,
       skips: SKIP_LIMIT,
+      hello: true,
       fromName: user?.displayName,
       fromId: user?.id,
     });

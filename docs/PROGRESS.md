@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Rematch hello across Soft/Sky/HB/Orbit/Draw/Veil/ToS · PostMatch track import  
 - [x] ToS deck-wrap · Soft partner-finish juice · QA checklist update  
 - [x] Soft arm ЖМИ · Word Veil start hello  
 

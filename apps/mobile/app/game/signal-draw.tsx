@@ -127,7 +127,8 @@ export default function SignalDrawScreen() {
         }
       }
       if (payload.rematch) {
-        showToast('Новый раунд');
+        setPeerSeen(true);
+        showToast('Партнёр: ещё раунд');
         void juice.sync();
         startRef.current();
         return;
@@ -225,7 +226,7 @@ export default function SignalDrawScreen() {
   startRef.current = start;
 
   const rematch = () => {
-    pairRealtime.sendGame('signal-draw', { rematch: true, seed: Date.now() % 100000 });
+    pairRealtime.sendGame('signal-draw', { rematch: true, seed: Date.now() % 100000, hello: true });
     start();
   };
 

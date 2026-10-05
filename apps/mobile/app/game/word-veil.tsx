@@ -157,6 +157,8 @@ export default function WordVeilScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
+        setPresenceHint('Партнёр: ещё раунд');
+        setTimeout(() => setPresenceHint(null), 1600);
         resetRef.current();
         void juice.sync();
         return;
@@ -238,7 +240,7 @@ export default function WordVeilScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    pairRealtime.sendGame('word-veil', { rematch: true, seed: next });
+    pairRealtime.sendGame('word-veil', { rematch: true, seed: next, hello: true });
     resetRound();
   };
 
