@@ -17,6 +17,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
+import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
@@ -475,7 +476,20 @@ export default function WordVeilScreen() {
   return (
     <LpdBackground mood="rain">
       <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-        <Text style={styles.title}>Word Veil</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Word Veil</Text>
+          <Pressable
+            onPress={() => {
+              void confirmLeaveMatch(
+                phase === 'playing' || phase === 'reveal',
+              ).then((ok) => {
+                if (ok) router.back();
+              });
+            }}
+          >
+            <Text style={styles.leave}>Выйти</Text>
+          </Pressable>
+        </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
             <Text style={styles.hero}>Ассоциация вдвоём</Text>
@@ -561,6 +575,15 @@ export default function WordVeilScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, paddingHorizontal: spacing.xl, gap: spacing.md },
   title: { fontFamily: fonts.uiSemi, color: colors.textPrimary, fontSize: 18 },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  leave: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentAmber,
+  },
   ready: { flex: 1, justifyContent: 'center', gap: spacing.md },
   hero: { fontFamily: fonts.display, fontSize: 34, color: colors.textPrimary },
   body: { fontFamily: fonts.ui, color: colors.textSecondary, lineHeight: 22 },
