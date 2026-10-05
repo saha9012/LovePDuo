@@ -133,7 +133,14 @@ export default function GameLobbyScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        showCancelToast('Партнёр снова в лобби');
+        showCancelToast(
+          cancelToastRef.current === 'Партнёр вышел из лобби' ||
+            cancelToastRef.current === 'Партнёр вышел — старт отменён' ||
+            cancelToastRef.current === 'Партнёр снова в лобби' ||
+            cancelToastRef.current === 'Оба снова в лобби'
+            ? 'Оба снова в лобби'
+            : 'Партнёр снова в лобби',
+        );
         void juice.sync();
         if (readyMeRef.current && user.id) {
           pairRealtime.sendGame(gameId, { ready: true, userId: user.id });

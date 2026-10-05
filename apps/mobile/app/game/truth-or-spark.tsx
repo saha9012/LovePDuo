@@ -130,7 +130,13 @@ export default function TruthOrSparkScreen() {
       }
       if (msg.type === 'peer_joined') {
         setLive(true);
-        showTurnToast('Партнёр вернулся');
+        showTurnToast(
+          turnToastRef.current === 'Партнёр вышел' ||
+            turnToastRef.current === 'Партнёр вернулся' ||
+            turnToastRef.current === 'Оба снова здесь'
+            ? 'Оба снова здесь'
+            : 'Партнёр вернулся',
+        );
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame(GAME_ID, {

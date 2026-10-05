@@ -139,7 +139,13 @@ export default function SkyClaimScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        bumpPeerNote('вернулся');
+        bumpPeerNote(
+          peerNoteRef.current === 'вышел' ||
+            peerNoteRef.current === 'вернулся' ||
+            peerNoteRef.current === 'оба снова здесь'
+            ? 'оба снова здесь'
+            : 'вернулся',
+        );
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });

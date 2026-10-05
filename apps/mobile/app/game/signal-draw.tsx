@@ -137,7 +137,13 @@ export default function SignalDrawScreen() {
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
-        showToast('Партнёр вернулся');
+        showToast(
+          toastRef.current === 'Партнёр вышел' ||
+            toastRef.current === 'Партнёр вернулся' ||
+            toastRef.current === 'Оба снова здесь'
+            ? 'Оба снова здесь'
+            : 'Партнёр вернулся',
+        );
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('signal-draw', { hello: true, fromId: user.id });

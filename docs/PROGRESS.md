@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Catalog/Lobby rejoin «Оба снова здесь/в лобби»  
 - [x] Home/Soft/Music rejoin dual · Music hello dup fix  
 - [x] Together rejoin «Оба снова вместе» · Profile room escalate  
-- [x] PostMatch «Оба на финише» dual label · Soft/Sky/Orbit/HB/Draw  
 
 ## Catalog
 

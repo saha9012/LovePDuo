@@ -116,7 +116,13 @@ export default function OrbitCatchScreen() {
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
-        bumpPeerNote('вернулся');
+        bumpPeerNote(
+          peerNoteRef.current === 'вышел' ||
+            peerNoteRef.current === 'вернулся' ||
+            peerNoteRef.current === 'оба снова здесь'
+            ? 'оба снова здесь'
+            : 'вернулся',
+        );
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });

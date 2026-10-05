@@ -183,7 +183,13 @@ export default function WordVeilScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPresenceHint('Партнёр вернулся');
+        setPresenceHint(
+          hintRef.current === 'Партнёр вышел' ||
+            hintRef.current === 'Партнёр вернулся' ||
+            hintRef.current === 'Оба снова здесь'
+            ? 'Оба снова здесь'
+            : 'Партнёр вернулся',
+        );
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });

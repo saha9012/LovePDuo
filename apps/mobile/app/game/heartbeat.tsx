@@ -142,7 +142,14 @@ export default function HeartbeatScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setPeerNote('вернулся');
+        const note =
+          peerNoteRef.current === 'вышел' ||
+          peerNoteRef.current === 'вернулся' ||
+          peerNoteRef.current === 'оба снова здесь'
+            ? 'оба снова здесь'
+            : 'вернулся';
+        setPeerNote(note);
+        peerNoteRef.current = note;
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
         void juice.sync();
