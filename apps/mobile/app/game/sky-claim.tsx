@@ -214,7 +214,13 @@ export default function SkyClaimScreen() {
         setCombo(result.combo);
         setScore(scoreRef.current);
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
-        void (hit.type === 'decoy' ? juice.decoy() : juice.catch());
+        if (hit.type === 'decoy') {
+          void juice.decoy();
+        } else if (result.combo > 0 && result.combo % 5 === 0) {
+          void juice.perfect();
+        } else {
+          void juice.catch();
+        }
         return rest;
       });
     },
@@ -254,7 +260,7 @@ export default function SkyClaimScreen() {
         </View>
         <View style={styles.stats}>
           <Text style={styles.stat}>Очки {score}</Text>
-          <Text style={styles.stat}>Комбо ×{combo}</Text>
+          <Text style={[styles.stat, combo >= 5 && styles.comboHot]}>Комбо ×{combo}</Text>
           <Text style={styles.stat}>
             Партнёр {partnerScore}
             {partnerLive ? '·live' : ''}
@@ -357,6 +363,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiMedium,
     color: colors.textSecondary,
     fontSize: 14,
+  },
+  comboHot: {
+    color: colors.accentAmber,
+    fontFamily: fonts.uiSemi,
   },
   ready: {
     flex: 1,
