@@ -188,7 +188,7 @@ export default function SignalDrawScreen() {
           setPhase('finished');
           void juice.postMatch();
           addMemory({
-            kind: 'spark',
+            kind: 'draw',
             title: 'Signal Draw',
             detail: `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
           });

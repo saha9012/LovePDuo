@@ -199,6 +199,7 @@ export default function GameLobbyScreen() {
         <Text style={styles.hostHint}>
           {isHost ? 'Ты host — стартуешь раунд для обоих.' : 'Жди host (кто создал пару).'}
           {' · '}WS {wsOnline ? 'online' : 'переподключение…'}
+          {typeof pair?.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''}
         </Text>
 
         <View style={styles.status}>

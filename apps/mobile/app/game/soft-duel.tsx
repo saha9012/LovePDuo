@@ -105,7 +105,7 @@ export default function SoftDuelScreen() {
       setPhase('finished');
       void juice.postMatch();
       addMemory({
-        kind: 'spark',
+        kind: 'duel',
         title: 'Soft Duel',
         detail: `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
       });
