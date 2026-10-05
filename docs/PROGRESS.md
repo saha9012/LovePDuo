@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky/Orbit/HB «оба в гонке» · Soft гонка · Together пишут  
 - [x] Soft «Оба в гонке» · Together пишут · ToS по кругу  
 - [x] Together «Оба пишут»/в длине · ToS по кругу · Music коллекции  
-- [x] ToS «Оба по кругу» · Music коллекции · Sky комбо  
 
 ## Catalog
 

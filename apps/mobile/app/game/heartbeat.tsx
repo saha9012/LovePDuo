@@ -304,8 +304,16 @@ export default function HeartbeatScreen() {
           void juice.sync();
         } else if (payload.total > myTotal + 40 && phaseRef.current === 'playing') {
           const racing =
-            peerNoteRef.current === 'партнёр впереди' || peerNoteRef.current === 'гонка';
-          bumpPeerNote(racing ? 'гонка' : 'партнёр впереди');
+            peerNoteRef.current === 'партнёр впереди' ||
+            peerNoteRef.current === 'гонка' ||
+            peerNoteRef.current === 'оба в гонке';
+          bumpPeerNote(
+            peerNoteRef.current === 'гонка' || peerNoteRef.current === 'оба в гонке'
+              ? 'оба в гонке'
+              : racing
+                ? 'гонка'
+                : 'партнёр впереди',
+          );
           void (racing ? juice.sync() : juice.hit());
         }
         partnerScale.value = withSequence(

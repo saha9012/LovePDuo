@@ -252,8 +252,16 @@ export default function OrbitCatchScreen() {
             void juice.sync();
           } else if (grew && payload.caught > caughtRef.current + 1) {
             const racing =
-              peerNoteRef.current === 'партнёр впереди' || peerNoteRef.current === 'гонка';
-            bumpPeerNote(racing ? 'гонка' : 'партнёр впереди');
+              peerNoteRef.current === 'партнёр впереди' ||
+              peerNoteRef.current === 'гонка' ||
+              peerNoteRef.current === 'оба в гонке';
+            bumpPeerNote(
+              peerNoteRef.current === 'гонка' || peerNoteRef.current === 'оба в гонке'
+                ? 'оба в гонке'
+                : racing
+                  ? 'гонка'
+                  : 'партнёр впереди',
+            );
             void (racing ? juice.sync() : juice.hit());
           }
         }
@@ -415,8 +423,16 @@ export default function OrbitCatchScreen() {
       } else if (caughtRef.current > partnerRef.current + 1) {
         setTimeout(() => {
           const racing =
-            peerNoteRef.current === 'я впереди' || peerNoteRef.current === 'гонка';
-          bumpPeerNote(racing ? 'гонка' : 'я впереди');
+            peerNoteRef.current === 'я впереди' ||
+            peerNoteRef.current === 'гонка' ||
+            peerNoteRef.current === 'оба в гонке';
+          bumpPeerNote(
+            peerNoteRef.current === 'гонка' || peerNoteRef.current === 'оба в гонке'
+              ? 'оба в гонке'
+              : racing
+                ? 'гонка'
+                : 'я впереди',
+          );
           void (racing ? juice.sync() : juice.hit());
         }, 320);
       }
