@@ -39,6 +39,7 @@ export default function TogetherScreen() {
   const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
+  const warmthSentAt = useRef(0);
 
   useEffect(() => {
     candleLitRef.current = lit;
@@ -53,8 +54,9 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!warmthPulse || warmthPulse <= warmthSeen.current) return;
     warmthSeen.current = warmthPulse;
-    showPeer('Тепло от партнёра');
-    void juice.warmth();
+    const meet = Date.now() - warmthSentAt.current < 2800;
+    showPeer(meet ? 'Тепло встречное' : 'Тепло от партнёра');
+    void (meet ? juice.perfect() : juice.warmth());
   }, [warmthPulse]);
 
   useEffect(() => {
@@ -313,6 +315,7 @@ export default function TogetherScreen() {
             label="Отправить тепло"
             variant="ghost"
             onPress={() => {
+              warmthSentAt.current = Date.now();
               pairRealtime.sendWarmth();
               showPeer('Тепло ушло');
               void juice.warmth();

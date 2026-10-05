@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Warmth «встречное» when both send · send/receive split  
 - [x] Warmth send vs receive split · Together переписка · Music reaction match  
 - [x] Together note «Переписка» · Music reaction match · dual skips/misses  
-- [x] Music reaction sync perfect · ToS оба скипнули · dual miss/catch  
 
 ## Catalog
 

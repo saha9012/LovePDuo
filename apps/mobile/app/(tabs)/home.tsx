@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const lastMemory = memories[0];
   const warmthSeen = React.useRef(0);
+  const warmthSentAt = React.useRef(0);
   const nameSeen = React.useRef(pair?.name ?? '');
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
@@ -197,8 +198,9 @@ export default function HomeScreen() {
     );
     if (warmthPulse > warmthSeen.current) {
       warmthSeen.current = warmthPulse;
-      setWarmthToast('Тепло в комнате');
-      void juice.warmth();
+      const meet = Date.now() - warmthSentAt.current < 2800;
+      setWarmthToast(meet ? 'Тепло встречное' : 'Тепло в комнате');
+      void (meet ? juice.perfect() : juice.warmth());
       const t = setTimeout(() => setWarmthToast(null), 1600);
       return () => clearTimeout(t);
     }
@@ -290,6 +292,7 @@ export default function HomeScreen() {
             label="Отправить тепло"
             variant="ghost"
             onPress={() => {
+              warmthSentAt.current = Date.now();
               pairRealtime.sendWarmth();
               setWarmthToast('Тепло ушло');
               void juice.warmth();
