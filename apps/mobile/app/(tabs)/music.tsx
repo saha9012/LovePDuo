@@ -14,7 +14,7 @@ import { LpdButton } from '../../src/components/LpdButton';
 import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
-import { useApp, TrackItem } from '../../src/store/AppStore';
+import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
@@ -41,6 +41,9 @@ export default function MusicScreen() {
     activePlaylistId,
     setActivePlaylist,
     renamePlaylist,
+    createPlaylist,
+    receivePlaylist,
+    removePlaylist,
     addTrackToPlaylist,
     removeTrackFromPlaylist,
     setMood,
@@ -420,12 +423,45 @@ export default function MusicScreen() {
           `${payload.from ?? 'Партнёр'} назвал полку «${payload.name.trim().slice(0, 28)}»`,
         );
         void juice.card();
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'playlist-create') {
+        const payload = msg.payload as
+          | (Playlist & { from?: string; fromId?: string })
+          | undefined;
+        if (!payload?.id || !payload.name || payload.fromId === user?.id) return;
+        receivePlaylist({
+          id: payload.id,
+          name: payload.name,
+          mood: payload.mood ?? 'warm',
+          trackIds: [],
+        });
+        showNote(
+          `${payload.from ?? 'Партнёр'} создал «${payload.name.trim().slice(0, 28)}»`,
+        );
+        void juice.card();
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'playlist-delete') {
+        const payload = msg.payload as {
+          playlistId?: string;
+          from?: string;
+          fromId?: string;
+        } | undefined;
+        if (!payload?.playlistId || payload.fromId === user?.id) return;
+        const name = playlists.find((p) => p.id === payload.playlistId)?.name;
+        const ok = removePlaylist(payload.playlistId);
+        if (!ok) return;
+        showNote(
+          `${payload.from ?? 'Партнёр'} убрал полку${name ? ` «${name}»` : ''}`,
+        );
+        void juice.miss();
       }
     });
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, clearTracks, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying, renamePlaylist]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, clearTracks, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying, renamePlaylist, receivePlaylist, removePlaylist]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -740,6 +776,47 @@ export default function MusicScreen() {
     void juice.card();
   };
 
+  const addShelf = () => {
+    if (playlists.length >= 8) {
+      showNote('Максимум 8 полок.');
+      return;
+    }
+    const pl = createPlaylist('Наша полка', active?.mood ?? 'warm');
+    if (!pl) {
+      showNote('Не вышло создать полку.');
+      return;
+    }
+    setActivePlaylist(pl.id);
+    pairRealtime.sendGame('playlist-create', {
+      ...pl,
+      from: user?.displayName,
+      fromId: user?.id,
+    });
+    pairRealtime.sendGame('playlist', { playlistId: pl.id, mood: pl.mood });
+    beginRename(pl.id, pl.name);
+    showNote('Новая полка — переименуй и пиши.');
+    void juice.hit();
+  };
+
+  const deleteShelf = (id: string, name: string) => {
+    void confirmDestructive('Удалить полку?', `«${name}» исчезнет у обоих. Треки в библиотеке останутся.`).then(
+      (ok) => {
+        if (!ok) return;
+        if (!removePlaylist(id)) {
+          showNote('Базовые полки нельзя удалить.');
+          return;
+        }
+        pairRealtime.sendGame('playlist-delete', {
+          playlistId: id,
+          from: user?.displayName,
+          fromId: user?.id,
+        });
+        showNote(`Полку «${name}» убрали`);
+        void juice.miss();
+      },
+    );
+  };
+
   return (
     <LpdBackground mood={active?.mood === 'pulse' ? 'warm' : active?.mood ?? 'warm'}>
       <ScrollView
@@ -787,7 +864,22 @@ export default function MusicScreen() {
               </Pressable>
             ),
           )}
+          {playlists.length < 8 ? (
+            <Pressable
+              onPress={addShelf}
+              style={[styles.moodChip, styles.addShelfChip]}
+              accessibilityLabel="Создать полку"
+            >
+              <Text style={styles.moodLabelOn}>+</Text>
+            </Pressable>
+          ) : null}
         </ScrollView>
+        {active &&
+        !['pl_night', 'pl_warm', 'pl_rain', 'pl_pulse'].includes(active.id) ? (
+          <Pressable onPress={() => deleteShelf(active.id, active.name)} hitSlop={8}>
+            <Text style={styles.deleteShelfHint}>Удалить полку «{active.name}»</Text>
+          </Pressable>
+        ) : null}
 
         {partnerNowPlaying ? (
           <Animated.Text style={[styles.nowPlaying, peerStyle]}>
@@ -1021,6 +1113,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     padding: 0,
     minWidth: 120,
+  },
+  addShelfChip: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 48,
+    borderStyle: 'dashed',
+  },
+  deleteShelfHint: {
+    fontFamily: fonts.ui,
+    color: colors.accentRose,
+    fontSize: 12,
   },
   moodLabel: {
     fontFamily: fonts.uiSemi,

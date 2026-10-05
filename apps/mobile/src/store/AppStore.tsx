@@ -96,6 +96,9 @@ type AppState = {
   receiveNote: (note: TinyNote) => void;
   setActivePlaylist: (id: string | null) => void;
   renamePlaylist: (id: string, name: string) => boolean;
+  createPlaylist: (name: string, mood?: PlaylistMood) => Playlist | null;
+  receivePlaylist: (playlist: Playlist) => void;
+  removePlaylist: (id: string) => boolean;
   addTrackToPlaylist: (playlistId: string, trackId: string) => void;
   removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
 };
@@ -396,6 +399,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return hit;
   }, []);
 
+  const createPlaylist = useCallback((name: string, mood: PlaylistMood = 'warm') => {
+    const next = name.trim().slice(0, 28) || 'Наша полка';
+    const created: Playlist = {
+      id: makeId('pl'),
+      name: next,
+      mood,
+      trackIds: [],
+    };
+    let accepted = false;
+    setPlaylists((prev) => {
+      if (prev.length >= 8) return prev;
+      accepted = true;
+      return [...prev, created];
+    });
+    return accepted ? created : null;
+  }, []);
+
+  const receivePlaylist = useCallback((playlist: Playlist) => {
+    if (!playlist?.id || !playlist.name) return;
+    setPlaylists((prev) => {
+      if (prev.some((p) => p.id === playlist.id)) {
+        return prev.map((p) =>
+          p.id === playlist.id
+            ? { ...p, name: playlist.name, mood: playlist.mood ?? p.mood }
+            : p,
+        );
+      }
+      if (prev.length >= 8) return prev;
+      return [
+        ...prev,
+        {
+          id: playlist.id,
+          name: playlist.name.trim().slice(0, 28),
+          mood: playlist.mood ?? 'warm',
+          trackIds: Array.isArray(playlist.trackIds) ? playlist.trackIds : [],
+        },
+      ];
+    });
+  }, []);
+
+  const removePlaylist = useCallback((id: string) => {
+    const locked = new Set(['pl_night', 'pl_warm', 'pl_rain', 'pl_pulse']);
+    if (locked.has(id)) return false;
+    let hit = false;
+    setPlaylists((prev) => {
+      if (!prev.some((p) => p.id === id)) return prev;
+      hit = true;
+      return prev.filter((p) => p.id !== id);
+    });
+    setActivePlaylistId((cur) => (cur === id ? 'pl_night' : cur));
+    return hit;
+  }, []);
+
   const addTrackToPlaylist = useCallback((playlistId: string, trackId: string) => {
     setPlaylists((prev) =>
       prev.map((pl) =>
@@ -452,6 +508,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveNote,
       setActivePlaylist,
       renamePlaylist,
+      createPlaylist,
+      receivePlaylist,
+      removePlaylist,
       addTrackToPlaylist,
       removeTrackFromPlaylist,
     }),
@@ -489,6 +548,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       receiveNote,
       setActivePlaylist,
       renamePlaylist,
+      createPlaylist,
+      receivePlaylist,
+      removePlaylist,
       addTrackToPlaylist,
       removeTrackFromPlaylist,
     ],
