@@ -73,6 +73,7 @@ export default function SkyClaimScreen() {
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
+  const lastRematchAt = useRef(0);
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
@@ -155,8 +156,9 @@ export default function SkyClaimScreen() {
           partnerLiveRef.current = true;
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
-          bumpPeerNote('ещё раунд');
-          void juice.sync();
+          const both = Date.now() - lastRematchAt.current < 2500;
+          bumpPeerNote(both ? 'оба ещё раунд' : 'ещё раунд');
+          void (both ? juice.perfect() : juice.sync());
           setTimeout(() => startRef.current(), 0);
           return;
         }
@@ -252,6 +254,7 @@ export default function SkyClaimScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    lastRematchAt.current = Date.now();
     pairRealtime.sendGame('sky-claim', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };

@@ -52,6 +52,7 @@ export default function SoftDuelScreen() {
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
+  const lastRematchAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const padScale = useSharedValue(1);
   const flashScale = useSharedValue(1);
@@ -148,8 +149,9 @@ export default function SoftDuelScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setPartnerRound(0);
-        setFlash('Партнёр: ещё раунд');
-        void juice.sync();
+        const both = Date.now() - lastRematchAt.current < 2500;
+        setFlash(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
+        void (both ? juice.perfect() : juice.sync());
         startRef.current();
         return;
       }
@@ -298,6 +300,7 @@ export default function SoftDuelScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     setSyncFinish(false);
+    lastRematchAt.current = Date.now();
     void juice.sync();
     pairRealtime.sendGame('soft-duel', { rematch: true, seed: next, hello: true });
     start();

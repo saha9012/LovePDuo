@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft/Sky dual rematch · Together dual spark · Music dual shelf  
 - [x] Together dual spark · Music dual shelf · Play dual filter  
 - [x] Music dual playlist shelf · Play dual filter · Sky dual combo  
-- [x] Play dual filter sync · Sky dual combo · Lobby dual unready  
 
 ## Catalog
 
