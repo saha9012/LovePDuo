@@ -62,7 +62,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Lobby: Ready toast · оба READY/готовы · оба сняли Ready/не готовы · оба в этом лобби · оба догоняют/в старте · cancel mid-count · peer leave/rejoin · Ready rebroadcast · late-start «догоняем» · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast · оба фильтр MVP/New · оба в каталоге · оба в игре · оба ждут игру  
 - [ ] Music: now-playing · оба слушают · оба в треке · stop · оба остановили/тишина · shelf · оба полка/в полке · оба на полке · оба добавили · оба на Music/слушают полку · reaction sync · оба чувствуют · reaction match · leave/rejoin
-- [ ] Together: candle · sync-light · оба у свечи · оба погасили/гасят · оба догорели · named spark · оба искра · оба в искрах · оба на Together · note · переписка · оба на буквах · warmth · оба в тепле · leave/rejoin   
+- [ ] Together: candle · sync-light · оба у свечи · оба погасили/гасят · оба догорели/в пепле · named spark · оба искра · оба в искрах · оба на Together/рядом · note · переписка · оба на буквах · warmth · оба в тепле · leave/rejoin   
 - [ ] Home: warmth send/receive · тепло встречное · оба в тепле · peer-join · оба в комнате/дома · leave toast · оба настроение · оба в настроении · mood sync · presence · room size 2  
 - [ ] Welcome reconnect · оба в комнате/дома · leave toast · Profile invite deep link · partner rename toast · оба обновили имена · display-name sync · оба назвали комнату  
 

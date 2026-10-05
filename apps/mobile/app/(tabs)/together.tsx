@@ -142,7 +142,14 @@ export default function TogetherScreen() {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId === user.id) return;
         const both = Date.now() - lastHelloAt.current < 2500;
-        showPeer(both ? 'Оба на Together' : `${payload?.from ?? 'Партнёр'} на Together`);
+        showPeer(
+          both
+            ? peerToastRef.current === 'Оба на Together' ||
+              peerToastRef.current === 'Оба рядом'
+              ? 'Оба рядом'
+              : 'Оба на Together'
+            : `${payload?.from ?? 'Партнёр'} на Together`,
+        );
         void (both ? juice.perfect() : juice.warmth());
         return;
       }
@@ -183,7 +190,14 @@ export default function TogetherScreen() {
           candleLogged.current = true;
           const both = Date.now() - lastCandleEndAt.current < 2800;
           setCandleLeft(0);
-          showPeer(both ? 'Оба догорели' : 'Свеча догорела у партнёра');
+          showPeer(
+            both
+              ? peerToastRef.current === 'Оба догорели' ||
+                peerToastRef.current === 'Оба в пепле'
+                ? 'Оба в пепле'
+                : 'Оба догорели'
+              : 'Свеча догорела у партнёра',
+          );
           void (both ? juice.perfect() : juice.postMatch());
         }
         if (typeof payload?.left === 'number' && !payload?.end && !payload?.blow) {

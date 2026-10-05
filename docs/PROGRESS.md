@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Together рядом/в пепле · Word Veil совпали · Lobby готовы  
 - [x] Word Veil совпали/в длине · Lobby готовы · HB sync  
 - [x] Lobby «Оба готовы» · HB sync · Orbit sync  
-- [x] HB «оба sync» · Orbit sync · Draw кисть  
 
 ## Catalog
 
