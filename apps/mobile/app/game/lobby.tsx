@@ -16,6 +16,7 @@ const routes = {
   'truth-or-spark': '/game/truth-or-spark',
   'soft-duel': '/game/soft-duel',
   'word-veil': '/game/word-veil',
+  'signal-draw': '/game/signal-draw',
 } as const;
 
 export default function GameLobbyScreen() {

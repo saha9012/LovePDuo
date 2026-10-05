@@ -1,31 +1,30 @@
 # LovePDuo — PROGRESS
 
 **Repo:** `https://github.com/saha9012/LovePDuo.git`  
-**Updated:** 2026-10-05 continuous  
-**Test URL:** http://localhost:8081 · WS `:8787`
+**Test:** http://localhost:8081 · WS `:8787`  
+**Updated:** 2026-10-05
 
-## Latest pushes
+## Latest
 
-- SFX WAV pack + juice audio/haptics + mute
-- LPD icon/splash/orbit brand
-- Pair cinematic, Sky trails/ramp, Heartbeat/TOS sync
-- Soft Duel, Word Veil
-- Tiny Notes persist + WS
-- Memories, Candle, deep join `lovepduo://join/CODE`
-- Store listing draft
+- [x] **Signal Draw** — dual canvas, amber/rose strokes, WS sync
+- [x] **Mood playlists** — Ночь / Тёплый свет / Дождь / Пульс + add track (+)
+- [x] Soft Duel, Word Veil, Tiny Notes, Memories, SFX, brand icon
+- [x] MVP trio dual-ready (Sky / Heartbeat / Truth Or Spark)
 
-## MVP games
+## Catalog
 
-| Game | Dual sync | Feel |
-|------|-----------|------|
-| Sky Claim | seed + score | trails + ramp + SFX |
-| Heartbeat | seed + tap sync | live sync bonus |
-| Truth Or Spark | shared deck | soft/spicy |
-| Soft Duel | score | reaction |
-| Word Veil | words | association |
+| Game | Status |
+|------|--------|
+| Sky Claim | MVP polished |
+| Heartbeat Tap | MVP + live sync |
+| Truth Or Spark | MVP + shared deck |
+| Signal Draw | NEW shared canvas |
+| Soft Duel | NEW reaction |
+| Word Veil | NEW associations |
 
-## Open
+## Open Ideal Bar
 
-- Dual Android Expo Go QA (LAN IP)
-- Spotify OAuth keys
-- Store screenshots shoot
+1. Android dual-device Expo Go + LAN `EXPO_PUBLIC_LPD_WS_URL`
+2. Spotify OAuth keys
+3. Store screenshot shoot
+4. denser Signal Draw (SVG path / Skia later)

@@ -22,7 +22,7 @@ export default function PlayScreen() {
         <Text style={styles.kicker}>Play</Text>
         <Text style={typography.headline}>Миниигры для двоих</Text>
         <Text style={[typography.body, styles.sub]}>
-          Три проработанных раунда. Два телефона. Живой post-match.
+          MVP + расширения. Два телефона. Живой post-match.
         </Text>
         <View style={styles.list}>
           <GameTile
@@ -48,6 +48,14 @@ export default function PlayScreen() {
             cover="spark"
             badge="MVP"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'truth-or-spark' } })}
+          />
+          <GameTile
+            title="Signal Draw"
+            subtitle="Общий холст. Янтарь и роза рисуют сигнал вместе."
+            accent="amber"
+            cover="sky"
+            badge="NEW"
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
           />
           <GameTile
             title="Soft Duel"

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
@@ -23,9 +23,25 @@ export default function MusicScreen() {
     setNowPlaying,
     partnerNowPlaying,
     setPartnerNowPlaying,
+    playlists,
+    activePlaylistId,
+    setActivePlaylist,
+    addTrackToPlaylist,
+    setMood,
   } = useApp();
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
+  const visibleTracks = useMemo(() => {
+    if (!active || active.trackIds.length === 0) return tracks;
+    const set = new Set(active.trackIds);
+    const ordered = active.trackIds
+      .map((id) => tracks.find((t) => t.id === id))
+      .filter(Boolean) as TrackItem[];
+    const rest = tracks.filter((t) => !set.has(t.id));
+    return [...ordered, ...rest];
+  }, [tracks, active]);
 
   useEffect(() => {
     return () => {
@@ -122,8 +138,14 @@ export default function MusicScreen() {
     void juice.card();
   };
 
+  const selectPlaylist = (id: string, mood: 'night' | 'warm' | 'rain' | 'pulse') => {
+    setActivePlaylist(id);
+    if (mood !== 'pulse') setMood(mood);
+    void juice.card();
+  };
+
   return (
-    <LpdBackground mood="warm">
+    <LpdBackground mood={active?.mood === 'pulse' ? 'warm' : active?.mood ?? 'warm'}>
       <ScrollView
         contentContainerStyle={[
           styles.content,
@@ -133,8 +155,23 @@ export default function MusicScreen() {
         <Text style={styles.kicker}>Music</Text>
         <Text style={typography.headline}>Полка пары</Text>
         <Text style={typography.body}>
-          Музыка остаётся в LovePDuo. Upload — must. Spotify и VK — пробуем честно.
+          Музыка остаётся в LovePDuo. Плейлисты-настроения — ваша полка, не список ссылок.
         </Text>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.moods}>
+          {playlists.map((pl) => (
+            <Pressable
+              key={pl.id}
+              onPress={() => selectPlaylist(pl.id, pl.mood)}
+              style={[styles.moodChip, activePlaylistId === pl.id && styles.moodActive]}
+            >
+              <Text style={[styles.moodLabel, activePlaylistId === pl.id && styles.moodLabelOn]}>
+                {pl.name}
+              </Text>
+              <Text style={styles.moodCount}>{pl.trackIds.length}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
 
         {partnerNowPlaying ? (
           <Text style={styles.nowPlaying}>♪ {partnerNowPlaying}</Text>
@@ -151,35 +188,47 @@ export default function MusicScreen() {
           {tracks.length === 0 ? (
             <EmptyState
               title="Пока тихо"
-              body="Загрузите первый трек — он останется в комнате после перезахода. Это ваша полка, не список ссылок."
+              body="Загрузите первый трек — он останется в комнате после перезахода."
             />
           ) : (
-            tracks.map((t) => (
-              <View key={t.id} style={styles.row}>
-                <Pressable
-                  style={{ flex: 1, gap: 4 }}
-                  onPress={() => void playTrack(t)}
-                >
-                  <Text style={styles.trackTitle}>
-                    {nowPlayingId === t.id ? '▶ ' : ''}
-                    {t.title}
-                  </Text>
-                  <Text style={styles.trackMeta}>
-                    {t.artist} · {t.sourceType} · {t.playbackMode}
-                  </Text>
-                </Pressable>
-                <View style={styles.reactRow}>
-                  {(['heart', 'fire', 'rain'] as const).map((r) => (
-                    <Pressable key={r} onPress={() => react(t.id, r)}>
-                      <Text style={[styles.react, t.reaction === r && styles.reactOn]}>
-                        {r === 'heart' ? '♥' : r === 'fire' ? '✦' : '≈'}
-                      </Text>
-                    </Pressable>
-                  ))}
+            visibleTracks.map((t) => {
+              const inActive = active?.trackIds.includes(t.id);
+              return (
+                <View key={t.id} style={styles.row}>
+                  <Pressable style={{ flex: 1, gap: 4 }} onPress={() => void playTrack(t)}>
+                    <Text style={styles.trackTitle}>
+                      {nowPlayingId === t.id ? '▶ ' : ''}
+                      {t.title}
+                    </Text>
+                    <Text style={styles.trackMeta}>
+                      {t.artist} · {t.sourceType}
+                      {inActive ? ` · ${active?.name}` : ''}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => {
+                      if (active) {
+                        addTrackToPlaylist(active.id, t.id);
+                        setNote(`В «${active.name}».`);
+                        void juice.hit();
+                      }
+                    }}
+                    style={styles.addPl}
+                  >
+                    <Text style={styles.addPlLabel}>{inActive ? '✓' : '+'}</Text>
+                  </Pressable>
+                  <View style={styles.reactRow}>
+                    {(['heart', 'fire', 'rain'] as const).map((r) => (
+                      <Pressable key={r} onPress={() => react(t.id, r)}>
+                        <Text style={[styles.react, t.reaction === r && styles.reactOn]}>
+                          {r === 'heart' ? '♥' : r === 'fire' ? '✦' : '≈'}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
                 </View>
-                <Text style={styles.who}>{t.addedBy}</Text>
-              </View>
-            ))
+              );
+            })
           )}
         </View>
       </ScrollView>
@@ -199,6 +248,37 @@ const styles = StyleSheet.create({
     color: colors.accentAmber,
     fontSize: 12,
   },
+  moods: {
+    gap: spacing.sm,
+    paddingVertical: 4,
+  },
+  moodChip: {
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    borderRadius: radii.sm,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginRight: 8,
+    minWidth: 88,
+  },
+  moodActive: {
+    borderColor: 'rgba(226,176,122,0.5)',
+    backgroundColor: 'rgba(226,176,122,0.12)',
+  },
+  moodLabel: {
+    fontFamily: fonts.uiSemi,
+    color: colors.textMuted,
+    fontSize: 13,
+  },
+  moodLabelOn: {
+    color: colors.accentAmber,
+  },
+  moodCount: {
+    fontFamily: fonts.ui,
+    color: colors.textMuted,
+    fontSize: 11,
+    marginTop: 2,
+  },
   nowPlaying: {
     fontFamily: fonts.uiMedium,
     color: colors.accentRose,
@@ -206,7 +286,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.sm,
-    marginTop: spacing.sm,
   },
   note: {
     fontFamily: fonts.ui,
@@ -215,7 +294,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   list: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
     gap: spacing.sm,
   },
   row: {
@@ -238,6 +317,19 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 12,
   },
+  addPl: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPlLabel: {
+    color: colors.accentAmber,
+    fontFamily: fonts.uiSemi,
+  },
   reactRow: {
     flexDirection: 'row',
     gap: 8,
@@ -250,10 +342,5 @@ const styles = StyleSheet.create({
   reactOn: {
     color: colors.accentAmber,
     opacity: 1,
-  },
-  who: {
-    fontFamily: fonts.uiMedium,
-    color: colors.accentAmber,
-    fontSize: 12,
   },
 });

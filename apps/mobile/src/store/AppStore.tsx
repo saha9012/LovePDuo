@@ -45,18 +45,30 @@ export type TinyNote = {
   at: number;
 };
 
+export type PlaylistMood = 'night' | 'warm' | 'rain' | 'pulse';
+
+export type Playlist = {
+  id: string;
+  name: string;
+  mood: PlaylistMood;
+  trackIds: string[];
+};
+
 type AppState = {
   hydrated: boolean;
   user: UserProfile | null;
   pair: PairState | null;
   tracks: TrackItem[];
   notes: TinyNote[];
+  playlists: Playlist[];
+  activePlaylistId: string | null;
   signIn: (name: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
   createPair: (pairName?: string, hostUserId?: string) => Promise<PairState>;
   joinPair: (code: string) => Promise<PairState>;
   unlinkPair: () => Promise<void>;
   setMood: (mood: PairState['mood']) => void;
+  setPartnerInfo: (name: string, presence?: Presence) => void;
   sendWarmth: () => void;
   warmthPulse: number;
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
@@ -67,6 +79,8 @@ type AppState = {
   setPartnerNowPlaying: (title: string | null) => void;
   addNote: (text: string) => void;
   receiveNote: (note: TinyNote) => void;
+  setActivePlaylist: (id: string | null) => void;
+  addTrackToPlaylist: (playlistId: string, trackId: string) => void;
 };
 
 const STORAGE_KEY = 'lovepduo.v1';
@@ -75,6 +89,15 @@ const AppContext = createContext<AppState | null>(null);
 
 function makeId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function defaultPlaylists(): Playlist[] {
+  return [
+    { id: 'pl_night', name: 'Ночь', mood: 'night', trackIds: [] },
+    { id: 'pl_warm', name: 'Тёплый свет', mood: 'warm', trackIds: [] },
+    { id: 'pl_rain', name: 'Дождь', mood: 'rain', trackIds: [] },
+    { id: 'pl_pulse', name: 'Пульс', mood: 'pulse', trackIds: [] },
+  ];
 }
 
 function makePairCode() {
@@ -92,6 +115,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [pair, setPair] = useState<PairState | null>(null);
   const [tracks, setTracks] = useState<TrackItem[]>([]);
   const [notes, setNotes] = useState<TinyNote[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>(defaultPlaylists);
+  const [activePlaylistId, setActivePlaylistId] = useState<string | null>('pl_night');
   const [warmthPulse, setWarmthPulse] = useState(0);
   const [nowPlayingId, setNowPlayingId] = useState<string | null>(null);
   const [partnerNowPlaying, setPartnerNowPlaying] = useState<string | null>(null);
@@ -106,6 +131,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             pair?: PairState | null;
             tracks?: TrackItem[];
             notes?: TinyNote[];
+            playlists?: Playlist[];
+            activePlaylistId?: string | null;
           };
           setUser(parsed.user ?? null);
           if (parsed.pair) {
@@ -119,6 +146,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
           setTracks(parsed.tracks ?? []);
           setNotes(parsed.notes ?? []);
+          setPlaylists(
+            parsed.playlists?.length ? parsed.playlists : defaultPlaylists(),
+          );
+          setActivePlaylistId(parsed.activePlaylistId ?? 'pl_night');
         }
       } finally {
         setHydrated(true);
@@ -130,9 +161,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     void AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ user, pair, tracks, notes }),
+      JSON.stringify({ user, pair, tracks, notes, playlists, activePlaylistId }),
     );
-  }, [hydrated, user, pair, tracks, notes]);
+  }, [hydrated, user, pair, tracks, notes, playlists, activePlaylistId]);
 
   const signIn = useCallback(async (name: string) => {
     const clean = name.trim() || 'Игрок';
@@ -147,6 +178,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPair(null);
     setTracks([]);
     setNotes([]);
+    setPlaylists(defaultPlaylists());
+    setActivePlaylistId('pl_night');
     await AsyncStorage.removeItem(STORAGE_KEY);
   }, []);
 
@@ -188,6 +221,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const setMood = useCallback((mood: PairState['mood']) => {
     setPair((prev) => (prev ? { ...prev, mood } : prev));
+  }, []);
+
+  const setPartnerInfo = useCallback((name: string, presence: Presence = 'online') => {
+    setPair((prev) =>
+      prev
+        ? {
+            ...prev,
+            partnerName: name || prev.partnerName,
+            partnerPresence: presence,
+          }
+        : prev,
+    );
   }, []);
 
   const sendWarmth = useCallback(() => {
@@ -233,6 +278,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const setActivePlaylist = useCallback((id: string | null) => {
+    setActivePlaylistId(id);
+  }, []);
+
+  const addTrackToPlaylist = useCallback((playlistId: string, trackId: string) => {
+    setPlaylists((prev) =>
+      prev.map((pl) =>
+        pl.id === playlistId && !pl.trackIds.includes(trackId)
+          ? { ...pl, trackIds: [trackId, ...pl.trackIds] }
+          : pl,
+      ),
+    );
+  }, []);
+
   const value = useMemo(
     () => ({
       hydrated,
@@ -240,6 +299,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       pair,
       tracks,
       notes,
+      playlists,
+      activePlaylistId,
       signIn,
       signOut,
       createPair,
@@ -256,6 +317,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setPartnerNowPlaying,
       addNote,
       receiveNote,
+      setActivePlaylist,
+      addTrackToPlaylist,
     }),
     [
       hydrated,
@@ -263,6 +326,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       pair,
       tracks,
       notes,
+      playlists,
+      activePlaylistId,
       signIn,
       signOut,
       createPair,
@@ -278,6 +343,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       partnerNowPlaying,
       addNote,
       receiveNote,
+      setActivePlaylist,
+      addTrackToPlaylist,
     ],
   );
 

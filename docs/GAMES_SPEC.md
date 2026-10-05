@@ -58,6 +58,16 @@ Feel checklist:
 
 ---
 
-## Post-match engine
+## GAME — Signal Draw
 
-`src/content/postMatch.ts` — win / lose / draw pools, дерзко-милый тон.
+**Файл:** `apps/mobile/app/game/signal-draw.tsx`
+
+- Shared canvas, ~40s
+- Local strokes amber, peer dusty-rose
+- WS: stroke start + point stream + counts
+- Post-match + rematch + memory
+
+## GAME — Soft Duel / Word Veil
+
+See Soft Duel reaction rounds and Word Veil association compare.
+
