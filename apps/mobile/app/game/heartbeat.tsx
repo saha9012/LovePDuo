@@ -268,24 +268,28 @@ export default function HeartbeatScreen() {
             void juice.perfect();
             if (payload.total === myTotal && myTotal > 0) {
               setTimeout(() => {
-                bumpPeerNote('оба на очках');
+                bumpPeerNote(
+              peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+                ? 'оба в счёте'
+                : 'оба на очках',
+            );
                 void juice.sync();
               }, 380);
             }
           } else if (payload.total === myTotal && myTotal > 0) {
-            setPeerNote('оба на очках');
-            if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-            peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+            bumpPeerNote(
+              peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+                ? 'оба в счёте'
+                : 'оба на очках',
+            );
             void juice.sync();
           }
         } else if (payload.total === myTotal && myTotal > 0) {
-          setPeerNote('оба на очках');
-          peerNoteRef.current = 'оба на очках';
-          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-          peerNoteTimer.current = setTimeout(() => {
-            peerNoteRef.current = null;
-            setPeerNote(null);
-          }, 1000);
+          bumpPeerNote(
+            peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+              ? 'оба в счёте'
+              : 'оба на очках',
+          );
           void juice.sync();
         } else if (payload.total > myTotal + 40 && phaseRef.current === 'playing') {
           const racing =
@@ -496,13 +500,11 @@ export default function HeartbeatScreen() {
       partnerScoreRef.current > 0
     ) {
       setTimeout(() => {
-        setPeerNote('оба на очках');
-        peerNoteRef.current = 'оба на очках';
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => {
-          peerNoteRef.current = null;
-          setPeerNote(null);
-        }, 1000);
+        bumpPeerNote(
+          peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+            ? 'оба в счёте'
+            : 'оба на очках',
+        );
         void juice.sync();
       }, 320);
       if (j === 'perfect') void juice.perfect();

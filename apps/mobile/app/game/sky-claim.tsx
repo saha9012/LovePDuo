@@ -245,7 +245,11 @@ export default function SkyClaimScreen() {
             void juice.perfect();
             if (payload.score === scoreRef.current && scoreRef.current > 0) {
               setTimeout(() => {
-                bumpPeerNote('оба на очках');
+                bumpPeerNote(
+              peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+                ? 'оба в счёте'
+                : 'оба на очках',
+            );
                 void juice.sync();
               }, 380);
             }
@@ -256,7 +260,11 @@ export default function SkyClaimScreen() {
             payload.score === scoreRef.current &&
             scoreRef.current > 0
           ) {
-            bumpPeerNote('оба на очках');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+                ? 'оба в счёте'
+                : 'оба на очках',
+            );
             void juice.sync();
           } else if (
             !payload.phase &&
@@ -493,7 +501,11 @@ export default function SkyClaimScreen() {
           scoreRef.current > 0
         ) {
           setTimeout(() => {
-            bumpPeerNote('оба на очках');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба на очках' || peerNoteRef.current === 'оба в счёте'
+                ? 'оба в счёте'
+                : 'оба на очках',
+            );
             void juice.sync();
           }, 320);
         } else if (

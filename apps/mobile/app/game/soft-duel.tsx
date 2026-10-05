@@ -290,7 +290,11 @@ export default function SoftDuelScreen() {
             payload.score === myScoreRef.current
           ) {
             setTimeout(() => {
-              setFlash('Оба на очках');
+              setFlash(
+                flashRef.current === 'Оба на очках' || flashRef.current === 'Оба в счёте'
+                  ? 'Оба в счёте'
+                  : 'Оба на очках',
+              );
               flashScale.value = withSpring(1.12, { damping: 10 });
               void juice.sync();
             }, 380);
@@ -485,7 +489,11 @@ export default function SoftDuelScreen() {
       }, 320);
     } else if (partnerLiveRef.current && myScoreRef.current === partnerScore) {
       setTimeout(() => {
-        setFlash('Оба на очках');
+        setFlash(
+          flashRef.current === 'Оба на очках' || flashRef.current === 'Оба в счёте'
+            ? 'Оба в счёте'
+            : 'Оба на очках',
+        );
         flashScale.value = withSpring(1.12, { damping: 10 });
         void juice.sync();
       }, 320);
