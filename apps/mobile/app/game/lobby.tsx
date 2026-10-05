@@ -67,6 +67,10 @@ export default function GameLobbyScreen() {
     if (!pair || !user) return;
     pairRealtime.connect(pair.code, user.id, user.displayName);
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setReadyPeer(false);
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === gameId) {
         const payload = msg.payload as {
           ready?: boolean;
@@ -74,10 +78,19 @@ export default function GameLobbyScreen() {
           start?: boolean;
           seed?: number;
           startAtMs?: number;
+          reset?: boolean;
         } | undefined;
-        if (payload?.ready && payload.userId !== user.id) {
-          setReadyPeer(true);
-          void juice.sync();
+        if (payload?.reset) {
+          setReadyMe(false);
+          setReadyPeer(false);
+          startSent.current = false;
+          setCountdown(null);
+          return;
+        }
+        if (typeof payload?.ready === 'boolean' && payload.userId !== user.id) {
+          setReadyPeer(payload.ready);
+          if (payload.ready) void juice.sync();
+          else void juice.miss();
         }
         if (payload?.start && typeof payload.seed === 'number') {
           const at = payload.startAtMs ?? Date.now() + 2500;
@@ -91,7 +104,17 @@ export default function GameLobbyScreen() {
     return () => {
       off();
     };
-  }, [pair?.code, user?.id, gameId]);
+  }, [pair?.code, user?.id, gameId, user?.displayName, pair]);
+
+  // Entering a different game lobby clears local ready state
+  useEffect(() => {
+    setReadyMe(false);
+    setReadyPeer(false);
+    startSent.current = false;
+    setCountdown(null);
+    setMatchSeed(null);
+    setStartAtMs(null);
+  }, [gameId]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -117,7 +140,7 @@ export default function GameLobbyScreen() {
     }
     const t = setTimeout(() => setCountdown((c) => (c == null ? c : c - 1)), 720);
     return () => clearTimeout(t);
-  }, [countdown, gameId, router, matchSeed, startAtMs]);
+  }, [countdown, gameId, router, matchSeed, startAtMs, countScale, countOpacity]);
 
   useEffect(() => {
     if (!readyMe || !readyPeer || countdown !== null || startSent.current) return;
@@ -142,10 +165,18 @@ export default function GameLobbyScreen() {
   }));
 
   const onReady = () => {
-    if (!user) return;
+    if (!user || countdown != null) return;
     setReadyMe(true);
     juice.hit();
     pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+  };
+
+  const onUnready = () => {
+    if (!user || countdown != null) return;
+    setReadyMe(false);
+    startSent.current = false;
+    juice.miss();
+    pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
   };
 
   const solo = () => {
@@ -186,7 +217,16 @@ export default function GameLobbyScreen() {
         ) : null}
 
         <View style={styles.actions}>
-          <LpdButton label="Ready" onPress={onReady} disabled={readyMe || countdown != null} />
+          {!readyMe ? (
+            <LpdButton label="Ready" onPress={onReady} disabled={countdown != null} />
+          ) : (
+            <LpdButton
+              label="Снять Ready"
+              variant="ghost"
+              onPress={onUnready}
+              disabled={countdown != null}
+            />
+          )}
           <LpdButton label="Solo / Demo" variant="ghost" onPress={solo} />
           <LpdButton label="Назад" variant="ghost" onPress={() => router.back()} />
         </View>

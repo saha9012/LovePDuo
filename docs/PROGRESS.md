@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Shared rematch across catalog (Sky · Heartbeat · Orbit · Soft Duel · Word Veil · Signal Draw)  
-- [x] Warmth toast · WS reconnect backoff · AppState away · mute persist · presence ping  
-- [x] Store capture helpers + Spotify env stub  
+- [x] Lobby: unready · peer_left clears Ready · reset on game switch  
+- [x] Together: shared spark · blow candle · peer toasts  
+- [x] Shared rematch across catalog · WS reconnect · mute persist · presence  
 
 ## Catalog
 

@@ -202,7 +202,7 @@ export default function OrbitCatchScreen() {
             gameId="orbit-catch"
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace('/(tabs)/play')}
+            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
           />
         </View>
       </LpdBackground>

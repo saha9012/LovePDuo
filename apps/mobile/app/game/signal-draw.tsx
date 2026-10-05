@@ -335,7 +335,7 @@ export default function SignalDrawScreen() {
             gameId="signal-draw"
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace('/(tabs)/play')}
+            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
           />
         </View>
       </LpdBackground>

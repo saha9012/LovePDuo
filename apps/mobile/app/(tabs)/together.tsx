@@ -29,11 +29,19 @@ export default function TogetherScreen() {
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
+  const [peerToast, setPeerToast] = useState<string | null>(null);
   const soft = useMemo(() => sparksRu.filter((s) => s.filter === 'soft'), []);
   const card = soft[idx % soft.length];
   const flame = useSharedValue(1);
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showPeer = (text: string) => {
+    setPeerToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setPeerToast(null), 1800);
+  };
 
   useEffect(() => {
     if (!lit) {
@@ -76,16 +84,40 @@ export default function TogetherScreen() {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'game' && msg.gameId === 'candle') {
-        const payload = msg.payload as { left?: number; start?: boolean } | undefined;
+        const payload = msg.payload as {
+          left?: number;
+          start?: boolean;
+          blow?: boolean;
+        } | undefined;
         if (payload?.start) {
           candleLogged.current = false;
           setCandleLeft(CANDLE_SEC);
+          showPeer('Партнёр зажёг свечу');
+          void juice.warmth();
+        }
+        if (payload?.blow) {
+          candleLogged.current = true;
+          setCandleLeft(0);
+          showPeer('Партнёр погасил свечу');
+          void juice.miss();
         }
         if (typeof payload?.left === 'number') setCandleLeft(payload.left);
       }
+      if (msg.type === 'game' && msg.gameId === 'spark') {
+        const payload = msg.payload as { idx?: number } | undefined;
+        if (typeof payload?.idx === 'number') {
+          setIdx(payload.idx);
+          showPeer('Новая искра от партнёра');
+          void juice.card();
+        }
+      }
       if (msg.type === 'game' && msg.gameId === 'tiny-note') {
         const payload = msg.payload as TinyNote | undefined;
-        if (payload?.id && payload.text) receiveNote(payload);
+        if (payload?.id && payload.text) {
+          receiveNote(payload);
+          showPeer('Новая заметка');
+          void juice.card();
+        }
       }
     });
     return () => {
@@ -101,8 +133,20 @@ export default function TogetherScreen() {
     track('warmth_sent', { ritual: 'candle' });
   };
 
+  const blowCandle = () => {
+    if (!lit) return;
+    candleLogged.current = true;
+    setCandleLeft(0);
+    pairRealtime.sendGame('candle', { blow: true, left: 0 });
+    void juice.miss();
+  };
+
   const nextSpark = () => {
-    setIdx((v) => v + 1);
+    setIdx((v) => {
+      const next = v + 1;
+      pairRealtime.sendGame('spark', { idx: next });
+      return next;
+    });
     void juice.card();
   };
 
@@ -140,6 +184,7 @@ export default function TogetherScreen() {
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
           <Text style={styles.text}>{card.text}</Text>
+          {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
         </View>
 
         <View style={styles.candleBlock}>
@@ -184,6 +229,9 @@ export default function TogetherScreen() {
             disabled={lit}
             onPress={startCandle}
           />
+          {lit ? (
+            <LpdButton label="Погасить свечу" variant="ghost" onPress={blowCandle} />
+          ) : null}
           <LpdButton
             label="Отправить тепло"
             variant="ghost"
@@ -253,6 +301,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 32,
     color: colors.textPrimary,
+  },
+  peerToast: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentRose,
+    fontSize: 13,
   },
   candleBlock: {
     borderRadius: radii.lg,

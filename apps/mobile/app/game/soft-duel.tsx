@@ -198,7 +198,7 @@ export default function SoftDuelScreen() {
             gameId="soft-duel"
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace('/(tabs)/play')}
+            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
           />
         </View>
       </LpdBackground>

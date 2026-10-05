@@ -287,7 +287,7 @@ export default function SkyClaimScreen() {
             gameId="sky-claim"
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace('/(tabs)/play')}
+            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'sky-claim' } })}
           />
         </View>
       </LpdBackground>
