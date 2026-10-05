@@ -45,6 +45,7 @@ export default function MusicScreen() {
   } = useApp();
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [progress, setProgress] = useState<{ pos: number; dur: number } | null>(null);
   const soundRef = React.useRef<Audio.Sound | null>(null);
   const nowPlayingRef = React.useRef<string | null>(null);
   const peerPulse = useSharedValue(1);
@@ -316,6 +317,7 @@ export default function MusicScreen() {
               }
               setSound(null);
               setNowPlaying(null);
+              setProgress(null);
             })();
           }
           if (
@@ -341,6 +343,7 @@ export default function MusicScreen() {
           }
           setSound(null);
           setNowPlaying(null);
+          setProgress(null);
           clearTracks();
           setPartnerNowPlaying(null);
           showNote(`${payload?.from ?? 'Партнёр'} очистил библиотеку`);
@@ -413,6 +416,13 @@ export default function MusicScreen() {
     });
   }, [pair?.code, user?.id, user?.displayName]);
 
+  const formatMs = (ms: number) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
   const playTrack = async (track: TrackItem) => {
     if (!track.uri || track.playbackMode !== 'local') {
       showNote(
@@ -428,11 +438,20 @@ export default function MusicScreen() {
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
       const next = new Audio.Sound();
       await next.loadAsync({ uri: track.uri });
+      setProgress(null);
       next.setOnPlaybackStatusUpdate((status) => {
-        if (!status.isLoaded || !status.didJustFinish) return;
+        if (!status.isLoaded) return;
+        if (typeof status.positionMillis === 'number') {
+          setProgress({
+            pos: status.positionMillis,
+            dur: status.durationMillis ?? 0,
+          });
+        }
+        if (!status.didJustFinish) return;
         void next.unloadAsync();
         setSound(null);
         setNowPlaying(null);
+        setProgress(null);
         lastStopAt.current = Date.now();
         const list = visibleTracksRef.current;
         const idx = list.findIndex((t) => t.id === track.id);
@@ -488,6 +507,7 @@ export default function MusicScreen() {
               }
               setSound(null);
               setNowPlaying(null);
+              setProgress(null);
               setPartnerNowPlaying(null);
               lastStopAt.current = Date.now();
               clearTracks();
@@ -529,6 +549,7 @@ export default function MusicScreen() {
                 }
                 setSound(null);
                 setNowPlaying(null);
+                setProgress(null);
                 lastStopAt.current = Date.now();
                 pairRealtime.sendGame('now-playing', {
                   title: null,
@@ -720,6 +741,23 @@ export default function MusicScreen() {
         ) : null}
         {nowPlayingId ? (
           <View style={styles.playbackRow}>
+            {progress && progress.dur > 0 ? (
+              <View style={styles.progressBlock}>
+                <View style={styles.progressTrack}>
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${Math.min(100, (progress.pos / progress.dur) * 100)}%`,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.progressTime}>
+                  {formatMs(progress.pos)} / {formatMs(progress.dur)}
+                </Text>
+              </View>
+            ) : null}
             <LpdButton
               label="Предыдущий"
               variant="ghost"
@@ -746,6 +784,7 @@ export default function MusicScreen() {
                 await sound?.unloadAsync();
                 setSound(null);
                 setNowPlaying(null);
+                setProgress(null);
                 lastStopAt.current = Date.now();
                 pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
                 showNote('Остановили — партнёр видит.');
@@ -921,6 +960,26 @@ const styles = StyleSheet.create({
   },
   playbackRow: {
     gap: spacing.sm,
+  },
+  progressBlock: {
+    gap: 6,
+    marginBottom: 4,
+  },
+  progressTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+    backgroundColor: colors.accentAmber,
+  },
+  progressTime: {
+    fontFamily: fonts.mono,
+    color: colors.textMuted,
+    fontSize: 12,
   },
   note: {
     fontFamily: fonts.ui,
