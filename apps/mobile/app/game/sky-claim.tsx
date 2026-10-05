@@ -171,7 +171,11 @@ export default function SkyClaimScreen() {
           setPartnerLive(true);
           partnerLiveRef.current = true;
           if (Date.now() - lateStartAt.current < 2500) {
-            bumpPeerNote('оба догоняют');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба догоняют' || peerNoteRef.current === 'оба в старте'
+                ? 'оба в старте'
+                : 'оба догоняют',
+            );
             void juice.perfect();
           }
         }

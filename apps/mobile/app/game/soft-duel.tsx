@@ -171,7 +171,11 @@ export default function SoftDuelScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         if (flashRef.current === 'Догоняем старт') {
-          setFlash('Оба догоняют');
+          setFlash(
+            flashRef.current === 'Оба догоняют' || flashRef.current === 'Оба в старте'
+              ? 'Оба в старте'
+              : 'Оба догоняют',
+          );
           void juice.perfect();
         }
       }

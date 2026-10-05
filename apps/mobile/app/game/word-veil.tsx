@@ -193,7 +193,9 @@ export default function WordVeilScreen() {
         const late = Date.now() - lateStartAt.current < 2500;
         setPresenceHint(
           late
-            ? 'Оба догоняют'
+            ? hintRef.current === 'Оба догоняют' || hintRef.current === 'Оба в старте'
+              ? 'Оба в старте'
+              : 'Оба догоняют'
             : both
               ? hintRef.current === 'Оба в игре' || hintRef.current === 'Оба здесь'
                 ? 'Оба здесь'

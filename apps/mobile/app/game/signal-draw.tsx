@@ -169,7 +169,11 @@ export default function SignalDrawScreen() {
           return;
         }
         if (payload.phase === 'start' && Date.now() - lateStartAt.current < 2500) {
-          showToast('Оба догоняют');
+          showToast(
+            toastRef.current === 'Оба догоняют' || toastRef.current === 'Оба в старте'
+              ? 'Оба в старте'
+              : 'Оба догоняют',
+          );
           void juice.perfect();
         }
       }

@@ -178,9 +178,12 @@ export default function HeartbeatScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         if (Date.now() - lateStartAt.current < 2500) {
-          setPeerNote('оба догоняют');
-          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+          bumpPeerNote(
+            peerNoteRef.current === 'оба догоняют' || peerNoteRef.current === 'оба в старте'
+              ? 'оба в старте'
+              : 'оба догоняют',
+            1200,
+          );
           void juice.perfect();
         }
       }

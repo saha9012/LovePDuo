@@ -205,7 +205,12 @@ export default function GameLobbyScreen() {
           setMatchSession({ gameId, seed: payload.seed, startAtMs: at });
           setCountdown(3);
           if (drift < 500) {
-            showCancelToast('Оба догоняют');
+            showCancelToast(
+              cancelToastRef.current === 'Оба догоняют' ||
+                cancelToastRef.current === 'Оба в старте'
+                ? 'Оба в старте'
+                : 'Оба догоняют',
+            );
             void juice.perfect();
           } else {
             showCancelToast('Старт!');
