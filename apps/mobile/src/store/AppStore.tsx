@@ -8,6 +8,8 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { pairRealtime } from '../realtime/PairRealtime';
+import { hydrateWsUrl } from '../realtime/wsConfig';
+import { track } from '../analytics/track';
 
 export type Presence = 'online' | 'away' | 'offline';
 
@@ -124,6 +126,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
+        await hydrateWsUrl();
+        track('session_start');
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as {

@@ -2,6 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
@@ -10,6 +16,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
+import { juice } from '../../src/audio/juice';
 
 const routes = {
   'sky-claim': '/game/sky-claim',
@@ -33,6 +40,8 @@ export default function GameLobbyScreen() {
   const [matchSeed, setMatchSeed] = useState<number | null>(null);
   const [startAtMs, setStartAtMs] = useState<number | null>(null);
   const startSent = useRef(false);
+  const countScale = useSharedValue(1);
+  const countOpacity = useSharedValue(1);
 
   const isHost = Boolean(
     user?.id && pair?.hostUserId && pair.hostUserId === user.id,
@@ -69,19 +78,27 @@ export default function GameLobbyScreen() {
 
   useEffect(() => {
     if (countdown === null) return;
+    countScale.value = 0.55;
+    countOpacity.value = 0.4;
+    countScale.value = withSpring(1.08, { damping: 9, stiffness: 180 });
+    countOpacity.value = withTiming(1, { duration: 180 });
+    juice.hit();
     if (countdown <= 0) {
+      juice.sync();
       const seed = matchSeed ?? Math.floor(Math.random() * 100000);
       const startAt = startAtMs ?? Date.now();
-      router.replace({
-        pathname: routes[gameId],
-        params: {
-          seed: String(seed),
-          startAt: String(startAt),
-        },
-      });
-      return;
+      const t = setTimeout(() => {
+        router.replace({
+          pathname: routes[gameId],
+          params: {
+            seed: String(seed),
+            startAt: String(startAt),
+          },
+        });
+      }, 280);
+      return () => clearTimeout(t);
     }
-    const t = setTimeout(() => setCountdown((c) => (c == null ? c : c - 1)), 700);
+    const t = setTimeout(() => setCountdown((c) => (c == null ? c : c - 1)), 720);
     return () => clearTimeout(t);
   }, [countdown, gameId, router, matchSeed, startAtMs]);
 
@@ -99,14 +116,21 @@ export default function GameLobbyScreen() {
     track('game_started', { game: gameId });
   }, [readyMe, readyPeer, countdown, gameId, isHost]);
 
+  const countStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: countScale.value }],
+    opacity: countOpacity.value,
+  }));
+
   const onReady = () => {
     if (!user) return;
     setReadyMe(true);
+    juice.hit();
     pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
   };
 
   const solo = () => {
     const seed = Math.floor(Math.random() * 100000);
+    track('game_started', { game: gameId, solo: true });
     router.replace({
       pathname: routes[gameId],
       params: { seed: String(seed), solo: '1' },
@@ -126,12 +150,18 @@ export default function GameLobbyScreen() {
         </Text>
 
         <View style={styles.status}>
-          <Text style={styles.pill}>{readyMe ? 'Ты: READY' : 'Ты: …'}</Text>
-          <Text style={styles.pill}>{readyPeer ? 'Партнёр: READY' : 'Партнёр: …'}</Text>
+          <Text style={[styles.pill, readyMe && styles.pillReady]}>
+            {readyMe ? 'Ты: READY' : 'Ты: …'}
+          </Text>
+          <Text style={[styles.pill, readyPeer && styles.pillReady]}>
+            {readyPeer ? 'Партнёр: READY' : 'Партнёр: …'}
+          </Text>
         </View>
 
         {countdown != null ? (
-          <Text style={styles.count}>{countdown === 0 ? 'GO' : countdown}</Text>
+          <Animated.Text style={[styles.count, countStyle]}>
+            {countdown === 0 ? 'GO' : countdown}
+          </Animated.Text>
         ) : null}
 
         <View style={styles.actions}>
@@ -176,10 +206,14 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     overflow: 'hidden',
   },
+  pillReady: {
+    borderColor: 'rgba(226,176,122,0.55)',
+    backgroundColor: 'rgba(196,92,110,0.18)',
+  },
   count: {
     marginTop: spacing.xxl,
     fontFamily: fonts.display,
-    fontSize: 72,
+    fontSize: 84,
     color: colors.accentRose,
     textAlign: 'center',
   },

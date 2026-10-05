@@ -200,6 +200,7 @@ export default function HeartbeatScreen() {
           </Text>
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
+            gameId="heartbeat"
             line={line.text}
             onRematch={start}
             onHome={() => router.replace('/(tabs)/play')}

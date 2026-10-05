@@ -124,6 +124,7 @@ export default function OrbitCatchScreen() {
           </Text>
           <PostMatchCard
             title="Орбита закрыта"
+            gameId="orbit-catch"
             line={line.text}
             onRematch={start}
             onHome={() => router.replace('/(tabs)/play')}

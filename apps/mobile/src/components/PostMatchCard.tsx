@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radii, spacing } from '../theme/tokens';
 import { typography } from '../theme/typography';
+import { track } from '../analytics/track';
 
 type Props = {
   title: string;
   line: string;
   winnerLabel?: string;
+  gameId?: string;
   onRematch?: () => void;
   onHome?: () => void;
 };
@@ -15,9 +17,14 @@ export function PostMatchCard({
   title,
   line,
   winnerLabel,
+  gameId,
   onRematch,
   onHome,
 }: Props) {
+  useEffect(() => {
+    track('game_finished', { game: gameId ?? title });
+  }, [gameId, title]);
+
   return (
     <View style={styles.card}>
       <Text style={styles.kicker}>{winnerLabel ?? 'Раунд закрыт'}</Text>
@@ -25,7 +32,13 @@ export function PostMatchCard({
       <Text style={typography.tease}>{line}</Text>
       <View style={styles.actions}>
         {onRematch ? (
-          <Pressable onPress={onRematch} style={styles.primary}>
+          <Pressable
+            onPress={() => {
+              track('game_started', { game: gameId ?? title, rematch: true });
+              onRematch();
+            }}
+            style={styles.primary}
+          >
             <Text style={styles.primaryLabel}>Ещё раунд</Text>
           </Pressable>
         ) : null}

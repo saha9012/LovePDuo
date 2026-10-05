@@ -1,20 +1,33 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { PairAvatar } from '../../src/components/PairAvatar';
-import { colors, fonts, spacing } from '../../src/theme/tokens';
+import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
+import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime/wsConfig';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, pair, unlinkPair, signOut } = useApp();
   const [sfxMuted, setSfxMuted] = useState(false);
+  const [wsDraft, setWsDraft] = useState(getWsUrl());
+  const [wsSaved, setWsSaved] = useState(getWsUrl());
+  const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
+
+  useEffect(() => {
+    hydrateWsUrl().then((url) => {
+      setWsDraft(url);
+      setWsSaved(url);
+    });
+    return pairRealtime.onStatus(setWsOnline);
+  }, []);
 
   return (
     <LpdBackground mood="night">
@@ -28,11 +41,53 @@ export default function ProfileScreen() {
             <Text style={styles.name}>{user?.displayName ?? 'Ты'}</Text>
             <Text style={typography.caption}>Код: {pair?.code ?? '—'}</Text>
             <Text style={typography.caption}>{pair?.name}</Text>
-            <Text style={styles.lan}>
-              Android / 2 телефона: backend `npm start`, в apps/mobile задай
-              EXPO_PUBLIC_LPD_WS_URL=ws://IP_ПК:8787 и npm start.
+            <Text style={[styles.wsBadge, wsOnline ? styles.wsOn : styles.wsOff]}>
+              WS {wsOnline ? 'online' : 'offline'}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.wsBox}>
+          <Text style={styles.wsLabel}>Realtime URL (LAN для Android)</Text>
+          <TextInput
+            value={wsDraft}
+            onChangeText={setWsDraft}
+            autoCapitalize="none"
+            autoCorrect={false}
+            placeholder="ws://192.168.0.120:8787"
+            placeholderTextColor={colors.textMuted}
+            style={styles.input}
+          />
+          <Text style={styles.lan}>
+            На ПК: backend `npm start`. На телефоне укажи IP ПК, например
+            ws://192.168.0.120:8787 — оба устройства в одной Wi‑Fi.
+          </Text>
+          <View style={styles.wsActions}>
+            <LpdButton
+              label="Сохранить URL"
+              onPress={async () => {
+                await setWsUrl(wsDraft);
+                setWsSaved(getWsUrl());
+                if (user && pair) {
+                  pairRealtime.connect(pair.code, user.id, user.displayName);
+                }
+              }}
+            />
+            <LpdButton
+              label="Сбросить на default"
+              variant="ghost"
+              onPress={async () => {
+                await resetWsUrl();
+                const url = getWsUrl();
+                setWsDraft(url);
+                setWsSaved(url);
+                if (user && pair) {
+                  pairRealtime.connect(pair.code, user.id, user.displayName);
+                }
+              }}
+            />
+          </View>
+          <Text style={typography.caption}>Сейчас: {wsSaved}</Text>
         </View>
 
         <View style={styles.actions}>
@@ -91,12 +146,56 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: colors.textPrimary,
   },
+  wsBadge: {
+    marginTop: 6,
+    alignSelf: 'flex-start',
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    letterSpacing: 0.6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  wsOn: {
+    color: colors.accentMist,
+    backgroundColor: 'rgba(156,196,196,0.14)',
+  },
+  wsOff: {
+    color: colors.accentRose,
+    backgroundColor: 'rgba(196,92,110,0.16)',
+  },
+  wsBox: {
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+  },
+  wsLabel: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  input: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.28)',
+    borderRadius: radii.md,
+    paddingHorizontal: 14,
+    color: colors.textPrimary,
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    backgroundColor: 'rgba(20,14,28,0.55)',
+  },
   lan: {
-    marginTop: 8,
     fontFamily: fonts.ui,
     fontSize: 12,
     lineHeight: 17,
     color: colors.textMuted,
+  },
+  wsActions: {
+    gap: spacing.sm,
   },
   actions: {
     marginTop: 'auto',

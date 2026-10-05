@@ -272,6 +272,7 @@ export default function SignalDrawScreen() {
           </Text>
           <PostMatchCard
             title="Общий холст закрыт"
+            gameId="signal-draw"
             line={line.text}
             onRematch={start}
             onHome={() => router.replace('/(tabs)/play')}

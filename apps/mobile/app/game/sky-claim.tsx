@@ -235,6 +235,7 @@ export default function SkyClaimScreen() {
           <PostMatchCard
             title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
             winnerLabel="Post-match"
+            gameId="sky-claim"
             line={line.text}
             onRematch={start}
             onHome={() => router.replace('/(tabs)/play')}

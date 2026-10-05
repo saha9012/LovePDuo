@@ -2,6 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
@@ -31,11 +38,14 @@ export default function SoftDuelScreen() {
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState('');
+  const [armed, setArmed] = useState(false);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const roundRef = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
+  const padScale = useSharedValue(1);
+  const flashScale = useSharedValue(1);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -70,9 +80,17 @@ export default function SoftDuelScreen() {
     roundRef.current = r;
     setRound(r);
     setPrompt(PROMPTS[(seed + r) % PROMPTS.length]);
-    armAt.current = Date.now() + 600 + ((seed + r * 97) % 900);
+    setArmed(false);
+    const wait = 600 + ((seed + r * 97) % 900);
+    armAt.current = Date.now() + wait;
     setFlash('Жди…');
-    setTimeout(() => setFlash('ЖМИ'), 600 + ((seed + r * 97) % 900));
+    flashScale.value = withTiming(0.92, { duration: 120 });
+    setTimeout(() => {
+      setFlash('ЖМИ');
+      setArmed(true);
+      flashScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
+      void juice.beat();
+    }, wait);
   };
 
   const start = () => {
@@ -98,8 +116,13 @@ export default function SoftDuelScreen() {
   const onTap = () => {
     if (phase !== 'playing') return;
     const now = Date.now();
+    padScale.value = withSequence(
+      withTiming(0.94, { duration: 60 }),
+      withSpring(1, { damping: 12, stiffness: 220 }),
+    );
     if (now < armAt.current) {
       setFlash('Рано');
+      setArmed(false);
       void juice.miss();
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
@@ -110,12 +133,20 @@ export default function SoftDuelScreen() {
     myScoreRef.current += pts;
     setMyScore(myScoreRef.current);
     setFlash(pts === 3 ? 'PERFECT' : pts === 2 ? 'GOOD' : 'OK');
+    setArmed(false);
+    flashScale.value = withSpring(1.2, { damping: 10 });
     void (pts === 3 ? juice.perfect() : juice.hit());
     pairRealtime.sendGame('soft-duel', { score: myScoreRef.current, tap: delta });
     setTimeout(() => nextRound(roundRef.current + 1), 420);
   };
 
   const line = pickPostMatchLine(myScore, partnerScore, seed);
+  const padStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: padScale.value }],
+  }));
+  const flashStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: flashScale.value }],
+  }));
 
   if (phase === 'finished') {
     return (
@@ -128,6 +159,7 @@ export default function SoftDuelScreen() {
           </Text>
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
+            gameId="soft-duel"
             line={line.text}
             onRematch={start}
             onHome={() => router.replace('/(tabs)/play')}
@@ -154,12 +186,18 @@ export default function SoftDuelScreen() {
         ) : (
           <>
             <Text style={styles.meta}>
-              Раунд {round + 1}/{ROUNDS} · {myScore} pts
+              Раунд {round + 1}/{ROUNDS} · ты {myScore}
+              {partnerLive ? ` · партнёр ${partnerScore}` : ''}
             </Text>
-            <Pressable style={styles.pad} onPress={onTap}>
-              <Text style={styles.prompt}>{prompt}</Text>
-              <Text style={styles.flash}>{flash}</Text>
-            </Pressable>
+            <Animated.View style={[styles.padWrap, padStyle]}>
+              <Pressable
+                style={[styles.pad, armed && styles.padArmed]}
+                onPress={onTap}
+              >
+                <Text style={styles.prompt}>{prompt}</Text>
+                <Animated.Text style={[styles.flash, flashStyle]}>{flash}</Animated.Text>
+              </Pressable>
+            </Animated.View>
           </>
         )}
       </View>
@@ -184,6 +222,7 @@ const styles = StyleSheet.create({
   },
   btnLabel: { fontFamily: fonts.uiSemi, color: colors.textPrimary },
   meta: { fontFamily: fonts.ui, color: colors.textSecondary },
+  padWrap: { flex: 1 },
   pad: {
     flex: 1,
     borderRadius: 24,
@@ -193,6 +232,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
+  },
+  padArmed: {
+    borderColor: 'rgba(226,176,122,0.65)',
+    backgroundColor: 'rgba(196,92,110,0.22)',
   },
   prompt: {
     fontFamily: fonts.display,

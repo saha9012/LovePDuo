@@ -76,7 +76,11 @@ export default function HomeScreen() {
             <Text style={styles.hint}>
               Тест вдвоём: окно 1 создаёт пару, окно 2 (инкognito) → «есть код». Один backend :8787.
             </Text>
-          ) : null}
+          ) : (
+            <Text style={styles.hint}>
+              Два телефона: Profile → Realtime URL = ws://IP_ПК:8787 (одна Wi‑Fi).
+            </Text>
+          )}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>

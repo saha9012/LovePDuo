@@ -122,6 +122,7 @@ export default function WordVeilScreen() {
           <PostMatchCard
             title={matchLabel}
             line={line.text}
+            gameId="word-veil"
             winnerLabel="Word Veil"
             onRematch={() => {
               setMine('');

@@ -1,6 +1,4 @@
-import { colors } from '../theme/tokens';
-
-export const WS_URL = process.env.EXPO_PUBLIC_LPD_WS_URL ?? 'ws://127.0.0.1:8787';
+import { getWsUrl, onWsUrlChange } from './wsConfig';
 
 type Handler = (msg: Record<string, unknown>) => void;
 type StatusHandler = (connected: boolean) => void;
@@ -11,6 +9,17 @@ export class PairRealtime {
   private statusHandlers = new Set<StatusHandler>();
   private queue: Record<string, unknown>[] = [];
   private joinPayload: { code: string; userId: string; name: string } | null = null;
+  private unsubUrl: (() => void) | null = null;
+
+  constructor() {
+    this.unsubUrl = onWsUrlChange(() => {
+      if (this.joinPayload) {
+        const { code, userId, name } = this.joinPayload;
+        this.disconnect(false);
+        this.connect(code, userId, name);
+      }
+    });
+  }
 
   connect(code: string, userId: string, name: string) {
     if (
@@ -22,8 +31,9 @@ export class PairRealtime {
     }
     this.disconnect(false);
     this.joinPayload = { code, userId, name };
+    const url = getWsUrl();
     try {
-      this.ws = new WebSocket(WS_URL);
+      this.ws = new WebSocket(url);
     } catch {
       this.emitStatus(false);
       return;
@@ -57,7 +67,9 @@ export class PairRealtime {
   onStatus(handler: StatusHandler) {
     this.statusHandlers.add(handler);
     handler(this.ws?.readyState === WebSocket.OPEN);
-    return () => this.statusHandlers.delete(handler);
+    return () => {
+      this.statusHandlers.delete(handler);
+    };
   }
 
   private emitStatus(connected: boolean) {
@@ -66,7 +78,9 @@ export class PairRealtime {
 
   onMessage(handler: Handler) {
     this.handlers.add(handler);
-    return () => this.handlers.delete(handler);
+    return () => {
+      this.handlers.delete(handler);
+    };
   }
 
   send(payload: Record<string, unknown>) {
@@ -96,8 +110,10 @@ export class PairRealtime {
   get connected() {
     return this.ws?.readyState === WebSocket.OPEN;
   }
+
+  get url() {
+    return getWsUrl();
+  }
 }
 
 export const pairRealtime = new PairRealtime();
-
-export const brandStroke = colors.stroke;

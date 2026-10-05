@@ -39,6 +39,15 @@ npm start
 # Web preview: npm run web
 ```
 
+Realtime backend:
+
+```bash
+cd backend
+npm start   # :8787
+```
+
+**Два Android в одной Wi‑Fi:** см. [`docs/ANDROID_QA.md`](docs/ANDROID_QA.md) — в Profile задай `ws://IP_ПК:8787`.
+
 ApplicationId / bundle: `app.lovepduo`  
 Scheme: `lovepduo://join/CODE`
 
@@ -59,3 +68,6 @@ Scheme: `lovepduo://join/CODE`
 - [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)
 - [`docs/GAMES_SPEC.md`](docs/GAMES_SPEC.md)
 - [`docs/PROGRESS.md`](docs/PROGRESS.md)
+- [`docs/ANDROID_QA.md`](docs/ANDROID_QA.md) — dual-device LAN
+- [`docs/DATA_SAFETY.md`](docs/DATA_SAFETY.md) — Play Data Safety draft
+- [`docs/PRIVACY_DRAFT.md`](docs/PRIVACY_DRAFT.md)
