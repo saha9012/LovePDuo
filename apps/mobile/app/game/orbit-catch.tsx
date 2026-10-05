@@ -201,12 +201,19 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (payload?.align) {
-          bumpPeerNote(alignedRef.current ? 'sync align' : 'align');
+          const synced = alignedRef.current;
+          const racing =
+            synced &&
+            (peerNoteRef.current === 'sync align' ||
+              peerNoteRef.current === 'оба sync');
+          bumpPeerNote(
+            racing ? 'оба sync' : synced ? 'sync align' : 'align',
+          );
           ringPulse.value = withSequence(
             withTiming(1.08, { duration: 90 }),
             withTiming(1, { duration: 220 }),
           );
-          void (alignedRef.current ? juice.perfect() : juice.hit());
+          void (synced ? juice.perfect() : juice.hit());
           return;
         }
         if (typeof payload?.caught === 'number') {
