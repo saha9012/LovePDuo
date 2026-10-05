@@ -240,6 +240,9 @@ export default function ProfileScreen() {
               const next = !sfxMuted;
               setSfxMuted(next);
               await juice.setMuted(next);
+              setWsToast(next ? 'SFX + haptics выкл' : 'SFX + haptics вкл');
+              setTimeout(() => setWsToast(null), 1600);
+              if (!next) void juice.hit();
             }}
           />
           <LpdButton

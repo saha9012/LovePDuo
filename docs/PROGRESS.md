@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Profile SFX mute toast · Together dual hello · Music dual hello  
 - [x] Together «Оба на Together» · Music dual hello · Soft «Наравне»  
 - [x] Music «Оба на Music» · dual add track · Soft «Наравне»  
-- [x] Music dual add track · Soft «Наравне» · Welcome/Home оба в комнате  
 
 ## Catalog
 
@@ -16,10 +16,12 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 
 ## Still open (Ideal Bar not closed)
 
-Code dual-feel layer is saturated. Remaining blockers need external input:
+Code dual-feel is deeply saturated (grades, miss/catch, rematch, hello, tabs, room-size, filters, shelf). Remaining blockers need external input:
 
 1. Live device screenshot replace (`docs/STORE_SHOTS.md`) — placeholders refreshed  
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream — stubs/cards sync dual already  
 4. Optional Skia canvas for Signal Draw  
 5. Production `wss://` deploy (`docs/WSS_PROD.md`) — tunnel path documented
+
+Micro dual-sync feel keeps shipping until Ideal Bar closes.
