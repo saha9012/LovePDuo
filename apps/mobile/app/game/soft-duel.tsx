@@ -67,6 +67,7 @@ export default function SoftDuelScreen() {
         seed?: number;
         early?: boolean;
         round?: number;
+        phase?: string;
       } | undefined;
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
@@ -97,6 +98,9 @@ export default function SoftDuelScreen() {
           withTiming(1, { duration: 220 }),
         );
         setTimeout(() => setPartnerFlash(false), 450);
+        if (payload.phase === 'finished' && phase === 'playing') {
+          setFlash('Партнёр финиш');
+        }
       }
     });
     return () => {
@@ -105,9 +109,14 @@ export default function SoftDuelScreen() {
   }, [pair?.code, user?.id, partnerScale]);
 
   const nextRound = (r: number) => {
-    if (r >= ROUNDS) {
+      if (r >= ROUNDS) {
       setPhase('finished');
       void juice.postMatch();
+      pairRealtime.sendGame('soft-duel', {
+        phase: 'finished',
+        score: myScoreRef.current,
+        round: ROUNDS,
+      });
       addMemory({
         kind: 'duel',
         title: 'Soft Duel',
