@@ -8,6 +8,7 @@ import {
   Pressable,
 } from 'react-native';
 import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { juice } from '../audio/juice';
 
 type Props = {
   value: string;
@@ -28,7 +29,10 @@ export function CodeInput({ value, onChange, length = 6 }: Props) {
       if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
         const text = await navigator.clipboard.readText();
         const clean = sanitize(text, length);
-        if (clean) onChange(clean);
+        if (clean) {
+          onChange(clean);
+          void juice.hit();
+        }
       } else {
         inputRef.current?.focus();
       }

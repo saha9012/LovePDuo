@@ -36,6 +36,7 @@ export default function HomeScreen() {
   const nameSeen = React.useRef(pair?.name ?? '');
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
+  const memorySeen = React.useRef(lastMemory?.id ?? '');
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -43,6 +44,19 @@ export default function HomeScreen() {
       off();
     };
   }, []);
+
+  useEffect(() => {
+    const id = lastMemory?.id ?? '';
+    if (!id || id === memorySeen.current) return;
+    if (memorySeen.current) {
+      setRoomToast(`Memory: ${lastMemory?.title}`);
+      void juice.card();
+      const t = setTimeout(() => setRoomToast(null), 1800);
+      memorySeen.current = id;
+      return () => clearTimeout(t);
+    }
+    memorySeen.current = id;
+  }, [lastMemory?.id, lastMemory?.title]);
 
   useEffect(() => {
     const name = pair?.partnerName ?? '';

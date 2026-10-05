@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Join/create already-paired juice · store dual-feel frames  
-- [x] Lobby WS toast · Pair success peer arrival  
+- [x] Home memory toast · CodeInput paste juice  
+- [x] Join/create already-paired reconnect juice  
 
 ## Catalog
 
