@@ -237,7 +237,11 @@ export default function SkyClaimScreen() {
             !payload.decoy &&
             flashRef.current === 'catch'
           ) {
-            bumpPeerNote('оба ловят');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба ловят' || peerNoteRef.current === 'оба в небе'
+                ? 'оба в небе'
+                : 'оба ловят',
+            );
             void juice.perfect();
             if (payload.score === scoreRef.current && scoreRef.current > 0) {
               setTimeout(() => {

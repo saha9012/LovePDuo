@@ -256,14 +256,19 @@ export default function HeartbeatScreen() {
           const both = lastRef.current === payload.judgement;
           setLast(payload.judgement);
           if (both) {
-            setPeerNote(`оба ${payload.judgement}`);
-            setTimeout(() => setPeerNote(null), 1000);
+            const racing =
+              peerNoteRef.current === `оба ${payload.judgement}` ||
+              peerNoteRef.current === 'оба в ритме';
+            setPeerNote(racing ? 'оба в ритме' : `оба ${payload.judgement}`);
+            peerNoteRef.current = racing ? 'оба в ритме' : `оба ${payload.judgement}`;
+            setTimeout(() => {
+              peerNoteRef.current = null;
+              setPeerNote(null);
+            }, 1000);
             void juice.perfect();
             if (payload.total === myTotal && myTotal > 0) {
               setTimeout(() => {
-                setPeerNote('оба на очках');
-                if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-                peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+                bumpPeerNote('оба на очках');
                 void juice.sync();
               }, 380);
             }

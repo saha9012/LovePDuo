@@ -207,7 +207,11 @@ export default function OrbitCatchScreen() {
           );
           setTimeout(() => setPartnerFlash(false), 400);
           if (grew && Date.now() - lastCatchAt.current < 900) {
-            bumpPeerNote('оба catch');
+            bumpPeerNote(
+              peerNoteRef.current === 'оба catch' || peerNoteRef.current === 'оба в орбите'
+                ? 'оба в орбите'
+                : 'оба catch',
+            );
             void juice.perfect();
             if (payload.caught === caughtRef.current && caughtRef.current > 0) {
               setTimeout(() => {
