@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] PostMatch rematch juice · ToS hello ping when partner enters  
-- [x] Soft Duel «ожидаем партнёра» HUD  
-- [x] Profile WS reconnect · peer join/leave juice  
+- [x] Hello ping across Soft/Sky/Orbit/HB/Draw/Veil  
+- [x] PostMatch rematch juice · ToS partner-enter toast  
+- [x] Soft Duel wait HUD  
 
 ## Catalog
 

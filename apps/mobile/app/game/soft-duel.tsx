@@ -91,7 +91,15 @@ export default function SoftDuelScreen() {
         early?: boolean;
         round?: number;
         phase?: string;
+        hello?: boolean;
       } | undefined;
+      if (payload?.hello) {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        setFlash('Партнёр в игре');
+        void juice.sync();
+        return;
+      }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -146,6 +154,11 @@ export default function SoftDuelScreen() {
       off();
     };
   }, [pair?.code, user?.id, partnerScale]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   const nextRound = (r: number) => {
       if (r >= ROUNDS) {

@@ -105,7 +105,17 @@ export default function HeartbeatScreen() {
         seed?: number;
         miss?: boolean;
         judgement?: BeatJudgement;
+        hello?: boolean;
       } | undefined;
+      if (payload?.hello) {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        setPeerNote('в игре');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+        void juice.sync();
+        return;
+      }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -164,6 +174,11 @@ export default function HeartbeatScreen() {
       off();
     };
   }, [pair?.code, user?.id, partnerScale]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('heartbeat', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   const start = () => {
     setPhase('playing');

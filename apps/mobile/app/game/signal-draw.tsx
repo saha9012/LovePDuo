@@ -114,8 +114,14 @@ export default function SignalDrawScreen() {
         seed?: number;
         brush?: 'fine' | 'bold';
         phase?: string;
+        hello?: boolean;
       } | undefined;
       if (!payload) return;
+      if (payload.hello) {
+        showToast('Партнёр в игре');
+        void juice.sync();
+        return;
+      }
       if (payload.rematch) {
         showToast('Новый раунд');
         void juice.sync();
@@ -194,6 +200,11 @@ export default function SignalDrawScreen() {
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, [pair?.code, user?.id, peerColor]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('signal-draw', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   const start = () => {
     setStrokes([]);

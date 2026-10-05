@@ -146,7 +146,14 @@ export default function WordVeilScreen() {
         rematch?: boolean;
         seed?: number;
         typing?: boolean;
+        hello?: boolean;
       } | undefined;
+      if (payload?.hello) {
+        setPresenceHint('Партнёр в игре');
+        void juice.sync();
+        setTimeout(() => setPresenceHint(null), 1600);
+        return;
+      }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -174,6 +181,11 @@ export default function WordVeilScreen() {
       off();
     };
   }, [pair?.code, user?.id]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   useEffect(() => {
     if (params.solo === '1') return;

@@ -115,7 +115,15 @@ export default function SkyClaimScreen() {
           miss?: boolean;
           decoy?: boolean;
           combo?: number;
+          hello?: boolean;
         } | undefined;
+        if (payload?.hello) {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
+          bumpPeerNote('в игре');
+          void juice.sync();
+          return;
+        }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
@@ -166,6 +174,11 @@ export default function SkyClaimScreen() {
       off();
     };
   }, [pair?.code, user?.id, partnerScale]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   const start = () => {
     setPhase('playing');

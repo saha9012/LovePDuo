@@ -94,7 +94,13 @@ export default function OrbitCatchScreen() {
           miss?: boolean;
           align?: boolean;
           phase?: string;
+          hello?: boolean;
         } | undefined;
+        if (payload?.hello) {
+          bumpPeerNote('в игре');
+          void juice.sync();
+          return;
+        }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
@@ -148,6 +154,11 @@ export default function OrbitCatchScreen() {
       off();
     };
   }, [pair?.code, user?.id, partnerScale, ringPulse]);
+
+  useEffect(() => {
+    if (!pair || !user || params.solo === '1') return;
+    pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });
+  }, [pair?.code, user?.id, params.solo]);
 
   const start = () => {
     caughtRef.current = 0;
