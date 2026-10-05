@@ -118,11 +118,13 @@ export default function SignalDrawScreen() {
         hello?: boolean;
       } | undefined;
       if (!payload) return;
-      if (payload.hello) {
+      if (payload.hello || payload.phase === 'start') {
         setPeerSeen(true);
-        showToast('Партнёр в игре');
-        void juice.sync();
-        return;
+        if (payload.hello) {
+          showToast('Партнёр в игре');
+          void juice.sync();
+          return;
+        }
       }
       if (payload.rematch) {
         showToast('Новый раунд');
@@ -217,7 +219,7 @@ export default function SignalDrawScreen() {
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
     endWarned.current = false;
-    pairRealtime.sendGame('signal-draw', { phase: 'start', seed });
+    pairRealtime.sendGame('signal-draw', { phase: 'start', seed, hello: true, fromId: user?.id });
     void juice.beat();
   };
   startRef.current = start;

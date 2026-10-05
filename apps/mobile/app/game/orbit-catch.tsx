@@ -97,11 +97,13 @@ export default function OrbitCatchScreen() {
           phase?: string;
           hello?: boolean;
         } | undefined;
-        if (payload?.hello) {
+        if (payload?.hello || payload?.phase === 'start') {
           setPeerSeen(true);
-          bumpPeerNote('в игре');
-          void juice.sync();
-          return;
+          if (payload?.hello) {
+            bumpPeerNote('в игре');
+            void juice.sync();
+            return;
+          }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
@@ -172,7 +174,12 @@ export default function OrbitCatchScreen() {
     setOrbAngle((seedRef.current % 360) * (Math.PI / 180));
     setAligned(false);
     setPhase('playing');
-    pairRealtime.sendGame('orbit-catch', { phase: 'start', seed: seedRef.current });
+    pairRealtime.sendGame('orbit-catch', {
+      phase: 'start',
+      seed: seedRef.current,
+      hello: true,
+      fromId: user?.id,
+    });
     void juice.beat();
   };
   startRef.current = start;

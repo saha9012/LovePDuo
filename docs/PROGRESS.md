@@ -6,9 +6,8 @@
 
 ## Latest
 
-- [x] Keep partnerLive across Soft/Sky/HB start · Word Veil wait copy  
-- [x] Profile Tunnel preset · candle 15s sync  
-- [x] Orbit/Draw ready wait  
+- [x] Draw/Orbit start keeps peerSeen · Soft/Sky/HB partnerLive fix  
+- [x] Word Veil ready wait · Tunnel preset · candle sync  
 
 ## Catalog
 
