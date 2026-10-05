@@ -93,7 +93,10 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.cta, contentStyle]}>
-          <LpdButton label="Войти в комнату" onPress={() => void enter()} />
+          <LpdButton
+            label={pair ? `В комнату «${pair.name}»` : 'Войти в комнату'}
+            onPress={() => void enter()}
+          />
           <LpdButton
             label="У меня есть код пары"
             variant="ghost"
@@ -103,7 +106,11 @@ export default function WelcomeScreen() {
               router.push('/pair/join');
             }}
           />
-          <Text style={styles.foot}>Пара в сборе. Можно жечь.</Text>
+          <Text style={styles.foot}>
+            {pair
+              ? `Код ${pair.code} сохранён. Можно жечь дальше.`
+              : 'Пара в сборе. Можно жечь.'}
+          </Text>
         </Animated.View>
       </View>
     </LpdBackground>

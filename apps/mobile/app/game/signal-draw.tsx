@@ -55,6 +55,7 @@ export default function SignalDrawScreen() {
   const [partnerStrokes, setPartnerStrokes] = useState(0);
   const [brush, setBrush] = useState<'fine' | 'bold'>('fine');
   const [peerPulse, setPeerPulse] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
@@ -62,6 +63,7 @@ export default function SignalDrawScreen() {
   const lastSend = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
   const peerPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
@@ -71,6 +73,12 @@ export default function SignalDrawScreen() {
     setPeerPulse(true);
     if (peerPulseTimer.current) clearTimeout(peerPulseTimer.current);
     peerPulseTimer.current = setTimeout(() => setPeerPulse(false), 420);
+  };
+
+  const showToast = (text: string) => {
+    setToast(text);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 1600);
   };
 
   useEffect(() => {
@@ -87,6 +95,8 @@ export default function SignalDrawScreen() {
       if (!payload) return;
       if (payload.clear) {
         setStrokes((prev) => prev.filter((s) => s.by === 'me'));
+        showToast('Партнёр стёр свои линии');
+        void juice.miss();
         return;
       }
       if (payload.undo) {
@@ -99,6 +109,8 @@ export default function SignalDrawScreen() {
         peerCount.current = Math.max(0, peerCount.current - 1);
         setPartnerStrokes(peerCount.current);
         bumpPeer();
+        showToast('Партнёр отменил штрих');
+        void juice.hit();
         return;
       }
       if (payload.stroke) {
@@ -131,6 +143,7 @@ export default function SignalDrawScreen() {
     return () => {
       off();
       if (peerPulseTimer.current) clearTimeout(peerPulseTimer.current);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, [pair?.code, user?.id, peerColor]);
 
@@ -340,6 +353,7 @@ export default function SignalDrawScreen() {
                 {peerPulse ? ' · live' : ''}
               </Text>
             </View>
+            {toast ? <Text style={styles.toast}>{toast}</Text> : null}
             <View style={styles.tools}>
               <Text
                 onPress={() => setBrush('fine')}
@@ -380,6 +394,11 @@ const styles = StyleSheet.create({
   hud: { flexDirection: 'row', justifyContent: 'space-between' },
   stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary },
   peerLive: { color: colors.accentRose, fontFamily: fonts.uiSemi },
+  toast: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentMist,
+    fontSize: 13,
+  },
   tools: { flexDirection: 'row', gap: spacing.md, alignItems: 'center', flexWrap: 'wrap' },
   tool: {
     fontFamily: fonts.uiMedium,
