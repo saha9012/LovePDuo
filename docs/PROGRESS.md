@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Orbit sync-align perfect when both rings aligned · Music shelf miss hint  
 - [x] Music shelf-add miss hint when track missing locally · Draw brush on start  
 - [x] Signal Draw start shares brush · Soft rematch cleanup  
-- [x] Soft rematch flash «партнёру» · late-start catch-up across games  
 
 ## Catalog
 
