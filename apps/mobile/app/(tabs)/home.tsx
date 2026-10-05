@@ -23,7 +23,7 @@ import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, warmthPulse, setMood } = useApp();
+  const { user, pair, warmthPulse, setMood, notes } = useApp();
   const { items: memories } = useMemories();
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   const [roomToast, setRoomToast] = useState<string | null>(null);
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const lastMemory = memories[0];
+  const lastNote = notes[0];
   const warmthSeen = React.useRef(0);
   const warmthSentAt = React.useRef(0);
   const warmthToastRef = React.useRef<string | null>(null);
@@ -40,6 +41,7 @@ export default function HomeScreen() {
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
   const memorySeen = React.useRef(lastMemory?.id ?? '');
+  const noteSeen = React.useRef(lastNote?.id ?? '');
   const roomSizeSeen = React.useRef(pair?.roomSize ?? 0);
   const lastMoodMatchAt = React.useRef(0);
   const lastMoodMatch = React.useRef<string | null>(null);
@@ -67,6 +69,23 @@ export default function HomeScreen() {
     }
     memorySeen.current = id;
   }, [lastMemory?.id, lastMemory?.title]);
+
+  useEffect(() => {
+    const id = lastNote?.id ?? '';
+    if (!id || id === noteSeen.current) return;
+    if (noteSeen.current) {
+      const snip =
+        (lastNote?.text.length ?? 0) > 36
+          ? `${lastNote!.text.slice(0, 34)}…`
+          : lastNote?.text ?? '';
+      setRoomToast(`Note · ${lastNote?.from ?? 'Партнёр'}: ${snip}`);
+      void juice.card();
+      const t = setTimeout(() => setRoomToast(null), 2000);
+      noteSeen.current = id;
+      return () => clearTimeout(t);
+    }
+    noteSeen.current = id;
+  }, [lastNote?.id, lastNote?.text, lastNote?.from]);
 
   useEffect(() => {
     const name = pair?.partnerName ?? '';
