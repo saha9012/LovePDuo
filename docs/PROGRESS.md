@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Lobby both-READY perfect juice · room-name juice · dual typing  
 - [x] Room-name receive juice · Word Veil dual typing · Draw together  
 - [x] Word Veil «Пишем вместе» · Draw together stroke · Soft dual early  
-- [x] Draw «Рисуем вместе» when both stroke · Soft dual early · mood sync  
 
 ## Catalog
 

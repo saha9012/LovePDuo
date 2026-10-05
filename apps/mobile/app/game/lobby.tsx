@@ -43,6 +43,7 @@ export default function GameLobbyScreen() {
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const [cancelToast, setCancelToast] = useState<string | null>(null);
   const startSent = useRef(false);
+  const bothReadyNoted = useRef(false);
   const countdownRef = useRef<number | null>(null);
   const readyMeRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -244,9 +245,20 @@ export default function GameLobbyScreen() {
   }, [countdown, gameId, router, matchSeed, startAtMs, countScale, countOpacity]);
 
   useEffect(() => {
-    if (!readyMe || !readyPeer || countdown !== null || startSent.current) return;
-    if (!isHost) return;
+    if (!readyMe || !readyPeer || countdown !== null || startSent.current) {
+      if (!readyMe || !readyPeer) bothReadyNoted.current = false;
+      return;
+    }
+    if (!isHost) {
+      if (!bothReadyNoted.current) {
+        bothReadyNoted.current = true;
+        showCancelToast('Оба READY — ждём старт');
+        void juice.perfect();
+      }
+      return;
+    }
     startSent.current = true;
+    bothReadyNoted.current = true;
     const seed = Math.floor(Math.random() * 100000);
     const startAt = Date.now() + 2800;
     setMatchSeed(seed);
@@ -255,6 +267,7 @@ export default function GameLobbyScreen() {
     pairRealtime.sendGame(gameId, { start: true, seed, startAtMs: startAt });
     setCountdown(3);
     showCancelToast('Старт для обоих');
+    void juice.perfect();
     track('game_started', { game: gameId });
   }, [readyMe, readyPeer, countdown, gameId, isHost]);
 
