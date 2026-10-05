@@ -52,6 +52,11 @@ type AppState = {
   sendWarmth: () => void;
   warmthPulse: number;
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
+  reactTrack: (id: string, reaction: TrackItem['reaction']) => void;
+  nowPlayingId: string | null;
+  setNowPlaying: (id: string | null) => void;
+  partnerNowPlaying: string | null;
+  setPartnerNowPlaying: (title: string | null) => void;
 };
 
 const STORAGE_KEY = 'lovepduo.v1';
@@ -77,6 +82,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [pair, setPair] = useState<PairState | null>(null);
   const [tracks, setTracks] = useState<TrackItem[]>([]);
   const [warmthPulse, setWarmthPulse] = useState(0);
+  const [nowPlayingId, setNowPlayingId] = useState<string | null>(null);
+  const [partnerNowPlaying, setPartnerNowPlaying] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -180,6 +187,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTracks((prev) => [{ ...track, id: makeId('trk') }, ...prev]);
   }, []);
 
+  const reactTrack = useCallback((id: string, reaction: TrackItem['reaction']) => {
+    setTracks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, reaction } : t)),
+    );
+  }, []);
+
+  const setNowPlaying = useCallback((id: string | null) => {
+    setNowPlayingId(id);
+  }, []);
+
   const value = useMemo(
     () => ({
       hydrated,
@@ -195,6 +212,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       sendWarmth,
       warmthPulse,
       addTrack,
+      reactTrack,
+      nowPlayingId,
+      setNowPlaying,
+      partnerNowPlaying,
+      setPartnerNowPlaying,
     }),
     [
       hydrated,
@@ -210,6 +232,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       sendWarmth,
       warmthPulse,
       addTrack,
+      reactTrack,
+      nowPlayingId,
+      setNowPlaying,
+      partnerNowPlaying,
     ],
   );
 

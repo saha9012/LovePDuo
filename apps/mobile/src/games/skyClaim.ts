@@ -29,25 +29,35 @@ function mulberry32(seed: number) {
   };
 }
 
+/** progress 0..1 — later in round: faster + more decoys */
 export function createSkySpawner(seed: number) {
   const rand = mulberry32(seed);
   let seq = 0;
 
-  return function spawn(): SkyObject {
+  return function spawn(progress = 0): SkyObject {
     seq += 1;
+    const p = Math.max(0, Math.min(1, progress));
+    const decoyChance = 0.12 + p * 0.16;
+    const amberChance = 0.22 - p * 0.04;
     const roll = rand();
-    const type: SkyObjectType = roll > 0.86 ? 'decoy' : roll > 0.62 ? 'amber' : 'orb';
+    const type: SkyObjectType =
+      roll < decoyChance ? 'decoy' : roll < decoyChance + amberChance ? 'amber' : 'orb';
     const points = type === 'amber' ? 3 : type === 'orb' ? 1 : -2;
+    const speedBoost = 0.18 + p * 0.16;
     return {
       id: `obj_${seq}`,
       type,
       x: 0.08 + rand() * 0.84,
       y: -0.08,
-      speed: 0.18 + rand() * 0.22 + (type === 'amber' ? 0.05 : 0),
-      radius: type === 'amber' ? 0.045 : 0.038,
+      speed: speedBoost + rand() * (0.18 + p * 0.12) + (type === 'amber' ? 0.04 : 0),
+      radius: type === 'amber' ? 0.045 : type === 'decoy' ? 0.036 : 0.038,
       points,
     };
   };
+}
+
+export function spawnIntervalMs(progress: number) {
+  return Math.max(380, skyClaimConfig.spawnEveryMs - Math.floor(progress * 280));
 }
 
 export function scoreCatch(combo: number, points: number) {

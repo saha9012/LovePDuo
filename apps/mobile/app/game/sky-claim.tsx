@@ -16,6 +16,7 @@ import {
   scoreCatch,
   SkyObject,
   skyClaimConfig,
+  spawnIntervalMs,
 } from '../../src/games/skyClaim';
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
@@ -51,7 +52,7 @@ export default function SkyClaimScreen() {
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
-
+  const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const startRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
@@ -79,6 +80,7 @@ export default function SkyClaimScreen() {
     comboRef.current = 0;
     scoreRef.current = 0;
     setTimeLeft(skyClaimConfig.durationSec);
+    timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
     setPartnerLive(false);
     partnerLiveRef.current = false;
@@ -98,9 +100,18 @@ export default function SkyClaimScreen() {
 
   useEffect(() => {
     if (phase !== 'playing') return;
-    const spawnTimer = setInterval(() => {
-      setObjects((prev) => [...prev, spawner()].slice(-18));
-    }, skyClaimConfig.spawnEveryMs);
+    let spawnTimer: ReturnType<typeof setInterval> | null = null;
+
+    const scheduleSpawn = (progress: number) => {
+      if (spawnTimer) clearInterval(spawnTimer);
+      spawnTimer = setInterval(() => {
+        const p =
+          1 - timeLeftRef.current / skyClaimConfig.durationSec;
+        setObjects((prev) => [...prev, spawner(p)].slice(-18));
+      }, spawnIntervalMs(progress));
+    };
+
+    scheduleSpawn(0);
 
     const tick = setInterval(() => {
       setObjects((prev) => {
@@ -119,8 +130,9 @@ export default function SkyClaimScreen() {
         return next;
       });
       setTimeLeft((t) => {
+        timeLeftRef.current = t - 1;
         if (t <= 1) {
-          clearInterval(spawnTimer);
+          if (spawnTimer) clearInterval(spawnTimer);
           clearInterval(tick);
           pairRealtime.sendGame('sky-claim', {
             phase: 'finished',
@@ -134,6 +146,7 @@ export default function SkyClaimScreen() {
             setPartnerScore(partner);
           }
           setPhase('finished');
+          void juice.postMatch();
           return 0;
         }
         if (t % 5 === 0) {
@@ -141,13 +154,14 @@ export default function SkyClaimScreen() {
             phase: 'playing',
             score: scoreRef.current,
           });
+          scheduleSpawn(1 - (t - 1) / skyClaimConfig.durationSec);
         }
         return t - 1;
       });
     }, 50);
 
     return () => {
-      clearInterval(spawnTimer);
+      if (spawnTimer) clearInterval(spawnTimer);
       clearInterval(tick);
     };
   }, [phase, spawner]);

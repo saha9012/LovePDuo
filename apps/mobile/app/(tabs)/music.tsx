@@ -8,13 +8,23 @@ import { LpdButton } from '../../src/components/LpdButton';
 import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
-import { useApp } from '../../src/store/AppStore';
+import { useApp, TrackItem } from '../../src/store/AppStore';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { juice } from '../../src/audio/juice';
 
 export default function MusicScreen() {
   const insets = useSafeAreaInsets();
-  const { tracks, addTrack, user } = useApp();
+  const {
+    tracks,
+    addTrack,
+    user,
+    reactTrack,
+    nowPlayingId,
+    setNowPlaying,
+    partnerNowPlaying,
+    setPartnerNowPlaying,
+  } = useApp();
   const [note, setNote] = useState('');
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   useEffect(() => {
@@ -23,10 +33,26 @@ export default function MusicScreen() {
     };
   }, [sound]);
 
-  const playTrack = async (id: string, uri?: string, mode?: string) => {
-    if (!uri || mode !== 'local') {
+  useEffect(() => {
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'now-playing') {
+        const payload = msg.payload as { title?: string | null; from?: string } | undefined;
+        if (payload?.title) {
+          setPartnerNowPlaying(`${payload.from ?? 'Партнёр'}: ${payload.title}`);
+        } else if (payload && payload.title === null) {
+          setPartnerNowPlaying(null);
+        }
+      }
+    });
+    return () => {
+      off();
+    };
+  }, [setPartnerNowPlaying]);
+
+  const playTrack = async (track: TrackItem) => {
+    if (!track.uri || track.playbackMode !== 'local') {
       setNote(
-        mode === 'spotify'
+        track.playbackMode === 'spotify'
           ? 'Стрим через Spotify — нужен OAuth / App Remote.'
           : 'Для этого трека пока только карточка/ссылка. Загрузите файл в LPD.',
       );
@@ -36,11 +62,16 @@ export default function MusicScreen() {
       await sound?.unloadAsync();
       await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
       const next = new Audio.Sound();
-      await next.loadAsync({ uri });
+      await next.loadAsync({ uri: track.uri });
       await next.playAsync();
       setSound(next);
-      setPlayingId(id);
-      setNote('Сейчас играет внутри LovePDuo.');
+      setNowPlaying(track.id);
+      pairRealtime.sendGame('now-playing', {
+        title: track.title,
+        from: user?.displayName,
+      });
+      setNote('Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.');
+      void juice.hit();
     } catch {
       setNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).');
     }
@@ -86,6 +117,11 @@ export default function MusicScreen() {
     setNote('VK: официальный audio pull ограничен — сохранены metadata + fallback upload.');
   };
 
+  const react = (id: string, reaction: NonNullable<TrackItem['reaction']>) => {
+    reactTrack(id, reaction);
+    void juice.card();
+  };
+
   return (
     <LpdBackground mood="warm">
       <ScrollView
@@ -99,6 +135,10 @@ export default function MusicScreen() {
         <Text style={typography.body}>
           Музыка остаётся в LovePDuo. Upload — must. Spotify и VK — пробуем честно.
         </Text>
+
+        {partnerNowPlaying ? (
+          <Text style={styles.nowPlaying}>♪ {partnerNowPlaying}</Text>
+        ) : null}
 
         <View style={styles.actions}>
           <LpdButton label="Загрузить трек" onPress={() => void upload()} />
@@ -115,22 +155,30 @@ export default function MusicScreen() {
             />
           ) : (
             tracks.map((t) => (
-              <Pressable
-                key={t.id}
-                style={styles.row}
-                onPress={() => void playTrack(t.id, t.uri, t.playbackMode)}
-              >
-                <View style={{ flex: 1, gap: 4 }}>
+              <View key={t.id} style={styles.row}>
+                <Pressable
+                  style={{ flex: 1, gap: 4 }}
+                  onPress={() => void playTrack(t)}
+                >
                   <Text style={styles.trackTitle}>
-                    {playingId === t.id ? '▶ ' : ''}
+                    {nowPlayingId === t.id ? '▶ ' : ''}
                     {t.title}
                   </Text>
                   <Text style={styles.trackMeta}>
                     {t.artist} · {t.sourceType} · {t.playbackMode}
                   </Text>
+                </Pressable>
+                <View style={styles.reactRow}>
+                  {(['heart', 'fire', 'rain'] as const).map((r) => (
+                    <Pressable key={r} onPress={() => react(t.id, r)}>
+                      <Text style={[styles.react, t.reaction === r && styles.reactOn]}>
+                        {r === 'heart' ? '♥' : r === 'fire' ? '✦' : '≈'}
+                      </Text>
+                    </Pressable>
+                  ))}
                 </View>
                 <Text style={styles.who}>{t.addedBy}</Text>
-              </Pressable>
+              </View>
             ))
           )}
         </View>
@@ -151,6 +199,11 @@ const styles = StyleSheet.create({
     color: colors.accentAmber,
     fontSize: 12,
   },
+  nowPlaying: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentRose,
+    fontSize: 14,
+  },
   actions: {
     gap: spacing.sm,
     marginTop: spacing.sm,
@@ -165,23 +218,10 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     gap: spacing.sm,
   },
-  empty: {
-    borderWidth: 1,
-    borderColor: colors.stroke,
-    borderRadius: radii.lg,
-    padding: spacing.xl,
-    gap: spacing.sm,
-    backgroundColor: 'rgba(36,28,49,0.45)',
-  },
-  emptyTitle: {
-    fontFamily: fonts.display,
-    fontSize: 24,
-    color: colors.textPrimary,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.stroke,
     borderRadius: radii.md,
@@ -197,6 +237,19 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     color: colors.textMuted,
     fontSize: 12,
+  },
+  reactRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  react: {
+    fontSize: 14,
+    color: colors.textMuted,
+    opacity: 0.55,
+  },
+  reactOn: {
+    color: colors.accentAmber,
+    opacity: 1,
   },
   who: {
     fontFamily: fonts.uiMedium,
