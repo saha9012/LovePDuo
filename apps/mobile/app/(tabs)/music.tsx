@@ -879,6 +879,9 @@ const styles = StyleSheet.create({
   actions: {
     gap: spacing.sm,
   },
+  playbackRow: {
+    gap: spacing.sm,
+  },
   note: {
     fontFamily: fonts.ui,
     color: colors.accentRose,
