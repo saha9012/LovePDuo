@@ -45,7 +45,7 @@ export default function TruthOrSparkScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
-  const params = useLocalSearchParams<{ seed?: string; solo?: string }>();
+  const params = useLocalSearchParams<{ seed?: string; solo?: string; startAt?: string }>();
 
   const [matchSeed, setMatchSeed] = useState(() => {
     const fromParam = Number(params.seed);
@@ -53,6 +53,13 @@ export default function TruthOrSparkScreen() {
     const session = consumeMatchSession(GAME_ID);
     if (session) return session.seed;
     return Date.now() % 100000;
+  });
+
+  const [sessionStarted, setSessionStarted] = useState(() => {
+    if (params.solo === '1') return true;
+    const at = Number(params.startAt);
+    if (!Number.isFinite(at)) return true;
+    return at - Date.now() < 400;
   });
 
   const [filter, setFilter] = useState<SparkFilter>('soft');
@@ -293,6 +300,69 @@ export default function TruthOrSparkScreen() {
     });
   }, [pair?.code, user?.id, user?.displayName, params.solo]);
 
+  useEffect(() => {
+    if (params.solo === '1') {
+      setSessionStarted(true);
+      return;
+    }
+    const at = Number(params.startAt);
+    if (!Number.isFinite(at)) {
+      setSessionStarted(true);
+      return;
+    }
+    const delay = Math.max(0, at - Date.now());
+    if (delay < 400) {
+      showTurnToast('догоняем');
+      void juice.hit();
+      const id = setTimeout(() => {
+        setSessionStarted(true);
+        if (pair && user) {
+          lastHelloAt.current = Date.now();
+          pairRealtime.sendGame(GAME_ID, {
+            hello: true,
+            sessionStart: true,
+            seed: matchSeed,
+            fromName: user.displayName,
+            fromId: user.id,
+          });
+        }
+      }, delay);
+      return () => clearTimeout(id);
+    }
+    setSessionStarted(false);
+    const ticks: ReturnType<typeof setTimeout>[] = [];
+    for (const sec of [3, 2, 1]) {
+      const when = delay - sec * 1000;
+      if (when > 80) {
+        ticks.push(
+          setTimeout(() => {
+            showTurnToast(`старт ${sec}`);
+            void juice.hit();
+          }, when),
+        );
+      }
+    }
+    const id = setTimeout(() => {
+      setSessionStarted(true);
+      showTurnToast('старт');
+      void juice.sync();
+      if (pair && user) {
+        lastHelloAt.current = Date.now();
+        pairRealtime.sendGame(GAME_ID, {
+          hello: true,
+          sessionStart: true,
+          seed: matchSeed,
+          fromName: user.displayName,
+          fromId: user.id,
+        });
+      }
+    }, delay);
+    return () => {
+      clearTimeout(id);
+      ticks.forEach(clearTimeout);
+    };
+  }, [params.startAt, params.solo, pair?.code, user?.id, user?.displayName, matchSeed]);
+
   const broadcast = (
     nextIndex: number,
     nextFilter: SparkFilter,
@@ -313,6 +383,7 @@ export default function TruthOrSparkScreen() {
   };
 
   const next = () => {
+    if (!sessionStarted) return;
     const ni = index + 1;
     const wrapped = ni > 0 && ni % deck.length === 0;
     if (wrapped) {
@@ -328,7 +399,7 @@ export default function TruthOrSparkScreen() {
   };
 
   const skip = () => {
-    if (skips <= 0) return;
+    if (!sessionStarted || skips <= 0) return;
     const ns = skips - 1;
     const ni = index + 1;
     lastSkipAt.current = Date.now();
@@ -340,6 +411,7 @@ export default function TruthOrSparkScreen() {
   };
 
   const changeFilter = (f: SparkFilter) => {
+    if (!sessionStarted) return;
     setFilter(f);
     setIndex(0);
     setSkips(SKIP_LIMIT);
@@ -351,6 +423,7 @@ export default function TruthOrSparkScreen() {
   };
 
   const reshuffle = () => {
+    if (!sessionStarted) return;
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     setIndex(0);
@@ -391,10 +464,21 @@ export default function TruthOrSparkScreen() {
         </View>
 
         <Text style={styles.syncMeta}>
-          seed {matchSeed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
-          {isHost ? ' · host' : ''} · ход: {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
+          seed {matchSeed} ·{' '}
+          {!sessionStarted
+            ? 'общий старт…'
+            : live
+              ? `live с ${peerName ?? 'партнёром'}`
+              : params.solo === '1'
+                ? 'solo'
+                : 'ожидаем партнёра'}
+          {isHost ? ' · host' : ''} · ход:{' '}
+          {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
         {turnToast ? <Text style={styles.turnToast}>{turnToast}</Text> : null}
+        {!sessionStarted ? (
+          <Text style={styles.waitStart}>Ждём общий countdown из лобби — карточки откроются вместе.</Text>
+        ) : null}
 
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
@@ -405,7 +489,8 @@ export default function TruthOrSparkScreen() {
             <Pressable
               key={f}
               onPress={() => changeFilter(f)}
-              style={[styles.chip, filter === f && styles.chipActive]}
+              disabled={!sessionStarted}
+              style={[styles.chip, filter === f && styles.chipActive, !sessionStarted && styles.chipDim]}
             >
               <Text style={[styles.chipLabel, filter === f && styles.chipLabelActive]}>
                 {f}
@@ -414,11 +499,13 @@ export default function TruthOrSparkScreen() {
           ))}
         </View>
 
-        <Animated.View style={[styles.card, cardStyle]}>
+        <Animated.View style={[styles.card, cardStyle, !sessionStarted && styles.cardDim]}>
           <Text style={styles.kind}>{card.kind}</Text>
-          <Text style={styles.text}>{card.text}</Text>
+          <Text style={styles.text}>{sessionStarted ? card.text : '…'}</Text>
           <Text style={styles.meta}>
-            Карточка {(index % deck.length) + 1}/{deck.length} · skip осталось {skips}
+            {sessionStarted
+              ? `Карточка ${(index % deck.length) + 1}/${deck.length} · skip осталось ${skips}`
+              : 'Старт через мгновение'}
           </Text>
         </Animated.View>
 
@@ -426,16 +513,23 @@ export default function TruthOrSparkScreen() {
           <LpdButton
             label="Дальше (обоим)"
             onPress={next}
-            disabled={!turnMine && params.solo !== '1' && live}
+            disabled={!sessionStarted || (!turnMine && params.solo !== '1' && live)}
           />
           <LpdButton
             label="Skip"
             variant="ghost"
-            disabled={skips <= 0 || (!turnMine && params.solo !== '1' && live)}
+            disabled={
+              !sessionStarted || skips <= 0 || (!turnMine && params.solo !== '1' && live)
+            }
             onPress={skip}
           />
           {index > 0 && index % deck.length === 0 ? (
-            <LpdButton label="Перетасовать колоду" variant="ghost" onPress={reshuffle} />
+            <LpdButton
+              label="Перетасовать колоду"
+              variant="ghost"
+              onPress={reshuffle}
+              disabled={!sessionStarted}
+            />
           ) : null}
         </View>
       </View>
@@ -473,6 +567,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.accentRose,
   },
+  waitStart: {
+    fontFamily: fonts.ui,
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
   progressTrack: {
     height: 3,
     borderRadius: 2,
@@ -499,6 +599,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(226,176,122,0.5)',
     backgroundColor: 'rgba(226,176,122,0.12)',
   },
+  chipDim: {
+    opacity: 0.45,
+  },
   chipLabel: {
     fontFamily: fonts.uiMedium,
     color: colors.textMuted,
@@ -518,6 +621,9 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     justifyContent: 'center',
     gap: spacing.lg,
+  },
+  cardDim: {
+    opacity: 0.55,
   },
   kind: {
     fontFamily: fonts.uiMedium,
