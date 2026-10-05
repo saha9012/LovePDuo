@@ -148,14 +148,26 @@ export default function TogetherScreen() {
           const alreadyLit = candleLitRef.current;
           candleLogged.current = false;
           setCandleLeft(CANDLE_SEC);
-          showPeer(alreadyLit ? 'Свеча синхрон' : 'Партнёр зажёг свечу');
+          const racing =
+            alreadyLit &&
+            (peerToastRef.current === 'Свеча синхрон' ||
+              peerToastRef.current === 'Оба у свечи');
+          showPeer(
+            racing ? 'Оба у свечи' : alreadyLit ? 'Свеча синхрон' : 'Партнёр зажёг свечу',
+          );
           void (alreadyLit ? juice.perfect() : juice.warmth());
         }
         if (payload?.blow) {
           candleLogged.current = true;
           const both = Date.now() - lastBlowAt.current < 2200;
+          const racing =
+            both &&
+            (peerToastRef.current === 'Оба погасили' ||
+              peerToastRef.current === 'Оба гасят');
           setCandleLeft(0);
-          showPeer(both ? 'Оба погасили' : 'Партнёр погасил свечу');
+          showPeer(
+            racing ? 'Оба гасят' : both ? 'Оба погасили' : 'Партнёр погасил свечу',
+          );
           void (both ? juice.sync() : juice.miss());
         }
         if (payload?.end) {
@@ -174,12 +186,18 @@ export default function TogetherScreen() {
         if (typeof payload?.idx === 'number') {
           setIdx(payload.idx);
           const both = Date.now() - lastSparkAt.current < 2200;
+          const racing =
+            both &&
+            (peerToastRef.current === 'Оба: новая искра' ||
+              peerToastRef.current === 'Оба в искрах');
           showPeer(
-            both
-              ? 'Оба: новая искра'
-              : payload.from
-                ? `${payload.from}: новая искра`
-                : 'Новая искра от партнёра',
+            racing
+              ? 'Оба в искрах'
+              : both
+                ? 'Оба: новая искра'
+                : payload.from
+                  ? `${payload.from}: новая искра`
+                  : 'Новая искра от партнёра',
           );
           void (both ? juice.perfect() : juice.card());
         }
