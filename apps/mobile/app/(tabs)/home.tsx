@@ -75,7 +75,8 @@ export default function HomeScreen() {
               : 'Ждём пульс партнёра. Можно греть комнату заранее.'}
           </Text>
           <Text style={styles.meta}>
-            Код пары: {pair?.code ?? '—'} · Realtime: {wsOnline ? 'online' : 'offline'}
+            Код пары: {pair?.code ?? '—'} · Realtime:{' '}
+            {wsOnline ? 'online' : 'переподключение…'}
             {typeof pair?.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''}
           </Text>
           {Platform.OS === 'web' ? (

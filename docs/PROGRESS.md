@@ -6,11 +6,10 @@
 
 ## Latest
 
-- [x] SFX + haptics mute persist (AsyncStorage) · Profile hydrate  
-- [x] Pair presence heartbeat ping (~18s) + backend name refresh  
-- [x] Store frames refresh + `capture.html` + `docs/STORE_SHOTS.md`  
+- [x] WS auto-reconnect (backoff) + AppState presence away/online  
+- [x] SFX + haptics mute persist · presence heartbeat ping  
+- [x] Store frames + capture.html + STORE_SHOTS  
 - [x] Spotify env stub status on Music shelf  
-- [x] Play search + Welcome reconnect + Signal Draw peer toasts  
 
 ## Catalog
 

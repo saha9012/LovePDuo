@@ -1,7 +1,11 @@
+import { AppState, type AppStateStatus } from 'react-native';
 import { getWsUrl, onWsUrlChange } from './wsConfig';
 
 type Handler = (msg: Record<string, unknown>) => void;
 type StatusHandler = (connected: boolean) => void;
+
+const MAX_BACKOFF_MS = 15000;
+const BASE_BACKOFF_MS = 700;
 
 export class PairRealtime {
   private ws: WebSocket | null = null;
@@ -10,6 +14,10 @@ export class PairRealtime {
   private queue: Record<string, unknown>[] = [];
   private joinPayload: { code: string; userId: string; name: string } | null = null;
   private unsubUrl: (() => void) | null = null;
+  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private attempts = 0;
+  private intentionalClose = false;
+  private appStateSub: { remove: () => void } | null = null;
 
   constructor() {
     this.unsubUrl = onWsUrlChange(() => {
@@ -19,7 +27,21 @@ export class PairRealtime {
         this.connect(code, userId, name);
       }
     });
+    this.appStateSub = AppState.addEventListener('change', this.onAppState);
   }
+
+  private onAppState = (state: AppStateStatus) => {
+    if (!this.joinPayload) return;
+    if (state === 'active') {
+      this.send({ type: 'presence', status: 'online', name: this.joinPayload.name });
+      if (!this.connected) {
+        const { code, userId, name } = this.joinPayload;
+        this.connect(code, userId, name);
+      }
+    } else if (state === 'background' || state === 'inactive') {
+      this.send({ type: 'presence', status: 'away', name: this.joinPayload.name });
+    }
+  };
 
   connect(code: string, userId: string, name: string) {
     if (
@@ -33,19 +55,33 @@ export class PairRealtime {
       }
       return;
     }
-    this.disconnect(false);
+    this.clearReconnect();
+    this.intentionalClose = false;
+    this.teardownSocket();
     this.joinPayload = { code, userId, name };
+    this.openSocket();
+  }
+
+  private openSocket() {
+    if (!this.joinPayload) return;
     const url = getWsUrl();
     try {
       this.ws = new WebSocket(url);
     } catch {
       this.emitStatus(false);
+      this.scheduleReconnect();
       return;
     }
     this.ws.onopen = () => {
+      this.attempts = 0;
       this.emitStatus(true);
       if (this.joinPayload) {
         this.send({ type: 'join', ...this.joinPayload });
+        this.send({
+          type: 'presence',
+          status: 'online',
+          name: this.joinPayload.name,
+        });
       }
       while (this.queue.length) {
         const msg = this.queue.shift();
@@ -54,6 +90,9 @@ export class PairRealtime {
     };
     this.ws.onclose = () => {
       this.emitStatus(false);
+      if (!this.intentionalClose && this.joinPayload) {
+        this.scheduleReconnect();
+      }
     };
     this.ws.onerror = () => {
       this.emitStatus(false);
@@ -66,6 +105,40 @@ export class PairRealtime {
         // ignore
       }
     };
+  }
+
+  private scheduleReconnect() {
+    if (this.reconnectTimer || !this.joinPayload || this.intentionalClose) return;
+    const delay = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * Math.pow(1.7, this.attempts));
+    this.attempts += 1;
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null;
+      if (!this.joinPayload || this.intentionalClose) return;
+      this.teardownSocket();
+      this.openSocket();
+    }, delay);
+  }
+
+  private clearReconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+  }
+
+  private teardownSocket() {
+    if (this.ws) {
+      this.ws.onopen = null;
+      this.ws.onclose = null;
+      this.ws.onerror = null;
+      this.ws.onmessage = null;
+      try {
+        this.ws.close();
+      } catch {
+        // ignore
+      }
+    }
+    this.ws = null;
   }
 
   onStatus(handler: StatusHandler) {
@@ -104,8 +177,9 @@ export class PairRealtime {
   }
 
   disconnect(clearJoin = true) {
-    this.ws?.close();
-    this.ws = null;
+    this.intentionalClose = true;
+    this.clearReconnect();
+    this.teardownSocket();
     this.queue = [];
     if (clearJoin) this.joinPayload = null;
     this.emitStatus(false);
