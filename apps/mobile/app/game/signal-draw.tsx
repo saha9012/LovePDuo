@@ -296,8 +296,16 @@ export default function SignalDrawScreen() {
           void juice.sync();
         } else if (peerCount.current > myCount.current + 1) {
           const racing =
-            toastRef.current === 'Партнёр впереди' || toastRef.current === 'Гонка';
-          showToast(racing ? 'Гонка' : 'Партнёр впереди');
+            toastRef.current === 'Партнёр впереди' ||
+            toastRef.current === 'Гонка' ||
+            toastRef.current === 'Оба в гонке';
+          showToast(
+            toastRef.current === 'Гонка' || toastRef.current === 'Оба в гонке'
+              ? 'Оба в гонке'
+              : racing
+                ? 'Гонка'
+                : 'Партнёр впереди',
+          );
           void (racing ? juice.sync() : juice.hit());
         }
       }
@@ -495,8 +503,16 @@ export default function SignalDrawScreen() {
           } else if (myCount.current > peerCount.current + 1) {
             setTimeout(() => {
               const racing =
-                toastRef.current === 'Я впереди' || toastRef.current === 'Гонка';
-              showToast(racing ? 'Гонка' : 'Я впереди');
+                toastRef.current === 'Я впереди' ||
+                toastRef.current === 'Гонка' ||
+                toastRef.current === 'Оба в гонке';
+              showToast(
+                toastRef.current === 'Гонка' || toastRef.current === 'Оба в гонке'
+                  ? 'Оба в гонке'
+                  : racing
+                    ? 'Гонка'
+                    : 'Я впереди',
+              );
               void (racing ? juice.sync() : juice.hit());
             }, 320);
           }
