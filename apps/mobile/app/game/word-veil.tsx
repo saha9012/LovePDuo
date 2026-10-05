@@ -129,7 +129,10 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.typing) {
-        setPeerTyping(true);
+        setPeerTyping((was) => {
+          if (!was) void juice.hit();
+          return true;
+        });
         return;
       }
       if (payload?.word) {

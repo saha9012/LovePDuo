@@ -111,6 +111,10 @@ export default function SoftDuelScreen() {
         setPartnerScore(payload.score);
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        const ahead =
+          typeof payload.round === 'number' &&
+          payload.round > roundRef.current &&
+          phase === 'playing';
         if (typeof payload.round === 'number') setPartnerRound(payload.round);
         setPartnerFlash(true);
         partnerScale.value = withSequence(
@@ -126,6 +130,10 @@ export default function SoftDuelScreen() {
           setFlash(label);
           flashScale.value = withSpring(1.16, { damping: 10 });
           void (payload.tap < 180 ? juice.perfect() : juice.hit());
+        } else if (ahead) {
+          setFlash('Партнёр впереди');
+          flashScale.value = withSpring(1.14, { damping: 10 });
+          void juice.hit();
         }
       }
     });

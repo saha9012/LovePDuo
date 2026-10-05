@@ -66,10 +66,32 @@ export default function HeartbeatScreen() {
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
 
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    if (phase !== 'playing') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      setPeerNote('offline');
+      if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+      peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      setPeerNote('online');
+      if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+      peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;

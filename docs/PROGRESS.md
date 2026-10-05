@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Play peer-lobby peek banner · Lobby «партнёр тоже здесь»  
-- [x] Signal Draw brush-change toast sync  
-- [x] Home presence/mood · ToS filter · lobby cancel toasts  
+- [x] Soft Duel round-ahead flash · Heartbeat mid-match presence  
+- [x] Word Veil typing juice on first peer keystroke  
+- [x] Play peer-lobby peek · Signal Draw brush toast  
 
 ## Catalog
 
