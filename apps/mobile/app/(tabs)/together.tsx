@@ -37,6 +37,7 @@ export default function TogetherScreen() {
   const candleLogged = useRef(false);
   const candleLitRef = useRef(false);
   const lastBlowAt = useRef(0);
+  const lastSparkAt = useRef(0);
   const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
@@ -165,12 +166,15 @@ export default function TogetherScreen() {
         const payload = msg.payload as { idx?: number; from?: string } | undefined;
         if (typeof payload?.idx === 'number') {
           setIdx(payload.idx);
+          const both = Date.now() - lastSparkAt.current < 2200;
           showPeer(
-            payload.from
-              ? `${payload.from}: новая искра`
-              : 'Новая искра от партнёра',
+            both
+              ? 'Оба: новая искра'
+              : payload.from
+                ? `${payload.from}: новая искра`
+                : 'Новая искра от партнёра',
           );
-          void juice.card();
+          void (both ? juice.perfect() : juice.card());
         }
       }
       if (msg.type === 'game' && msg.gameId === 'tiny-note') {
@@ -222,6 +226,7 @@ export default function TogetherScreen() {
   const nextSpark = () => {
     setIdx((v) => {
       const next = v + 1;
+      lastSparkAt.current = Date.now();
       pairRealtime.sendGame('spark', {
         idx: next,
         from: user?.displayName,
