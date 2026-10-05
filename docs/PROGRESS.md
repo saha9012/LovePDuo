@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music «Оба в коллекции» · Sky комбо · Together рядом  
 - [x] Sky «оба в комбо» · Together рядом · Word Veil совпали  
 - [x] Together рядом/в пепле · Word Veil совпали · Lobby готовы  
-- [x] Word Veil совпали/в длине · Lobby готовы · HB sync  
 
 ## Catalog
 

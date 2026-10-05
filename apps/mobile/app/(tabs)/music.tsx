@@ -152,7 +152,10 @@ export default function MusicScreen() {
         }
         showNote(
           already
-            ? `Оба добавили «${payload.title}»`
+            ? noteRef.current.startsWith('Оба добавили') ||
+              noteRef.current.startsWith('Оба в коллекции')
+              ? `Оба в коллекции «${payload.title}»`
+              : `Оба добавили «${payload.title}»`
             : `${payload.from ?? 'Партнёр'} добавил «${payload.title}»`,
         );
         void (already ? juice.perfect() : juice.sync());
