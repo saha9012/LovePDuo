@@ -132,6 +132,7 @@ export default function HeartbeatScreen() {
         miss?: boolean;
         judgement?: BeatJudgement;
         hello?: boolean;
+        sync?: boolean;
       } | undefined;
       if (payload?.hello) {
         setPartnerLive(true);
@@ -157,6 +158,22 @@ export default function HeartbeatScreen() {
         void juice.sync();
         // delay start until chart memo updates
         setTimeout(() => startRef.current(), 0);
+        return;
+      }
+      if (payload?.sync) {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+        setPeerNote('sync!');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+        syncGlow.value = withSequence(
+          withTiming(1, { duration: 80 }),
+          withTiming(0, { duration: 420 }),
+        );
+        void juice.perfect();
+        if (typeof payload.total === 'number') {
+          setPartnerScore(payload.total);
+        }
         return;
       }
       if (payload?.miss) {
@@ -356,7 +373,16 @@ export default function HeartbeatScreen() {
         withTiming(1, { duration: 80 }),
         withTiming(0, { duration: 420 }),
       );
-      void juice.sync();
+      void juice.perfect();
+      if (realSync) {
+        setPeerNote('sync!');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 900);
+        pairRealtime.sendGame('heartbeat', {
+          sync: true,
+          total: scoreRef.current + syncRef.current,
+        });
+      }
     } else if (j === 'perfect') {
       void juice.perfect();
     } else {
