@@ -64,11 +64,23 @@ export default function SoftDuelScreen() {
         tap?: number;
         rematch?: boolean;
         seed?: number;
+        early?: boolean;
       } | undefined;
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         startRef.current();
+        return;
+      }
+      if (payload?.early) {
+        setFlash('Партнёр рано');
+        setPartnerFlash(true);
+        partnerScale.value = withSequence(
+          withSpring(1.08, { damping: 10 }),
+          withTiming(1, { duration: 200 }),
+        );
+        setTimeout(() => setPartnerFlash(false), 420);
+        void juice.miss();
         return;
       }
       if (typeof payload?.score === 'number') {
@@ -159,6 +171,7 @@ export default function SoftDuelScreen() {
       void juice.miss();
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
+      pairRealtime.sendGame('soft-duel', { early: true, score: myScoreRef.current });
       return;
     }
     const delta = now - armAt.current;
