@@ -134,9 +134,12 @@ export default function ProfileScreen() {
             label={roomSaved ? 'Комната сохранена' : 'Сохранить комнату'}
             variant="ghost"
             onPress={() => {
-              setPairName(roomDraft);
+              const next = roomDraft.trim() || 'Наша комната';
+              setPairName(next);
               setRoomSaved(true);
-              pairRealtime.sendGame('room-name', { name: roomDraft.trim() || 'Наша комната' });
+              setWsToast('Имя комнаты сохранено');
+              setTimeout(() => setWsToast(null), 1600);
+              pairRealtime.sendGame('room-name', { name: next });
               void juice.card();
             }}
           />

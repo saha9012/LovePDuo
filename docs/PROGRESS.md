@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Dual room-name juice when names match · ANDROID_QA оба финиш  
 - [x] ANDROID_QA оба финиш · Catalog PostMatch dual · Soft dual finish  
 - [x] Catalog «Оба финиш» PostMatch · Soft dual finish · candle dual end  
-- [x] Soft «Оба финиш» · Together dual candle end · ToS dual deck wrap  
 
 ## Catalog
 

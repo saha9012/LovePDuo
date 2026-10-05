@@ -36,8 +36,10 @@ export function RealtimeConnector() {
       if (msg.type === 'game' && msg.gameId === 'room-name') {
         const payload = msg.payload as { name?: string } | undefined;
         if (typeof payload?.name === 'string' && payload.name.trim()) {
-          setPairName(payload.name);
-          void juice.card();
+          const next = payload.name.trim();
+          const both = pair.name === next;
+          if (!both) setPairName(next);
+          void (both ? juice.perfect() : juice.card());
         }
       }
       if (msg.type === 'game' && msg.gameId === 'display-name') {
