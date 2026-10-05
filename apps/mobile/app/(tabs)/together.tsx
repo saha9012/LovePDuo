@@ -39,6 +39,7 @@ export default function TogetherScreen() {
   const lastBlowAt = useRef(0);
   const lastSparkAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lastCandleEndAt = useRef(0);
   const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
@@ -98,6 +99,7 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (candleLeft !== 0 || candleLogged.current) return;
     candleLogged.current = true;
+    lastCandleEndAt.current = Date.now();
     void juice.postMatch();
     pairRealtime.sendGame('candle', { end: true, left: 0 });
     showPeer('Свеча догорела');
@@ -157,9 +159,10 @@ export default function TogetherScreen() {
         }
         if (payload?.end) {
           candleLogged.current = true;
+          const both = Date.now() - lastCandleEndAt.current < 2800;
           setCandleLeft(0);
-          showPeer('Свеча догорела у партнёра');
-          void juice.postMatch();
+          showPeer(both ? 'Оба догорели' : 'Свеча догорела у партнёра');
+          void (both ? juice.perfect() : juice.postMatch());
         }
         if (typeof payload?.left === 'number' && !payload?.end && !payload?.blow) {
           setCandleLeft(payload.left);
