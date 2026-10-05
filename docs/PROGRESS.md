@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft «Я впереди»/гонка · ToS листают · Orbit/HB race  
 - [x] ToS «Оба листают/на карте» · Orbit/HB race · Sky race  
 - [x] Orbit/HB партнёр впереди/гонка · Sky race · Word Veil буквы  
-- [x] Sky партнёр впереди/гонка · Word Veil буквы · Draw штрихи  
 
 ## Catalog
 
