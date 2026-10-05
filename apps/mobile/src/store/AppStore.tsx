@@ -95,6 +95,7 @@ type AppState = {
   removeNote: (id: string) => void;
   receiveNote: (note: TinyNote) => void;
   setActivePlaylist: (id: string | null) => void;
+  renamePlaylist: (id: string, name: string) => boolean;
   addTrackToPlaylist: (playlistId: string, trackId: string) => void;
   removeTrackFromPlaylist: (playlistId: string, trackId: string) => void;
 };
@@ -381,6 +382,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setActivePlaylistId(id);
   }, []);
 
+  const renamePlaylist = useCallback((id: string, name: string) => {
+    const next = name.trim().slice(0, 28);
+    if (!next) return false;
+    let hit = false;
+    setPlaylists((prev) =>
+      prev.map((pl) => {
+        if (pl.id !== id) return pl;
+        hit = true;
+        return pl.name === next ? pl : { ...pl, name: next };
+      }),
+    );
+    return hit;
+  }, []);
+
   const addTrackToPlaylist = useCallback((playlistId: string, trackId: string) => {
     setPlaylists((prev) =>
       prev.map((pl) =>
@@ -436,6 +451,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       removeNote,
       receiveNote,
       setActivePlaylist,
+      renamePlaylist,
       addTrackToPlaylist,
       removeTrackFromPlaylist,
     }),
@@ -472,6 +488,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       removeNote,
       receiveNote,
       setActivePlaylist,
+      renamePlaylist,
       addTrackToPlaylist,
       removeTrackFromPlaylist,
     ],

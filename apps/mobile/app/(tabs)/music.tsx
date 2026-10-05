@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
 import Animated, {
@@ -40,11 +40,14 @@ export default function MusicScreen() {
     playlists,
     activePlaylistId,
     setActivePlaylist,
+    renamePlaylist,
     addTrackToPlaylist,
     removeTrackFromPlaylist,
     setMood,
   } = useApp();
   const [note, setNote] = useState('');
+  const [renameId, setRenameId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [progress, setProgress] = useState<{ pos: number; dur: number } | null>(null);
   const soundRef = React.useRef<Audio.Sound | null>(null);
@@ -403,11 +406,26 @@ export default function MusicScreen() {
           void (both ? juice.perfect() : juice.hit());
         }
       }
+      if (msg.type === 'game' && msg.gameId === 'playlist-rename') {
+        const payload = msg.payload as {
+          playlistId?: string;
+          name?: string;
+          from?: string;
+          fromId?: string;
+        } | undefined;
+        if (!payload?.playlistId || !payload.name || payload.fromId === user?.id) return;
+        const ok = renamePlaylist(payload.playlistId, payload.name);
+        if (!ok) return;
+        showNote(
+          `${payload.from ?? 'Партнёр'} назвал полку «${payload.name.trim().slice(0, 28)}»`,
+        );
+        void juice.card();
+      }
     });
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, clearTracks, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, clearTracks, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying, renamePlaylist]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -686,9 +704,39 @@ export default function MusicScreen() {
   };
 
   const selectPlaylist = (id: string, mood: 'night' | 'warm' | 'rain' | 'pulse') => {
+    if (renameId) {
+      setRenameId(null);
+      setRenameDraft('');
+    }
     setActivePlaylist(id);
     if (mood !== 'pulse') setMood(mood);
     pairRealtime.sendGame('playlist', { playlistId: id, mood });
+    void juice.card();
+  };
+
+  const beginRename = (id: string, name: string) => {
+    setRenameId(id);
+    setRenameDraft(name);
+    void juice.hit();
+  };
+
+  const commitRename = () => {
+    if (!renameId) return;
+    const id = renameId;
+    const next = renameDraft.trim().slice(0, 28);
+    setRenameId(null);
+    setRenameDraft('');
+    if (!next) return;
+    const prev = playlists.find((p) => p.id === id)?.name;
+    const ok = renamePlaylist(id, next);
+    if (!ok || prev === next) return;
+    pairRealtime.sendGame('playlist-rename', {
+      playlistId: id,
+      name: next,
+      from: user?.displayName,
+      fromId: user?.id,
+    });
+    showNote(`Полка «${next}» — у обоих`);
     void juice.card();
   };
 
@@ -703,22 +751,42 @@ export default function MusicScreen() {
         <Text style={styles.kicker}>Music</Text>
         <Text style={typography.headline}>Полка пары</Text>
         <Text style={typography.body}>
-          Музыка остаётся в LovePDuo. Плейлисты-настроения — ваша полка, не список ссылок.
+          Музыка остаётся в LovePDuo. Long-press на чип полки — своё имя (синхрон у партнёра).
         </Text>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.moods}>
-          {playlists.map((pl) => (
-            <Pressable
-              key={pl.id}
-              onPress={() => selectPlaylist(pl.id, pl.mood)}
-              style={[styles.moodChip, activePlaylistId === pl.id && styles.moodActive]}
-            >
-              <Text style={[styles.moodLabel, activePlaylistId === pl.id && styles.moodLabelOn]}>
-                {pl.name}
-              </Text>
-              <Text style={styles.moodCount}>{pl.trackIds.length}</Text>
-            </Pressable>
-          ))}
+          {playlists.map((pl) =>
+            renameId === pl.id ? (
+              <View key={pl.id} style={[styles.moodChip, styles.moodActive, styles.renameChip]}>
+                <TextInput
+                  value={renameDraft}
+                  onChangeText={setRenameDraft}
+                  onSubmitEditing={commitRename}
+                  onBlur={commitRename}
+                  autoFocus
+                  maxLength={28}
+                  placeholder="Имя полки"
+                  placeholderTextColor={colors.textMuted}
+                  style={styles.renameInput}
+                  returnKeyType="done"
+                />
+              </View>
+            ) : (
+              <Pressable
+                key={pl.id}
+                onPress={() => selectPlaylist(pl.id, pl.mood)}
+                onLongPress={() => beginRename(pl.id, pl.name)}
+                delayLongPress={380}
+                style={[styles.moodChip, activePlaylistId === pl.id && styles.moodActive]}
+                accessibilityLabel={`${pl.name}, long-press чтобы переименовать`}
+              >
+                <Text style={[styles.moodLabel, activePlaylistId === pl.id && styles.moodLabelOn]}>
+                  {pl.name}
+                </Text>
+                <Text style={styles.moodCount}>{pl.trackIds.length}</Text>
+              </Pressable>
+            ),
+          )}
         </ScrollView>
 
         {partnerNowPlaying ? (
@@ -942,6 +1010,17 @@ const styles = StyleSheet.create({
   moodActive: {
     borderColor: 'rgba(226,176,122,0.5)',
     backgroundColor: 'rgba(226,176,122,0.12)',
+  },
+  renameChip: {
+    minWidth: 140,
+    paddingVertical: 6,
+  },
+  renameInput: {
+    fontFamily: fonts.uiSemi,
+    color: colors.textPrimary,
+    fontSize: 14,
+    padding: 0,
+    minWidth: 120,
   },
   moodLabel: {
     fontFamily: fonts.uiSemi,
