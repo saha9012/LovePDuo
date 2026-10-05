@@ -47,6 +47,8 @@ export default function MusicScreen() {
   const lastHelloAt = React.useRef(0);
   const lastReactMatchAt = React.useRef(0);
   const lastReactChoice = React.useRef<string | null>(null);
+  const lastListenMatchAt = React.useRef(0);
+  const lastListenTitle = React.useRef<string | null>(null);
 
   const showNote = (text: string, ms = 1800) => {
     setNote(text);
@@ -150,19 +152,32 @@ export default function MusicScreen() {
           setPartnerNowPlaying(`${payload.from ?? 'Партнёр'}: ${payload.title}`);
           const mine = tracks.find((t) => t.id === nowPlayingId);
           const both = Boolean(mine && mine.title === payload.title);
+          const again =
+            both &&
+            lastListenTitle.current === payload.title &&
+            Date.now() - lastListenMatchAt.current < 3200;
+          if (both) {
+            lastListenTitle.current = payload.title;
+            lastListenMatchAt.current = Date.now();
+          }
           showNote(
-            both
-              ? `Оба слушают «${payload.title}»`
-              : `${payload.from ?? 'Партнёр'}: ${payload.title}`,
+            again
+              ? `Оба в треке «${payload.title}»`
+              : both
+                ? `Оба слушают «${payload.title}»`
+                : `${payload.from ?? 'Партнёр'}: ${payload.title}`,
           );
-          void (both ? juice.perfect() : juice.hit());
+          void (again || both ? juice.perfect() : juice.hit());
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
           const both = Date.now() - lastStopAt.current < 2200;
+          const racing = both && Date.now() - lastStopAt.current < 900;
           showNote(
-            both
-              ? 'Оба остановили'
-              : `${payload.from ?? 'Партнёр'} остановил трек`,
+            racing
+              ? 'Оба тишина'
+              : both
+                ? 'Оба остановили'
+                : `${payload.from ?? 'Партнёр'} остановил трек`,
           );
           void (both ? juice.sync() : juice.miss());
         }

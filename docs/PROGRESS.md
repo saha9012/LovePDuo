@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music «Оба в треке»/тишина · Together свеча/искра · Soft early  
 - [x] Together свеча/искра escalate · Soft early local · Word Veil typing  
 - [x] Soft local оба рано/спешат · Word Veil typing буквы · Play каталог  
-- [x] Soft оба спешат/жмут · Play «Оба в каталоге» · Lobby READY  
 
 ## Catalog
 
