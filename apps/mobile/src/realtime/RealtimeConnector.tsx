@@ -37,6 +37,7 @@ export function RealtimeConnector() {
         const payload = msg.payload as { name?: string } | undefined;
         if (typeof payload?.name === 'string' && payload.name.trim()) {
           setPairName(payload.name);
+          void juice.card();
         }
       }
       if (msg.type === 'game' && msg.gameId === 'display-name') {
