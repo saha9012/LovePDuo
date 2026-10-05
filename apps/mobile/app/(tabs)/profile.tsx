@@ -11,11 +11,13 @@ import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
 import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime/wsConfig';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { useMemories } from '../../src/store/MemoriesStore';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, pair, unlinkPair, signOut, updateDisplayName, setPairName } = useApp();
+  const { clearMemories } = useMemories();
   const [sfxMuted, setSfxMuted] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
   const [roomDraft, setRoomDraft] = useState(pair?.name ?? '');
@@ -176,6 +178,7 @@ export default function ProfileScreen() {
             label="Выйти"
             variant="danger"
             onPress={async () => {
+              clearMemories();
               await signOut();
               router.replace('/welcome');
             }}

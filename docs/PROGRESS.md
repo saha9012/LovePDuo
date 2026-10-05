@@ -6,11 +6,11 @@
 
 ## Latest
 
-- [x] Profile: rename display name (keeps user id) + LAN WS preset
-- [x] Signal Draw: peer live pulse, undo, denser peer glow
-- [x] Pair create always updates name on signIn
-- [x] Share pair · Lobby/Soft Duel/ToS/Word Veil/Orbit/Heartbeat feel
-- [x] Android QA / Data Safety docs
+- [x] Profile rename (name + room) · LAN WS preset  
+- [x] Signal Draw undo + peer live pulse  
+- [x] Memories persist + Home last-match + Together clear  
+- [x] Join screen display name  
+- [x] Share pair · game feel passes · Android QA docs  
 
 ## Catalog
 
