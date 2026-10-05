@@ -105,6 +105,7 @@ export default function TruthOrSparkScreen() {
         fromId?: string;
         rematch?: boolean;
         seed?: number;
+        skipped?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
@@ -123,8 +124,13 @@ export default function TruthOrSparkScreen() {
       if (payload.fromName) setPeerName(payload.fromName);
       if (payload.fromId && payload.fromId !== user.id) {
         setTurnMine(true);
-        showTurnToast('Твой ход');
-        void juice.hit();
+        if (payload.skipped) {
+          showTurnToast('Партнёр скипнул — твой ход');
+          void juice.miss();
+        } else {
+          showTurnToast('Твой ход');
+          void juice.hit();
+        }
       }
     });
     return () => {
@@ -132,7 +138,12 @@ export default function TruthOrSparkScreen() {
     };
   }, [pair?.code, user?.id]);
 
-  const broadcast = (nextIndex: number, nextFilter: SparkFilter, nextSkips: number) => {
+  const broadcast = (
+    nextIndex: number,
+    nextFilter: SparkFilter,
+    nextSkips: number,
+    opts?: { skipped?: boolean },
+  ) => {
     pairRealtime.sendGame(GAME_ID, {
       index: nextIndex,
       filter: nextFilter,
@@ -140,6 +151,7 @@ export default function TruthOrSparkScreen() {
       fromName: user?.displayName,
       fromId: user?.id,
       seed: matchSeed,
+      skipped: opts?.skipped === true,
     });
   };
 
@@ -158,7 +170,7 @@ export default function TruthOrSparkScreen() {
     setSkips(ns);
     setIndex(ni);
     setTurnMine(false);
-    broadcast(ni, filter, ns);
+    broadcast(ni, filter, ns, { skipped: true });
     void juice.miss();
   };
 

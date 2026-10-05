@@ -69,6 +69,11 @@ export default function GameLobbyScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         setReadyPeer(false);
+        setCountdown(null);
+        setMatchSeed(null);
+        setStartAtMs(null);
+        startSent.current = false;
+        void juice.miss();
         return;
       }
       if (msg.type === 'game' && msg.gameId === gameId) {
@@ -89,8 +94,15 @@ export default function GameLobbyScreen() {
         }
         if (typeof payload?.ready === 'boolean' && payload.userId !== user.id) {
           setReadyPeer(payload.ready);
-          if (payload.ready) void juice.sync();
-          else void juice.miss();
+          if (payload.ready) {
+            void juice.sync();
+          } else {
+            void juice.miss();
+            setCountdown(null);
+            setMatchSeed(null);
+            setStartAtMs(null);
+            startSent.current = false;
+          }
         }
         if (payload?.start && typeof payload.seed === 'number') {
           const at = payload.startAtMs ?? Date.now() + 2500;
@@ -172,8 +184,11 @@ export default function GameLobbyScreen() {
   };
 
   const onUnready = () => {
-    if (!user || countdown != null) return;
+    if (!user) return;
     setReadyMe(false);
+    setCountdown(null);
+    setMatchSeed(null);
+    setStartAtMs(null);
     startSent.current = false;
     juice.miss();
     pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
@@ -222,10 +237,9 @@ export default function GameLobbyScreen() {
             <LpdButton label="Ready" onPress={onReady} disabled={countdown != null} />
           ) : (
             <LpdButton
-              label="Снять Ready"
+              label={countdown != null ? 'Отменить старт' : 'Снять Ready'}
               variant="ghost"
               onPress={onUnready}
-              disabled={countdown != null}
             />
           )}
           <LpdButton label="Solo / Demo" variant="ghost" onPress={solo} />

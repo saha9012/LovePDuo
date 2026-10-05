@@ -120,6 +120,7 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.stroke) {
+        const firstStroke = peerCount.current === 0;
         const s: Stroke = {
           ...payload.stroke,
           by: 'peer',
@@ -130,6 +131,10 @@ export default function SignalDrawScreen() {
         peerCount.current += 1;
         setPartnerStrokes(peerCount.current);
         bumpPeer();
+        if (firstStroke) {
+          showToast('Партнёр рисует');
+          void juice.hit();
+        }
       }
       if (payload.point) {
         setStrokes((prev) =>

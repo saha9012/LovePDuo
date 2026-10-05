@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Orbit align pulse sync · Sky Claim combo x5 partner flash  
-- [x] Join already-paired guard · Welcome/Play reconnect CTAs  
-- [x] Soft Duel round HUD · Heartbeat perfect mirror · note snippets  
+- [x] Lobby cancel mid-countdown · peer leave aborts start  
+- [x] Signal Draw first peer stroke toast · ToS skip sync juice  
+- [x] Orbit align pulse · Sky combo · Soft Duel finish announce  
 
 ## Catalog
 
