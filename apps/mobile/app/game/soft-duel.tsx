@@ -40,9 +40,11 @@ export default function SoftDuelScreen() {
   const [flash, setFlash] = useState('');
   const [armed, setArmed] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [matchSeed, setMatchSeed] = useState(seed);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const roundRef = useRef(0);
+  const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
   const armAt = useRef(0);
   const padScale = useSharedValue(1);
@@ -50,10 +52,25 @@ export default function SoftDuelScreen() {
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
+
+  useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type !== 'game' || msg.gameId !== 'soft-duel') return;
-      const payload = msg.payload as { score?: number; tap?: number } | undefined;
+      const payload = msg.payload as {
+        score?: number;
+        tap?: number;
+        rematch?: boolean;
+        seed?: number;
+      } | undefined;
+      if (payload?.rematch && typeof payload.seed === 'number') {
+        setMatchSeed(payload.seed);
+        seedRef.current = payload.seed;
+        startRef.current();
+        return;
+      }
       if (typeof payload?.score === 'number') {
         setPartnerScore(payload.score);
         setPartnerLive(true);
@@ -87,9 +104,9 @@ export default function SoftDuelScreen() {
     }
     roundRef.current = r;
     setRound(r);
-    setPrompt(PROMPTS[(seed + r) % PROMPTS.length]);
+    setPrompt(PROMPTS[(seedRef.current + r) % PROMPTS.length]);
     setArmed(false);
-    const wait = 600 + ((seed + r * 97) % 900);
+    const wait = 600 + ((seedRef.current + r * 97) % 900);
     armAt.current = Date.now() + wait;
     setFlash('Жди…');
     flashScale.value = withTiming(0.92, { duration: 120 });
@@ -108,10 +125,18 @@ export default function SoftDuelScreen() {
     partnerLiveRef.current = false;
     setPartnerLive(false);
     setPhase('playing');
-    pairRealtime.sendGame('soft-duel', { phase: 'start', seed });
+    pairRealtime.sendGame('soft-duel', { phase: 'start', seed: seedRef.current });
     nextRound(0);
   };
   startRef.current = start;
+
+  const rematch = () => {
+    const next = Math.floor(Math.random() * 100000);
+    setMatchSeed(next);
+    seedRef.current = next;
+    pairRealtime.sendGame('soft-duel', { rematch: true, seed: next });
+    start();
+  };
 
   useEffect(() => {
     if (params.solo === '1') return;
@@ -148,7 +173,7 @@ export default function SoftDuelScreen() {
     setTimeout(() => nextRound(roundRef.current + 1), 420);
   };
 
-  const line = pickPostMatchLine(myScore, partnerScore, seed);
+  const line = pickPostMatchLine(myScore, partnerScore, matchSeed);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],
   }));
@@ -172,7 +197,7 @@ export default function SoftDuelScreen() {
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
             gameId="soft-duel"
             line={line.text}
-            onRematch={start}
+            onRematch={rematch}
             onHome={() => router.replace('/(tabs)/play')}
           />
         </View>

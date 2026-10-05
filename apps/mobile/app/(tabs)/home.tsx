@@ -28,7 +28,9 @@ export default function HomeScreen() {
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [warmthToast, setWarmthToast] = useState<string | null>(null);
   const lastMemory = memories[0];
+  const warmthSeen = React.useRef(0);
 
   useEffect(() => {
     const off = pairRealtime.onStatus(setWsOnline);
@@ -43,6 +45,13 @@ export default function HomeScreen() {
       withTiming(1.08, { duration: 180 }),
       withTiming(1, { duration: 280 }),
     );
+    if (warmthPulse > warmthSeen.current) {
+      warmthSeen.current = warmthPulse;
+      setWarmthToast('Тепло в комнате');
+      void juice.warmth();
+      const t = setTimeout(() => setWarmthToast(null), 1600);
+      return () => clearTimeout(t);
+    }
   }, [warmthPulse, pulse]);
 
   const warmthStyle = useAnimatedStyle(() => ({
@@ -93,6 +102,7 @@ export default function HomeScreen() {
               Последнее: {lastMemory.title} — {lastMemory.detail}
             </Text>
           ) : null}
+          {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>
@@ -103,7 +113,6 @@ export default function HomeScreen() {
             onPress={() => {
               sendWarmth();
               pairRealtime.sendWarmth();
-              void juice.warmth();
             }}
           />
           <LpdButton
@@ -216,5 +225,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: colors.accentMist,
+  },
+  warmthToast: {
+    marginTop: 8,
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.accentRose,
   },
 });

@@ -6,10 +6,10 @@
 
 ## Latest
 
+- [x] Soft Duel shared rematch seed · Home warmth toast  
 - [x] WS auto-reconnect (backoff) + AppState presence away/online  
 - [x] SFX + haptics mute persist · presence heartbeat ping  
-- [x] Store frames + capture.html + STORE_SHOTS  
-- [x] Spotify env stub status on Music shelf  
+- [x] Store frames + capture.html + STORE_SHOTS · Spotify env stub  
 
 ## Catalog
 
