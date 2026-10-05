@@ -47,13 +47,13 @@ export default function TruthOrSparkScreen() {
   const { user, pair } = useApp();
   const params = useLocalSearchParams<{ seed?: string; solo?: string }>();
 
-  const seed = useMemo(() => {
+  const [matchSeed, setMatchSeed] = useState(() => {
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
     const session = consumeMatchSession(GAME_ID);
     if (session) return session.seed;
     return Date.now() % 100000;
-  }, [params.seed]);
+  });
 
   const [filter, setFilter] = useState<SparkFilter>('soft');
   const [index, setIndex] = useState(0);
@@ -62,7 +62,7 @@ export default function TruthOrSparkScreen() {
   const [live, setLive] = useState(false);
   const [turnMine, setTurnMine] = useState(true);
 
-  const deck = useMemo(() => shuffleDeck(seed, filter), [seed, filter]);
+  const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
   const card = deck[index % deck.length];
   const isHost = Boolean(user?.id && pair?.hostUserId && pair.hostUserId === user.id);
   const cardScale = useSharedValue(1);
@@ -83,7 +83,7 @@ export default function TruthOrSparkScreen() {
 
   useEffect(() => {
     flipIn();
-  }, [index, filter]);
+  }, [index, filter, matchSeed]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -95,9 +95,19 @@ export default function TruthOrSparkScreen() {
         skips?: number;
         fromName?: string;
         fromId?: string;
+        rematch?: boolean;
+        seed?: number;
       } | undefined;
       if (!payload) return;
       setLive(true);
+      if (payload.rematch && typeof payload.seed === 'number') {
+        setMatchSeed(payload.seed);
+        setIndex(0);
+        setSkips(SKIP_LIMIT);
+        setTurnMine(true);
+        void juice.sync();
+        return;
+      }
       if (typeof payload.index === 'number') setIndex(payload.index);
       if (payload.filter === 'soft' || payload.filter === 'spicy') setFilter(payload.filter);
       if (typeof payload.skips === 'number') setSkips(payload.skips);
@@ -118,7 +128,7 @@ export default function TruthOrSparkScreen() {
       skips: nextSkips,
       fromName: user?.displayName,
       fromId: user?.id,
-      seed,
+      seed: matchSeed,
     });
   };
 
@@ -151,10 +161,20 @@ export default function TruthOrSparkScreen() {
   };
 
   const reshuffle = () => {
+    const next = Math.floor(Math.random() * 100000);
+    setMatchSeed(next);
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
-    broadcast(0, filter, SKIP_LIMIT);
+    pairRealtime.sendGame(GAME_ID, {
+      rematch: true,
+      seed: next,
+      index: 0,
+      filter,
+      skips: SKIP_LIMIT,
+      fromName: user?.displayName,
+      fromId: user?.id,
+    });
     void juice.sync();
   };
 
@@ -179,7 +199,7 @@ export default function TruthOrSparkScreen() {
         </View>
 
         <Text style={styles.syncMeta}>
-          seed {seed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
+          seed {matchSeed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
           {isHost ? ' · host' : ''} · ход: {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
 
