@@ -96,6 +96,15 @@ export default function HeartbeatScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPartnerLive(false);
+        partnerLiveRef.current = false;
+        setPeerNote('вышел');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+        void juice.miss();
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'heartbeat') return;
       const payload = msg.payload as {
         total?: number;

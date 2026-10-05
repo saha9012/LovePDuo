@@ -110,6 +110,12 @@ export default function TruthOrSparkScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setLive(false);
+        showTurnToast('Партнёр вышел');
+        void juice.miss();
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== GAME_ID) return;
       const payload = msg.payload as {
         index?: number;

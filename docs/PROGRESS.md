@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Mid-match peer_left toast across Soft/Sky/HB/Orbit/Draw/Veil/ToS  
 - [x] Play/Home lobby-leave toast · Soft sync-finish memory  
 - [x] Home peer-join toast (not warmth) · lobby Ready rebroadcast · Music stop/shelf sync · candle end ping  
-- [x] Rematch hello across Soft/Sky/HB/Orbit/Draw/Veil/ToS · PostMatch track import  
 
 ## Catalog
 

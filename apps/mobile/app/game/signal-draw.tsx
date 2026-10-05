@@ -104,6 +104,12 @@ export default function SignalDrawScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPeerSeen(false);
+        showToast('Партнёр вышел');
+        void juice.miss();
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'signal-draw') return;
       const payload = msg.payload as {
         stroke?: Stroke;

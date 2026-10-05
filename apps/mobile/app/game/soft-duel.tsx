@@ -83,6 +83,13 @@ export default function SoftDuelScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPartnerLive(false);
+        partnerLiveRef.current = false;
+        setFlash('Партнёр вышел');
+        void juice.miss();
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'soft-duel') return;
       const payload = msg.payload as {
         score?: number;

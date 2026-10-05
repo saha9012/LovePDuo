@@ -139,6 +139,12 @@ export default function WordVeilScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPresenceHint('Партнёр вышел');
+        void juice.miss();
+        setTimeout(() => setPresenceHint(null), 1600);
+        return;
+      }
       if (msg.type !== 'game' || msg.gameId !== 'word-veil') return;
       const payload = msg.payload as {
         word?: string;

@@ -52,20 +52,19 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 ## 5. Smoke checklist
 
-- [ ] Sky Claim: очки партнёра · miss/decoy/combo notes · finish note · rematch hello  
-- [ ] Heartbeat: sync · miss HUD note · finish note · rematch hello · presence mid-match  
-- [ ] Truth Or Spark: named turn · skip juice · filter-change toast · deck-wrap · Перетасовать  
-- [ ] Signal Draw: first stroke toast · brush toast · 5s warning · peer finish · rematch hello  
-- [ ] Orbit Catch: miss/align notes · finish sync · rematch hello · presence  
-- [ ] Soft Duel: tap grade mirror · round-ahead · arm ЖМИ · partner finish juice · rematch hello · presence  
-- [ ] Word Veil: typing juice · peer-locked hint · start hello · presence · rematch hello  
-- [ ] Lobby: Ready toast · cancel mid-count · peer_left · peek «партнёр тоже здесь»  
+- [ ] Sky Claim: очки партнёра · miss/decoy/combo notes · finish note · rematch hello · peer_left  
+- [ ] Heartbeat: sync · miss HUD note · finish note · rematch hello · presence · peer_left  
+- [ ] Truth Or Spark: named turn · skip juice · filter-change toast · deck-wrap · Перетасовать · peer_left  
+- [ ] Signal Draw: first stroke toast · brush toast · 5s warning · peer finish · rematch hello · peer_left  
+- [ ] Orbit Catch: miss/align notes · finish sync · rematch hello · presence · peer_left  
+- [ ] Soft Duel: tap grade mirror · round-ahead · arm ЖМИ · partner finish juice · rematch hello · peer_left · presence  
+- [ ] Word Veil: typing juice · peer-locked hint · start hello · presence · rematch hello · peer_left  
+- [ ] Lobby: Ready toast · cancel mid-count · peer_left / unready · Ready rebroadcast after WS · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast  
 - [ ] Welcome reconnect · Profile invite deep link · partner rename toast  
 - [ ] Music: now-playing juice · stop toast · playlist switch · shelf + sync · reaction sync  
 - [ ] Together: candle start/blow/end · spark · note · warmth receive toast  
-- [ ] Home: warmth · peer-join toast · mood toast · presence online/away · room size 2
-- [ ] Lobby: peer_left / unready toast · Ready rebroadcast after WS reconnect  
+- [ ] Home: warmth · peer-join toast · mood toast · presence online/away · room size 2 
 
 ## Web dual (без телефонов)
 
