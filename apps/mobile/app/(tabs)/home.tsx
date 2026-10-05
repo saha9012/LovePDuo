@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
@@ -22,20 +22,14 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user, pair, sendWarmth, warmthPulse, setMood } = useApp();
   const pulse = useSharedValue(1);
+  const [wsOnline, setWsOnline] = useState(false);
 
   useEffect(() => {
-    if (!pair || !user) return;
-    pairRealtime.connect(pair.code, user.id, user.displayName);
-    const off = pairRealtime.onMessage((msg) => {
-      if (msg.type === 'warmth' || msg.type === 'peer_joined') {
-        sendWarmth();
-      }
-    });
+    const off = pairRealtime.onStatus(setWsOnline);
     return () => {
       off();
-      pairRealtime.disconnect();
     };
-  }, [pair?.code, user?.id]);
+  }, []);
 
   useEffect(() => {
     if (!warmthPulse) return;
@@ -68,6 +62,14 @@ export default function HomeScreen() {
               ? 'Партнёр рядом. LPD online. Ваш ход.'
               : 'Ждём пульс партнёра. Можно греть комнату заранее.'}
           </Text>
+          <Text style={styles.meta}>
+            Код пары: {pair?.code ?? '—'} · Realtime: {wsOnline ? 'online' : 'offline'}
+          </Text>
+          {Platform.OS === 'web' ? (
+            <Text style={styles.hint}>
+              Тест вдвоём: окно 1 создаёт пару, окно 2 (инкognito) → «есть код». Один backend :8787.
+            </Text>
+          ) : null}
         </View>
 
         <Animated.View style={[styles.ctaBlock, warmthStyle]}>
@@ -146,5 +148,17 @@ const styles = StyleSheet.create({
   moodActive: {
     color: colors.accentAmber,
     borderColor: 'rgba(226,176,122,0.45)',
+  },
+  meta: {
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    color: colors.accentAmber,
+    letterSpacing: 1,
+  },
+  hint: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 18,
+    color: colors.textMuted,
   },
 });

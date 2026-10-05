@@ -6,7 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -21,6 +21,7 @@ import {
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { consumeMatchSession } from '../../src/realtime/matchSession';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -28,7 +29,14 @@ export default function SkyClaimScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
-  const seed = useMemo(() => Date.now() % 100000, []);
+  const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+  const seed = useMemo(() => {
+    const fromParam = Number(params.seed);
+    if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
+    const session = consumeMatchSession('sky-claim');
+    if (session) return session.seed;
+    return Date.now() % 100000;
+  }, [params.seed]);
   const spawner = useMemo(() => createSkySpawner(seed), [seed]);
 
   const [phase, setPhase] = useState<Phase>('ready');
@@ -44,9 +52,10 @@ export default function SkyClaimScreen() {
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
 
+  const startRef = useRef<() => void>(() => undefined);
+
   useEffect(() => {
     if (!pair || !user) return;
-    pairRealtime.connect(pair.code, user.id, user.displayName);
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'game' && msg.gameId === 'sky-claim') {
         const payload = msg.payload as { score?: number; phase?: string } | undefined;
@@ -75,6 +84,17 @@ export default function SkyClaimScreen() {
     partnerLiveRef.current = false;
     pairRealtime.sendGame('sky-claim', { phase: 'start', seed, score: 0 });
   };
+
+  startRef.current = start;
+
+  useEffect(() => {
+    if (params.solo === '1') return;
+    const at = Number(params.startAt);
+    if (!Number.isFinite(at)) return;
+    const delay = Math.max(0, at - Date.now());
+    const id = setTimeout(() => startRef.current(), delay);
+    return () => clearTimeout(id);
+  }, [params.startAt, params.solo]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -217,6 +237,7 @@ export default function SkyClaimScreen() {
         <View style={styles.stats}>
           <Text style={styles.stat}>Очки {score}</Text>
           <Text style={styles.stat}>Комбо ×{combo}</Text>
+          <Text style={styles.stat}>seed {seed}</Text>
         </View>
 
         {phase === 'ready' ? (

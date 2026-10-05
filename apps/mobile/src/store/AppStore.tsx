@@ -20,6 +20,7 @@ export type PairState = {
   id: string;
   code: string;
   name: string;
+  hostUserId: string;
   partnerName: string;
   partnerPresence: Presence;
   mood: 'night' | 'warm' | 'rain';
@@ -41,9 +42,9 @@ type AppState = {
   user: UserProfile | null;
   pair: PairState | null;
   tracks: TrackItem[];
-  signIn: (name: string) => Promise<void>;
+  signIn: (name: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
-  createPair: (pairName?: string) => Promise<PairState>;
+  createPair: (pairName?: string, hostUserId?: string) => Promise<PairState>;
   joinPair: (code: string) => Promise<PairState>;
   unlinkPair: () => Promise<void>;
   setMood: (mood: PairState['mood']) => void;
@@ -87,7 +88,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             tracks?: TrackItem[];
           };
           setUser(parsed.user ?? null);
-          setPair(parsed.pair ?? null);
+          if (parsed.pair) {
+            const p = parsed.pair as PairState;
+            if (!p.hostUserId && parsed.user?.id) {
+              p.hostUserId = parsed.user.id;
+            }
+            setPair(p);
+          } else {
+            setPair(null);
+          }
           setTracks(parsed.tracks ?? []);
         }
       } finally {
@@ -106,7 +115,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (name: string) => {
     const clean = name.trim() || 'Игрок';
-    setUser({ id: makeId('usr'), displayName: clean });
+    const profile: UserProfile = { id: makeId('usr'), displayName: clean };
+    setUser(profile);
+    return profile;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -116,11 +127,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  const createPair = useCallback(async (pairName?: string) => {
+  const createPair = useCallback(async (pairName?: string, hostUserId?: string) => {
     const next: PairState = {
       id: makeId('pair'),
       code: makePairCode(),
       name: pairName?.trim() || 'Наша комната',
+      hostUserId: hostUserId ?? '',
       partnerName: 'Ожидание партнёра',
       partnerPresence: 'offline',
       mood: 'night',
@@ -138,6 +150,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: makeId('pair'),
       code: clean,
       name: 'Связанная пара',
+      hostUserId: '',
       partnerName: 'Партнёр',
       partnerPresence: 'online',
       mood: 'warm',

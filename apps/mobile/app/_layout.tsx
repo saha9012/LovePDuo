@@ -16,6 +16,7 @@ import {
 import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppProvider, useApp } from '../src/store/AppStore';
+import { RealtimeConnector } from '../src/realtime/RealtimeConnector';
 import { colors } from '../src/theme/tokens';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -77,6 +78,7 @@ function RootNavigator() {
 
   return (
     <AuthGate>
+      <RealtimeConnector />
       <StatusBar style="light" />
       <Stack
         screenOptions={{

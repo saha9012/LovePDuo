@@ -20,11 +20,8 @@ export default function CreatePairScreen() {
   const onCreate = async () => {
     setLoading(true);
     try {
-      if (!user) await signIn(displayName || 'Ты');
-      else if (displayName.trim() && displayName !== user.displayName) {
-        await signIn(displayName);
-      }
-      await createPair(name);
+      const profile = user ?? (await signIn(displayName || 'Ты'));
+      await createPair(name, profile.id);
       router.replace('/pair/success');
     } finally {
       setLoading(false);
