@@ -6,10 +6,11 @@
 
 ## Latest
 
-- [x] Music peer now-playing pulse · empty playlist hint  
-- [x] Candle finish → memory · Lobby peer Ready SFX/pulse  
-- [x] CodeInput paste / OTP autofill hints  
-- [x] Room size · partner score flashes · ToS progress · Word Veil wait  
+- [x] Play search + MVP/New filters  
+- [x] Welcome reconnect CTA when pair exists  
+- [x] Signal Draw peer undo/clear toasts  
+- [x] Music peer pulse · Candle memory · Lobby Ready SFX  
+- [x] Room size · partner flashes · Word Veil wait · CodeInput paste  
 
 ## Catalog
 

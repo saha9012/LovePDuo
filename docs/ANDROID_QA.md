@@ -45,8 +45,8 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 1. Телефон A: создать пару → код  
 2. Телефон B: join по коду (или `lovepduo://join/CODE`)  
-3. Home: оба online, Warmth доходит  
-4. Play → Lobby → оба Ready → countdown → общий seed
+3. Home: оба online, Warmth доходит, meta показывает «в комнате 2»  
+4. Play → Lobby → оба Ready (SFX) → countdown → общий seed
 
 ## 5. Smoke checklist
 
