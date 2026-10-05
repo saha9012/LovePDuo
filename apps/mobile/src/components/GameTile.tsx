@@ -7,7 +7,7 @@ type Props = {
   title: string;
   subtitle: string;
   accent?: 'rose' | 'amber' | 'mist';
-  cover?: 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit';
+  cover?: 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit' | 'duel' | 'veil';
   onPress?: () => void;
   badge?: string;
 };

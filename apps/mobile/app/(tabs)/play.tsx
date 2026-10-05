@@ -69,7 +69,7 @@ export default function PlayScreen() {
             title="Soft Duel"
             subtitle="Реакция на вспышку слова. Perfect / рано / реванш."
             accent="rose"
-            cover="heartbeat"
+            cover="duel"
             badge="NEW"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
           />
@@ -77,7 +77,7 @@ export default function PlayScreen() {
             title="Word Veil"
             subtitle="Ассоциации на одно слово. Сравниваем совпадение."
             accent="mist"
-            cover="spark"
+            cover="veil"
             badge="NEW"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'word-veil' } })}
           />

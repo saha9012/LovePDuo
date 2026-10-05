@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radii } from '../theme/tokens';
 
 type Props = {
-  game: 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit';
+  game: 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit' | 'duel' | 'veil';
 };
 
 const gradients: Record<Props['game'], [string, string, string]> = {
@@ -13,6 +13,8 @@ const gradients: Record<Props['game'], [string, string, string]> = {
   spark: ['rgba(122,140,163,0.45)', 'rgba(226,176,122,0.28)', 'rgba(7,6,10,0.3)'],
   draw: ['rgba(226,176,122,0.4)', 'rgba(227,154,160,0.35)', 'rgba(7,6,10,0.25)'],
   orbit: ['rgba(122,140,163,0.5)', 'rgba(226,176,122,0.3)', 'rgba(7,6,10,0.3)'],
+  duel: ['rgba(142,59,74,0.55)', 'rgba(226,176,122,0.3)', 'rgba(7,6,10,0.28)'],
+  veil: ['rgba(122,140,163,0.4)', 'rgba(227,154,160,0.25)', 'rgba(36,28,49,0.5)'],
 };
 
 export function GameCover({ game }: Props) {
@@ -44,6 +46,18 @@ export function GameCover({ game }: Props) {
           <View style={styles.orbitRing} />
           <View style={[styles.orb, { top: 18, left: 14, backgroundColor: colors.accentAmber, width: 8, height: 8 }]} />
           <View style={[styles.orb, { bottom: 16, right: 14, backgroundColor: colors.accentRose, width: 11, height: 11 }]} />
+        </>
+      ) : null}
+      {game === 'duel' ? (
+        <>
+          <View style={styles.duelFlash} />
+          <View style={styles.duelDot} />
+        </>
+      ) : null}
+      {game === 'veil' ? (
+        <>
+          <View style={styles.veilA} />
+          <View style={styles.veilB} />
         </>
       ) : null}
     </View>
@@ -124,5 +138,46 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1.5,
     borderColor: 'rgba(226,176,122,0.55)',
+  },
+  duelFlash: {
+    position: 'absolute',
+    top: 18,
+    left: 12,
+    right: 12,
+    height: 10,
+    borderRadius: 6,
+    backgroundColor: 'rgba(226,176,122,0.75)',
+  },
+  duelDot: {
+    position: 'absolute',
+    bottom: 14,
+    alignSelf: 'center',
+    left: 26,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.accentRose,
+  },
+  veilA: {
+    position: 'absolute',
+    top: 16,
+    left: 10,
+    width: 20,
+    height: 28,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.accentMist,
+    opacity: 0.85,
+  },
+  veilB: {
+    position: 'absolute',
+    top: 20,
+    right: 10,
+    width: 20,
+    height: 28,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: colors.accentRose,
+    opacity: 0.85,
   },
 });
