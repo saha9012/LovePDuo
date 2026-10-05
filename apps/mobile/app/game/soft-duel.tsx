@@ -130,13 +130,25 @@ export default function SoftDuelScreen() {
       }
       if (payload?.arm) {
         setPartnerFlash(true);
-        const bothPress = flashRef.current === 'ЖМИ';
-        const bothWait = flashRef.current === 'Жди…';
+        const bothPress =
+          flashRef.current === 'ЖМИ' ||
+          flashRef.current === 'Оба ЖМИ' ||
+          flashRef.current === 'Оба жмут';
+        const bothWait =
+          flashRef.current === 'Жди…' ||
+          flashRef.current === 'Оба ждут' ||
+          flashRef.current === 'Оба ждут вместе';
+        const racingPress = flashRef.current === 'Оба ЖМИ' || flashRef.current === 'Оба жмут';
+        const racingWait = flashRef.current === 'Оба ждут' || flashRef.current === 'Оба ждут вместе';
         setFlash((cur) =>
           bothPress
-            ? 'Оба ЖМИ'
+            ? racingPress
+              ? 'Оба жмут'
+              : 'Оба ЖМИ'
             : bothWait
-              ? 'Оба ждут'
+              ? racingWait
+                ? 'Оба ждут вместе'
+                : 'Оба ждут'
               : cur === 'ЖМИ' || cur === 'Жди…'
                 ? cur
                 : 'Партнёр ЖМИ',
@@ -172,8 +184,12 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.early) {
-        const both = flashRef.current === 'Рано';
-        setFlash(both ? 'Оба рано' : 'Партнёр рано');
+        const both =
+          flashRef.current === 'Рано' ||
+          flashRef.current === 'Оба рано' ||
+          flashRef.current === 'Оба спешат';
+        const racing = flashRef.current === 'Оба рано' || flashRef.current === 'Оба спешат';
+        setFlash(racing ? 'Оба спешат' : both ? 'Оба рано' : 'Партнёр рано');
         setPartnerFlash(true);
         partnerScale.value = withSequence(
           withSpring(1.08, { damping: 10 }),

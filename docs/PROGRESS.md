@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft оба спешат/жмут · Play «Оба в каталоге» · Lobby READY  
 - [x] Lobby «Оба READY» · Home «Оба в настроении» · Music/Together  
 - [x] Music «Оба чувствуют» · Together «Оба на буквах» · Orbit/HB lead  
-- [x] Orbit/HB я впереди/гонка · Draw/Sky lead · Soft lead  
 
 ## Catalog
 

@@ -112,6 +112,8 @@ export default function PlayScreen() {
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const [peekToast, setPeekToast] = useState<string | null>(null);
   const filterRef = useRef<Filter>('all');
+  const lastFilterMatch = useRef<Filter | null>(null);
+  const lastFilterMatchAt = useRef(0);
   const lastGameRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -146,6 +148,14 @@ export default function PlayScreen() {
         } | undefined;
         if (!payload?.filter || payload.fromId === user.id) return;
         const both = filterRef.current === payload.filter;
+        const again =
+          both &&
+          lastFilterMatch.current === payload.filter &&
+          Date.now() - lastFilterMatchAt.current < 2800;
+        if (both) {
+          lastFilterMatch.current = payload.filter;
+          lastFilterMatchAt.current = Date.now();
+        }
         const label =
           payload.filter === 'all'
             ? 'Все'
@@ -153,11 +163,13 @@ export default function PlayScreen() {
               ? 'MVP'
               : 'New';
         setPeekToast(
-          both
-            ? `Оба: фильтр ${label}`
-            : `${payload.from ?? 'Партнёр'}: фильтр ${label}`,
+          again
+            ? 'Оба в каталоге'
+            : both
+              ? `Оба: фильтр ${label}`
+              : `${payload.from ?? 'Партнёр'}: фильтр ${label}`,
         );
-        void (both ? juice.perfect() : juice.hit());
+        void (again || both ? juice.perfect() : juice.hit());
         setTimeout(() => setPeekToast(null), 1400);
         return;
       }
