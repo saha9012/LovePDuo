@@ -195,14 +195,19 @@ export default function ProfileScreen() {
             <LpdButton
               label="Пресет LAN 192.168.0.120"
               variant="ghost"
-              onPress={() => setWsDraft('ws://192.168.0.120:8787')}
+              onPress={() => {
+                setWsDraft('ws://192.168.0.120:8787');
+                setWsToast('LAN пресет — сохрани URL на обоих');
+                setTimeout(() => setWsToast(null), 2000);
+                void juice.card();
+              }}
             />
             <LpdButton
               label="Пресет Tunnel wss://…"
               variant="ghost"
               onPress={() => {
                 setWsDraft('wss://REPLACE.trycloudflare.com');
-                setWsToast('Вставь URL из cloudflared (см. WSS_PROD)');
+                setWsToast('Tunnel пресет — вставь URL из cloudflared');
                 setTimeout(() => setWsToast(null), 2200);
                 void juice.card();
               }}
@@ -215,6 +220,8 @@ export default function ProfileScreen() {
                 const url = getWsUrl();
                 setWsDraft(url);
                 setWsSaved(url);
+                setWsToast('Default WS');
+                setTimeout(() => setWsToast(null), 1600);
                 void juice.hit();
                 if (user && pair) {
                   pairRealtime.connect(pair.code, user.id, user.displayName);
