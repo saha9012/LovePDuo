@@ -282,7 +282,11 @@ export default function SoftDuelScreen() {
           prevPartnerRound < roundRef.current &&
           phaseRef.current === 'playing'
         ) {
-          setFlash('Наравне');
+          setFlash(
+            flashRef.current === 'Наравне' || flashRef.current === 'Оба наравне'
+              ? 'Оба наравне'
+              : 'Наравне',
+          );
           flashScale.value = withSpring(1.14, { damping: 10 });
           void juice.perfect();
         }
@@ -447,7 +451,11 @@ export default function SoftDuelScreen() {
     });
     if (catchingUp) {
       setTimeout(() => {
-        setFlash('Наравне');
+        setFlash(
+          flashRef.current === 'Наравне' || flashRef.current === 'Оба наравне'
+            ? 'Оба наравне'
+            : 'Наравне',
+        );
         flashScale.value = withSpring(1.14, { damping: 10 });
         void juice.perfect();
       }, 320);
