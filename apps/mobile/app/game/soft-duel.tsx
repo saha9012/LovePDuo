@@ -378,6 +378,9 @@ export default function SoftDuelScreen() {
     }
     const delta = now - armAt.current;
     const pts = delta < 180 ? 3 : delta < 420 ? 2 : 1;
+    const catchingUp =
+      partnerRoundRef.current > roundRef.current &&
+      partnerRoundRef.current === roundRef.current + 1;
     myScoreRef.current += pts;
     setMyScore(myScoreRef.current);
     setFlash(pts === 3 ? 'PERFECT' : pts === 2 ? 'GOOD' : 'OK');
@@ -389,6 +392,13 @@ export default function SoftDuelScreen() {
       tap: delta,
       round: roundRef.current,
     });
+    if (catchingUp) {
+      setTimeout(() => {
+        setFlash('Наравне');
+        flashScale.value = withSpring(1.14, { damping: 10 });
+        void juice.perfect();
+      }, 320);
+    }
     setTimeout(() => nextRound(roundRef.current + 1), 420);
   };
 

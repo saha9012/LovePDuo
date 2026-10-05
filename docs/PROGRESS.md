@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft local «Наравне» catch-up · Lobby оба в лобби · Profile SFX  
 - [x] Lobby «Оба в этом лобби» · Profile SFX toast · Together dual hello  
 - [x] Profile SFX mute toast · Together dual hello · Music dual hello  
-- [x] Together «Оба на Together» · Music dual hello · Soft «Наравне»  
 
 ## Catalog
 
