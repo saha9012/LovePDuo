@@ -237,6 +237,15 @@ export default function SignalDrawScreen() {
         if (firstStroke) {
           showToast(myCount.current > 0 ? 'Рисуем вместе' : 'Партнёр рисует');
           void (myCount.current > 0 ? juice.perfect() : juice.hit());
+          if (peerCount.current === myCount.current && myCount.current > 0) {
+            setTimeout(() => {
+              showToast('Оба на штрихах');
+              void juice.sync();
+            }, 420);
+          }
+        } else if (peerCount.current === myCount.current && myCount.current > 0) {
+          showToast('Оба на штрихах');
+          void juice.sync();
         }
       }
       if (payload.point) {
@@ -421,6 +430,12 @@ export default function SignalDrawScreen() {
             count: myCount.current,
           });
           void juice.hit();
+          if (myCount.current === peerCount.current && myCount.current > 0) {
+            setTimeout(() => {
+              showToast('Оба на штрихах');
+              void juice.sync();
+            }, 320);
+          }
         },
         onPanResponderMove: (evt) => {
           const cur = current.current;
