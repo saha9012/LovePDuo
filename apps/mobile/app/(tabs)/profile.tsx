@@ -13,6 +13,7 @@ import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { copyText, pairInviteMessage } from '../../src/utils/copyText';
+import { confirmDestructive } from '../../src/utils/confirmDestructive';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -318,20 +319,32 @@ export default function ProfileScreen() {
           <LpdButton
             label="Отвязать пару"
             variant="ghost"
-            onPress={async () => {
-              void juice.miss();
-              await unlinkPair();
-              router.replace('/pair/create');
+            onPress={() => {
+              void confirmDestructive(
+                'Отвязать пару?',
+                'Код комнаты сбросится. Memories останутся локально.',
+              ).then(async (ok) => {
+                if (!ok) return;
+                void juice.miss();
+                await unlinkPair();
+                router.replace('/pair/create');
+              });
             }}
           />
           <LpdButton
             label="Выйти"
             variant="danger"
-            onPress={async () => {
-              void juice.miss();
-              clearMemories();
-              await signOut();
-              router.replace('/welcome');
+            onPress={() => {
+              void confirmDestructive(
+                'Выйти из аккаунта?',
+                'Локальные memories будут очищены на этом устройстве.',
+              ).then(async (ok) => {
+                if (!ok) return;
+                void juice.miss();
+                clearMemories();
+                await signOut();
+                router.replace('/welcome');
+              });
             }}
           />
         </View>

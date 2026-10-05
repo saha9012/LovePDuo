@@ -25,6 +25,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -460,13 +461,14 @@ export default function HeartbeatScreen() {
         }
         setPhase('finished');
         void juice.postMatch();
-        addMemory({
+        const mem = addMemory({
           kind: 'heartbeat',
           title: 'Heartbeat Tap',
           detail: partnerFinishedRef.current
             ? `Оба финиш · итог ${total}`
             : `Итог ${total} · sync +${syncRef.current}`,
         });
+        broadcastMemory(mem, user);
       } else if (Math.floor(t / 1000) % 4 === 0) {
         pairRealtime.sendGame('heartbeat', {
           phase: 'playing',

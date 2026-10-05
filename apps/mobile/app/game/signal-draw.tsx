@@ -18,6 +18,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 type Pt = { x: number; y: number };
 type Stroke = { id: string; color: string; points: Pt[]; by: 'me' | 'peer'; width: number };
@@ -454,13 +455,14 @@ export default function SignalDrawScreen() {
             phase: 'finished',
             count: myCount.current,
           });
-          addMemory({
+          const mem = addMemory({
             kind: 'draw',
             title: 'Signal Draw',
             detail: partnerFinishedRef.current
               ? `Оба финиш · штрихи ${myCount.current}`
               : `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
           });
+          broadcastMemory(mem, user);
           if (peerCount.current === 0) {
             setPartnerStrokes(Math.max(1, Math.round(myCount.current * 0.85)));
           }

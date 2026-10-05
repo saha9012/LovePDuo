@@ -17,6 +17,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -382,13 +383,14 @@ export default function OrbitCatchScreen() {
           if (partnerRef.current === 0) {
             setPartnerCaught(Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3)));
           }
-          addMemory({
+          const mem = addMemory({
             kind: 'orbit',
             title: 'Orbit Catch',
             detail: partnerFinishedRef.current
               ? `Оба финиш · co-op ${caughtRef.current + partnerRef.current}`
               : `Co-op ${caughtRef.current + partnerRef.current} catches`,
           });
+          broadcastMemory(mem, user);
           return 0;
         }
         return t - 1;

@@ -17,6 +17,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 const ROUNDS = 8;
 const PROMPTS = ['Жар', 'Тише', 'Ближе', 'Смелей', 'Стоп', 'Ещё', 'Сейчас', 'Вдвоём'];
@@ -384,13 +385,14 @@ export default function SoftDuelScreen() {
         score: myScoreRef.current,
         round: ROUNDS,
       });
-      addMemory({
+      const mem = addMemory({
         kind: 'duel',
         title: 'Soft Duel',
         detail: partnerFinishedRef.current
           ? `Оба финиш · ты ${myScoreRef.current}`
           : `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
       });
+      broadcastMemory(mem, user);
       if (partnerFinishedRef.current) {
         const racing =
           flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';

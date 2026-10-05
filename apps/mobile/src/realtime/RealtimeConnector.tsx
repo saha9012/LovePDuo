@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useApp } from '../store/AppStore';
+import { useMemories, MemoryItem } from '../store/MemoriesStore';
 import { pairRealtime } from './PairRealtime';
 import { juice } from '../audio/juice';
 
@@ -8,6 +9,7 @@ const PING_MS = 18000;
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
   const { user, pair, sendWarmth, setPartnerInfo, setRoomSize, setPairName } = useApp();
+  const { receiveMemory, removeMemory, clearMemories } = useMemories();
 
   useEffect(() => {
     void juice.hydrateMuted();
@@ -52,6 +54,30 @@ export function RealtimeConnector() {
         ) {
           setPartnerInfo(payload.name.trim(), 'online');
           void juice.card();
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-add') {
+        const payload = msg.payload as (MemoryItem & { fromId?: string }) | undefined;
+        if (payload?.id && payload.fromId !== user.id && payload.title) {
+          receiveMemory({
+            id: payload.id,
+            kind: payload.kind,
+            title: payload.title,
+            detail: payload.detail ?? '',
+            at: typeof payload.at === 'number' ? payload.at : Date.now(),
+          });
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-remove') {
+        const payload = msg.payload as { id?: string; fromId?: string } | undefined;
+        if (payload?.id && payload.fromId !== user.id) {
+          removeMemory(payload.id);
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-clear') {
+        const payload = msg.payload as { fromId?: string } | undefined;
+        if (payload?.fromId !== user.id) {
+          clearMemories();
         }
       }
       if (msg.type === 'joined') {
@@ -99,6 +125,9 @@ export function RealtimeConnector() {
     setRoomSize,
     setPairName,
     user?.displayName,
+    receiveMemory,
+    removeMemory,
+    clearMemories,
   ]);
 
   return null;

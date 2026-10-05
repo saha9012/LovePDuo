@@ -18,13 +18,18 @@ export type MemoryItem = {
 
 type MemoriesApi = {
   items: MemoryItem[];
-  addMemory: (item: Omit<MemoryItem, 'id' | 'at'>) => void;
+  addMemory: (item: Omit<MemoryItem, 'id' | 'at'>) => MemoryItem;
+  receiveMemory: (item: MemoryItem) => void;
   removeMemory: (id: string) => void;
   clearMemories: () => void;
 };
 
 const KEY = 'lovepduo.memories.v1';
 const Ctx = createContext<MemoriesApi | null>(null);
+
+function makeId() {
+  return `mem_${Math.random().toString(36).slice(2, 9)}`;
+}
 
 export function MemoriesProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<MemoryItem[]>([]);
@@ -50,16 +55,21 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
   }, [items, hydrated]);
 
   const addMemory = useCallback((item: Omit<MemoryItem, 'id' | 'at'>) => {
-    setItems((prev) =>
-      [
-        {
-          ...item,
-          id: `mem_${Math.random().toString(36).slice(2, 9)}`,
-          at: Date.now(),
-        },
-        ...prev,
-      ].slice(0, 40),
-    );
+    const created: MemoryItem = {
+      ...item,
+      id: makeId(),
+      at: Date.now(),
+    };
+    setItems((prev) => [created, ...prev].slice(0, 40));
+    return created;
+  }, []);
+
+  const receiveMemory = useCallback((item: MemoryItem) => {
+    if (!item?.id || !item.title) return;
+    setItems((prev) => {
+      if (prev.some((m) => m.id === item.id)) return prev;
+      return [item, ...prev].slice(0, 40);
+    });
   }, []);
 
   const removeMemory = useCallback((id: string) => {
@@ -71,8 +81,8 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ items, addMemory, removeMemory, clearMemories }),
-    [items, addMemory, removeMemory, clearMemories],
+    () => ({ items, addMemory, receiveMemory, removeMemory, clearMemories }),
+    [items, addMemory, receiveMemory, removeMemory, clearMemories],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

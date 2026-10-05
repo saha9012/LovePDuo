@@ -18,6 +18,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 const SEEDS = [
   'ночь',
@@ -378,11 +379,12 @@ export default function WordVeilScreen() {
       phase: 'finished',
       score: myScore,
     });
-    addMemory({
+    const mem = addMemory({
       kind: 'veil',
       title: 'Word Veil',
       detail: `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
     });
+    broadcastMemory(mem, user);
   };
 
   const rematch = () => {

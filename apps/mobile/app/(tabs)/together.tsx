@@ -17,16 +17,21 @@ import { sparksRu } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { TinyNote, useApp } from '../../src/store/AppStore';
-import { useMemories } from '../../src/store/MemoriesStore';
+import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
 import { track } from '../../src/analytics/track';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
+import {
+  broadcastMemory,
+  broadcastMemoryClear,
+  broadcastMemoryRemove,
+} from '../../src/memories/broadcastMemory';
 
 const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, notes, addNote, removeNote, receiveNote, warmthPulse } = useApp();
-  const { items: memories, clearMemories, removeMemory, addMemory } = useMemories();
+  const { items: memories, clearMemories, removeMemory, addMemory, receiveMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -114,12 +119,13 @@ export default function TogetherScreen() {
     void juice.postMatch();
     pairRealtime.sendGame('candle', { end: true, left: 0 });
     showPeer('Свеча догорела');
-    addMemory({
+    const mem = addMemory({
       kind: 'candle',
       title: 'Candle',
       detail: 'Две минуты огня. Тепло осталось.',
     });
-  }, [candleLeft, addMemory]);
+    broadcastMemory(mem, user);
+  }, [candleLeft, addMemory, user]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -264,12 +270,52 @@ export default function TogetherScreen() {
         removeNote(payload.id);
         showPeer(`${payload.from ?? 'Партнёр'} удалил заметку`);
         void juice.miss();
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-add') {
+        const payload = msg.payload as
+          | (MemoryItem & { from?: string; fromId?: string })
+          | undefined;
+        if (!payload?.id || payload.fromId === user.id) return;
+        receiveMemory({
+          id: payload.id,
+          kind: payload.kind,
+          title: payload.title,
+          detail: payload.detail,
+          at: payload.at ?? Date.now(),
+        });
+        showPeer(`Memory: ${payload.title}`);
+        void juice.card();
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-remove') {
+        const payload = msg.payload as { id?: string; from?: string; fromId?: string } | undefined;
+        if (!payload?.id || payload.fromId === user.id) return;
+        removeMemory(payload.id);
+        showPeer(`${payload.from ?? 'Партнёр'} удалил memory`);
+        void juice.miss();
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'memory-clear') {
+        const payload = msg.payload as { from?: string; fromId?: string } | undefined;
+        if (payload?.fromId === user.id) return;
+        clearMemories();
+        showPeer(`${payload?.from ?? 'Партнёр'} очистил memories`);
+        void juice.miss();
       }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id, receiveNote, removeNote]);
+  }, [
+    pair?.code,
+    user?.id,
+    receiveNote,
+    removeNote,
+    receiveMemory,
+    removeMemory,
+    clearMemories,
+  ]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -357,9 +403,17 @@ export default function TogetherScreen() {
       );
       if (!ok) return;
       removeMemory(id);
+      broadcastMemoryRemove(id, user);
       showPeer(`Memory «${title}» удалена`);
       void juice.miss();
     })();
+  };
+
+  const performDeleteMemory = (id: string, title: string) => {
+    removeMemory(id);
+    broadcastMemoryRemove(id, user);
+    showPeer(`Memory «${title}» удалена`);
+    void juice.miss();
   };
 
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
@@ -463,11 +517,7 @@ export default function TogetherScreen() {
                 </Text>
                 <Pressable
                   onPress={() => deleteMemory(m.id, m.title, m.detail)}
-                  onLongPress={() => {
-                    removeMemory(m.id);
-                    showPeer(`Memory «${m.title}» удалена`);
-                    void juice.miss();
-                  }}
+                  onLongPress={() => performDeleteMemory(m.id, m.title)}
                   delayLongPress={380}
                   style={styles.noteDelete}
                   accessibilityLabel="Удалить memory"
@@ -483,10 +533,11 @@ export default function TogetherScreen() {
               onPress={() => {
                 void confirmDestructive(
                   'Очистить все memories?',
-                  'Локальная история партии.',
+                  'История у тебя и у партнёра.',
                 ).then((ok) => {
                   if (!ok) return;
                   clearMemories();
+                  broadcastMemoryClear(user);
                   void juice.miss();
                 });
               }}

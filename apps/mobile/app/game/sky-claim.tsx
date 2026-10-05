@@ -31,6 +31,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -475,13 +476,14 @@ export default function SkyClaimScreen() {
           }
           setPhase('finished');
           void juice.postMatch();
-          addMemory({
+          const mem = addMemory({
             kind: 'sky',
             title: 'Sky Claim',
             detail: partnerFinishedRef.current
               ? `Оба финиш · ты ${scoreRef.current}`
               : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
           });
+          broadcastMemory(mem, user);
           return 0;
         }
         if (t % 5 === 0) {
