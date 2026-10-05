@@ -46,6 +46,7 @@ export default function WordVeilScreen() {
   const [partnerWord, setPartnerWord] = useState('');
   const [locked, setLocked] = useState(false);
   const [waitingPeer, setWaitingPeer] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
   const veil = useSharedValue(1);
@@ -54,6 +55,7 @@ export default function WordVeilScreen() {
   const mineRef = useRef(mine);
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     mineRef.current = mine;
@@ -80,6 +82,7 @@ export default function WordVeilScreen() {
     setMyScore(pts);
     setTheirScore(Math.max(0, pts - (peer === mineRef.current ? 0 : 1)));
     setWaitingPeer(false);
+    setPeerTyping(false);
     setPhase('reveal');
     revealY.value = 28;
     revealOp.value = 0;
@@ -94,6 +97,7 @@ export default function WordVeilScreen() {
     setPartnerWord('');
     setLocked(false);
     setWaitingPeer(false);
+    setPeerTyping(false);
     setMyScore(0);
     setTheirScore(0);
     veil.value = 1;
@@ -110,6 +114,7 @@ export default function WordVeilScreen() {
         score?: number;
         rematch?: boolean;
         seed?: number;
+        typing?: boolean;
       } | undefined;
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
@@ -117,8 +122,13 @@ export default function WordVeilScreen() {
         resetRef.current();
         return;
       }
+      if (payload?.typing) {
+        setPeerTyping(true);
+        return;
+      }
       if (payload?.word) {
         setPartnerWord(payload.word);
+        setPeerTyping(false);
       }
       if (typeof payload?.score === 'number') setTheirScore(payload.score);
     });
@@ -231,13 +241,23 @@ export default function WordVeilScreen() {
             <Animated.Text style={[styles.prompt, veilStyle]}>Слово: {prompt}</Animated.Text>
             <TextInput
               value={mine}
-              onChangeText={setMine}
+              onChangeText={(t) => {
+                setMine(t);
+                if (locked || phase !== 'playing') return;
+                if (typingTimer.current) clearTimeout(typingTimer.current);
+                typingTimer.current = setTimeout(() => {
+                  pairRealtime.sendGame('word-veil', { typing: true });
+                }, 280);
+              }}
               editable={!locked}
               placeholder="Твоя ассоциация"
               placeholderTextColor={colors.textMuted}
               style={[styles.input, locked && styles.inputLocked]}
               autoCapitalize="none"
             />
+            {peerTyping && !locked && phase === 'playing' ? (
+              <Text style={styles.waitHint}>Партнёр пишет…</Text>
+            ) : null}
             {phase === 'reveal' ? (
               <Animated.View style={[styles.reveal, revealStyle]}>
                 <Text style={styles.revealLine}>Ты: {mine}</Text>
