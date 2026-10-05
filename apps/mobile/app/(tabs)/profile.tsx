@@ -15,11 +15,17 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, unlinkPair, signOut } = useApp();
+  const { user, pair, unlinkPair, signOut, updateDisplayName } = useApp();
   const [sfxMuted, setSfxMuted] = useState(false);
+  const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
   const [wsDraft, setWsDraft] = useState(getWsUrl());
   const [wsSaved, setWsSaved] = useState(getWsUrl());
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
+  const [nameSaved, setNameSaved] = useState(false);
+
+  useEffect(() => {
+    setNameDraft(user?.displayName ?? '');
+  }, [user?.displayName]);
 
   useEffect(() => {
     hydrateWsUrl().then((url) => {
@@ -45,6 +51,33 @@ export default function ProfileScreen() {
               WS {wsOnline ? 'online' : 'offline'}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.wsBox}>
+          <Text style={styles.wsLabel}>Имя в паре</Text>
+          <TextInput
+            value={nameDraft}
+            onChangeText={(t) => {
+              setNameDraft(t);
+              setNameSaved(false);
+            }}
+            placeholder="Как тебя зовут"
+            placeholderTextColor={colors.textMuted}
+            style={styles.nameInput}
+          />
+          <LpdButton
+            label={nameSaved ? 'Имя сохранено' : 'Сохранить имя'}
+            variant="ghost"
+            onPress={async () => {
+              const next = await updateDisplayName(nameDraft);
+              setNameDraft(next.displayName);
+              setNameSaved(true);
+              void juice.hit();
+              if (pair) {
+                pairRealtime.connect(pair.code, next.id, next.displayName);
+              }
+            }}
+          />
         </View>
 
         <View style={styles.wsBox}>
@@ -181,6 +214,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
     fontSize: 14,
     color: colors.textPrimary,
+  },
+  nameInput: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.28)',
+    borderRadius: radii.md,
+    paddingHorizontal: 14,
+    color: colors.textPrimary,
+    fontFamily: fonts.ui,
+    fontSize: 15,
+    backgroundColor: 'rgba(20,14,28,0.55)',
   },
   input: {
     minHeight: 48,

@@ -54,16 +54,24 @@ export default function SignalDrawScreen() {
   const [timeLeft, setTimeLeft] = useState(ROUND_SEC);
   const [partnerStrokes, setPartnerStrokes] = useState(0);
   const [brush, setBrush] = useState<'fine' | 'bold'>('fine');
+  const [peerPulse, setPeerPulse] = useState(false);
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
   const peerCount = useRef(0);
   const lastSend = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
+  const peerPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
   const brushW = brush === 'bold' ? 7 : 4;
+
+  const bumpPeer = () => {
+    setPeerPulse(true);
+    if (peerPulseTimer.current) clearTimeout(peerPulseTimer.current);
+    peerPulseTimer.current = setTimeout(() => setPeerPulse(false), 420);
+  };
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -73,11 +81,24 @@ export default function SignalDrawScreen() {
         stroke?: Stroke;
         point?: Pt & { strokeId: string };
         clear?: boolean;
+        undo?: boolean;
         count?: number;
       } | undefined;
       if (!payload) return;
       if (payload.clear) {
         setStrokes((prev) => prev.filter((s) => s.by === 'me'));
+        return;
+      }
+      if (payload.undo) {
+        setStrokes((prev) => {
+          const peerIdx = [...prev].map((s, i) => (s.by === 'peer' ? i : -1)).filter((i) => i >= 0);
+          const last = peerIdx[peerIdx.length - 1];
+          if (last == null) return prev;
+          return prev.filter((_, i) => i !== last);
+        });
+        peerCount.current = Math.max(0, peerCount.current - 1);
+        setPartnerStrokes(peerCount.current);
+        bumpPeer();
         return;
       }
       if (payload.stroke) {
@@ -90,6 +111,7 @@ export default function SignalDrawScreen() {
         setStrokes((prev) => [...prev, s]);
         peerCount.current += 1;
         setPartnerStrokes(peerCount.current);
+        bumpPeer();
       }
       if (payload.point) {
         setStrokes((prev) =>
@@ -99,6 +121,7 @@ export default function SignalDrawScreen() {
               : s,
           ),
         );
+        bumpPeer();
       }
       if (typeof payload.count === 'number') {
         peerCount.current = payload.count;
@@ -107,6 +130,7 @@ export default function SignalDrawScreen() {
     });
     return () => {
       off();
+      if (peerPulseTimer.current) clearTimeout(peerPulseTimer.current);
     };
   }, [pair?.code, user?.id, peerColor]);
 
@@ -172,6 +196,18 @@ export default function SignalDrawScreen() {
     myCount.current = 0;
     pairRealtime.sendGame('signal-draw', { clear: true });
     void juice.miss();
+  };
+
+  const undoMine = () => {
+    setStrokes((prev) => {
+      const mineIdx = [...prev].map((s, i) => (s.by === 'me' ? i : -1)).filter((i) => i >= 0);
+      const last = mineIdx[mineIdx.length - 1];
+      if (last == null) return prev;
+      myCount.current = Math.max(0, myCount.current - 1);
+      pairRealtime.sendGame('signal-draw', { undo: true, count: myCount.current });
+      void juice.hit();
+      return prev.filter((_, i) => i !== last);
+    });
   };
 
   const pan = useMemo(
@@ -251,10 +287,10 @@ export default function SignalDrawScreen() {
               marginTop: -w / 2,
               borderRadius: w / 2,
               backgroundColor: stroke.color,
-              opacity: stroke.by === 'peer' ? 0.85 : 0.95,
+              opacity: stroke.by === 'peer' ? 0.92 : 0.95,
               shadowColor: stroke.color,
-              shadowOpacity: 0.55,
-              shadowRadius: 4,
+              shadowOpacity: stroke.by === 'peer' ? 0.85 : 0.55,
+              shadowRadius: stroke.by === 'peer' ? 8 : 4,
             }}
           />
         ))}
@@ -299,7 +335,10 @@ export default function SignalDrawScreen() {
             <View style={styles.hud}>
               <Text style={styles.stat}>{timeLeft}s</Text>
               <Text style={styles.stat}>ты {myCount.current}</Text>
-              <Text style={styles.stat}>партнёр {partnerStrokes}</Text>
+              <Text style={[styles.stat, peerPulse && styles.peerLive]}>
+                партнёр {partnerStrokes}
+                {peerPulse ? ' · live' : ''}
+              </Text>
             </View>
             <View style={styles.tools}>
               <Text
@@ -314,11 +353,14 @@ export default function SignalDrawScreen() {
               >
                 жирный
               </Text>
+              <Text onPress={undoMine} style={styles.tool}>
+                undo
+              </Text>
               <Text onPress={clearMine} style={styles.toolDanger}>
                 стереть моё
               </Text>
             </View>
-            <View style={styles.canvas} onLayout={onLayout} {...pan.panHandlers}>
+            <View style={[styles.canvas, peerPulse && styles.canvasLive]} onLayout={onLayout} {...pan.panHandlers}>
               <View style={styles.grid} pointerEvents="none" />
               {strokes.map(renderStroke)}
             </View>
@@ -337,7 +379,8 @@ const styles = StyleSheet.create({
   body: { fontFamily: fonts.ui, color: colors.textSecondary, lineHeight: 22 },
   hud: { flexDirection: 'row', justifyContent: 'space-between' },
   stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary },
-  tools: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
+  peerLive: { color: colors.accentRose, fontFamily: fonts.uiSemi },
+  tools: { flexDirection: 'row', gap: spacing.md, alignItems: 'center', flexWrap: 'wrap' },
   tool: {
     fontFamily: fonts.uiMedium,
     color: colors.textMuted,
@@ -363,6 +406,9 @@ const styles = StyleSheet.create({
     borderColor: colors.stroke,
     backgroundColor: 'rgba(18,16,24,0.78)',
     overflow: 'hidden',
+  },
+  canvasLive: {
+    borderColor: 'rgba(227,154,160,0.55)',
   },
   grid: {
     ...StyleSheet.absoluteFill,

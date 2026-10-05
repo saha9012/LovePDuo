@@ -65,6 +65,7 @@ type AppState = {
   playlists: Playlist[];
   activePlaylistId: string | null;
   signIn: (name: string) => Promise<UserProfile>;
+  updateDisplayName: (name: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
   createPair: (pairName?: string, hostUserId?: string) => Promise<PairState>;
   joinPair: (code: string) => Promise<PairState>;
@@ -171,10 +172,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(async (name: string) => {
     const clean = name.trim() || 'Игрок';
-    const profile: UserProfile = { id: makeId('usr'), displayName: clean };
-    setUser(profile);
-    return profile;
+    let next: UserProfile = { id: makeId('usr'), displayName: clean };
+    setUser((prev) => {
+      next = prev ? { ...prev, displayName: clean } : next;
+      return next;
+    });
+    return next;
   }, []);
+
+  const updateDisplayName = useCallback(async (name: string) => {
+    return signIn(name);
+  }, [signIn]);
 
   const signOut = useCallback(async () => {
     pairRealtime.disconnect();
@@ -306,6 +314,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       playlists,
       activePlaylistId,
       signIn,
+      updateDisplayName,
       signOut,
       createPair,
       joinPair,
@@ -334,6 +343,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       playlists,
       activePlaylistId,
       signIn,
+      updateDisplayName,
       signOut,
       createPair,
       joinPair,
