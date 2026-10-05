@@ -28,6 +28,7 @@ function broadcast(code, data, except) {
 
 const wss = new WebSocketServer({ port: PORT });
 console.log(`[LPD] realtime listening on :${PORT}`);
+console.log('[LPD] Android LAN: set Profile WS URL to ws://YOUR_PC_IP:8787');
 
 wss.on('connection', (socket) => {
   socket.lpd = { code: null, userId: null, name: null };

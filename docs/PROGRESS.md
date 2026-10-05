@@ -6,11 +6,11 @@
 
 ## Latest
 
-- [x] Profile LAN WS URL · Android QA / Data Safety
-- [x] Lobby countdown · Soft Duel armed · ToS flip · Word Veil reveal
-- [x] Orbit Catch board fix + alignment glow
-- [x] Candle flame pulse · Music upload analytics / stop / playing row
-- [x] Signal Draw denser · store frames · privacy draft
+- [x] Profile LAN WS URL · Android QA / Data Safety · firewall script
+- [x] Lobby / Soft Duel / ToS / Word Veil / Orbit / Heartbeat feel passes
+- [x] Music stop + playing row · share pair code
+- [x] Distinct Soft Duel / Word Veil covers
+- [x] Signal Draw denser · store frames · privacy / analytics
 
 ## Catalog
 
