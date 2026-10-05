@@ -202,9 +202,6 @@ export default function HeartbeatScreen() {
       }
       if (payload?.phase === 'finished') {
         partnerFinishedRef.current = true;
-        setPeerNote('финиш');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
         if (typeof payload.total === 'number') {
           setPartnerScore(payload.total);
           setPartnerLive(true);
@@ -212,10 +209,14 @@ export default function HeartbeatScreen() {
         }
         if (phaseRef.current === 'finished') {
           setSyncFinish(true);
+          setPeerNote('оба финиш');
           void juice.perfect();
         } else {
+          setPeerNote('финиш');
           void juice.sync();
         }
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
         return;
       }
       if (typeof payload?.total === 'number') {

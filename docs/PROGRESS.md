@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky/Orbit/HB «оба финиш» notes · Soft «Гонка» · Welcome leave  
 - [x] Soft «Гонка» escalate · Welcome/Home leave · dual room-name  
 - [x] Welcome leave toast · Home leave · dual room-name · оба финиш  
-- [x] Home leave toast when room drops · dual room-name · оба финиш  
 
 ## Catalog
 

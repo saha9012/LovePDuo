@@ -144,15 +144,16 @@ export default function OrbitCatchScreen() {
         }
         if (payload?.phase === 'finished') {
           partnerFinishedRef.current = true;
-          bumpPeerNote('финиш');
           if (typeof payload.caught === 'number') {
             partnerRef.current = payload.caught;
             setPartnerCaught(payload.caught);
           }
           if (phaseRef.current === 'finished') {
             setSyncFinish(true);
+            bumpPeerNote('оба финиш');
             void juice.perfect();
           } else {
+            bumpPeerNote('финиш');
             void juice.sync();
           }
           return;
