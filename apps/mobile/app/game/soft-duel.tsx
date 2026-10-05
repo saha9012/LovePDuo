@@ -186,12 +186,25 @@ export default function SoftDuelScreen() {
           setSyncFinish(true);
           void juice.perfect();
         } else if (typeof payload.tap === 'number') {
+          const grade =
+            payload.tap < 180 ? 'PERFECT' : payload.tap < 420 ? 'GOOD' : 'OK';
           const label =
-            payload.tap < 180 ? 'Партнёр PERFECT' : payload.tap < 420 ? 'Партнёр GOOD' : 'Партнёр OK';
-          const bothPerfect = payload.tap < 180 && flashRef.current === 'PERFECT';
-          setFlash(bothPerfect ? 'Оба PERFECT' : label);
+            grade === 'PERFECT'
+              ? 'Партнёр PERFECT'
+              : grade === 'GOOD'
+                ? 'Партнёр GOOD'
+                : 'Партнёр OK';
+          const bothPerfect = grade === 'PERFECT' && flashRef.current === 'PERFECT';
+          const bothGood = grade === 'GOOD' && flashRef.current === 'GOOD';
+          setFlash(
+            bothPerfect ? 'Оба PERFECT' : bothGood ? 'Оба GOOD' : label,
+          );
           flashScale.value = withSpring(1.16, { damping: 10 });
-          void (bothPerfect || payload.tap < 180 ? juice.perfect() : juice.hit());
+          void (
+            bothPerfect || bothGood || grade === 'PERFECT'
+              ? juice.perfect()
+              : juice.hit()
+          );
         } else if (ahead) {
           setFlash('Партнёр впереди');
           flashScale.value = withSpring(1.14, { damping: 10 });

@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft dual GOOD · Warmth встречное · Together переписка  
 - [x] Warmth встречное QA · meet-in-middle · send/receive split  
 - [x] Warmth «встречное» when both send · send/receive split  
-- [x] Warmth send vs receive split · Together переписка · Music reaction match  
 
 ## Catalog
 
