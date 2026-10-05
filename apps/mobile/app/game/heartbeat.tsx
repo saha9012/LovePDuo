@@ -115,11 +115,19 @@ export default function HeartbeatScreen() {
     const prev = prevPresence.current;
     if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
       setPeerNote('offline');
+      peerNoteRef.current = 'offline';
       if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
       peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      setPeerNote('online');
+      const note =
+        peerNoteRef.current === 'offline' ||
+        peerNoteRef.current === 'online' ||
+        peerNoteRef.current === 'оба на связи'
+          ? 'оба на связи'
+          : 'online';
+      setPeerNote(note);
+      peerNoteRef.current = note;
       if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
       peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
       void juice.hit();

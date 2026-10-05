@@ -86,7 +86,11 @@ export default function SoftDuelScreen() {
       setFlash('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      setFlash('Партнёр online');
+      const racing =
+        flashRef.current === 'Партнёр offline' ||
+        flashRef.current === 'Партнёр online' ||
+        flashRef.current === 'Оба на связи';
+      setFlash(racing ? 'Оба на связи' : 'Партнёр online');
       void juice.hit();
     }
     prevPresence.current = cur;

@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Presence «Оба на связи» across catalog + Home/Soft  
 - [x] Welcome/Play rejoin dual · Оба снова дома/в лобби  
 - [x] Catalog/Lobby rejoin «Оба снова здесь/в лобби»  
-- [x] Home/Soft/Music rejoin dual · Music hello dup fix  
 
 ## Catalog
 

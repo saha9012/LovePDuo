@@ -106,7 +106,12 @@ export default function HomeScreen() {
         return () => clearTimeout(t);
       }
       if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-        setRoomToast('Партнёр снова рядом');
+        const racing =
+          roomToastRef.current === 'Партнёр offline' ||
+          roomToastRef.current === 'Партнёр away' ||
+          roomToastRef.current === 'Партнёр снова рядом' ||
+          roomToastRef.current === 'Оба на связи';
+        setRoomToast(racing ? 'Оба на связи' : 'Партнёр снова рядом');
         void juice.hit();
         const t = setTimeout(() => setRoomToast(null), 1600);
         presenceSeen.current = cur;

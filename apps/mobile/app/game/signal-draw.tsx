@@ -120,7 +120,13 @@ export default function SignalDrawScreen() {
       showToast('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      showToast('Партнёр снова online');
+      showToast(
+        toastRef.current === 'Партнёр offline' ||
+          toastRef.current === 'Партнёр снова online' ||
+          toastRef.current === 'Оба на связи'
+          ? 'Оба на связи'
+          : 'Партнёр снова online',
+      );
       void juice.hit();
     }
     prevPresence.current = cur;

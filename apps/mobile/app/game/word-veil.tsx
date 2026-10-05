@@ -95,7 +95,13 @@ export default function WordVeilScreen() {
       return () => clearTimeout(t);
     }
     if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      setPresenceHint('Партнёр снова online');
+      setPresenceHint(
+        hintRef.current === 'Партнёр offline' ||
+          hintRef.current === 'Партнёр снова online' ||
+          hintRef.current === 'Оба на связи'
+          ? 'Оба на связи'
+          : 'Партнёр снова online',
+      );
       void juice.hit();
       const t = setTimeout(() => setPresenceHint(null), 1800);
       prevPresence.current = cur;

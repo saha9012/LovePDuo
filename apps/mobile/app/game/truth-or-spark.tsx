@@ -97,7 +97,13 @@ export default function TruthOrSparkScreen() {
       showTurnToast('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      showTurnToast('Партнёр снова online');
+      showTurnToast(
+        turnToastRef.current === 'Партнёр offline' ||
+          turnToastRef.current === 'Партнёр снова online' ||
+          turnToastRef.current === 'Оба на связи'
+          ? 'Оба на связи'
+          : 'Партнёр снова online',
+      );
       void juice.hit();
     }
     prevPresence.current = cur;

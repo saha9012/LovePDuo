@@ -99,7 +99,13 @@ export default function OrbitCatchScreen() {
       bumpPeerNote('offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      bumpPeerNote('online');
+      bumpPeerNote(
+        peerNoteRef.current === 'offline' ||
+          peerNoteRef.current === 'online' ||
+          peerNoteRef.current === 'оба на связи'
+          ? 'оба на связи'
+          : 'online',
+      );
       void juice.hit();
     }
     prevPresence.current = cur;
