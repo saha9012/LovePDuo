@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
@@ -12,6 +19,11 @@ import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
 
 type Phase = 'ready' | 'playing' | 'finished';
+
+const SIZE = 280;
+const CX = SIZE / 2;
+const CY = SIZE / 2;
+const R = 100;
 
 export default function OrbitCatchScreen() {
   const router = useRouter();
@@ -27,9 +39,12 @@ export default function OrbitCatchScreen() {
   const [caught, setCaught] = useState(0);
   const [partnerCaught, setPartnerCaught] = useState(0);
   const [timeLeft, setTimeLeft] = useState(35);
+  const [aligned, setAligned] = useState(false);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
+  const flash = useSharedValue(0);
+  const ringPulse = useSharedValue(1);
 
   const speed = useMemo(() => 0.045 + (seed % 7) * 0.004, [seed]);
 
@@ -57,6 +72,7 @@ export default function OrbitCatchScreen() {
     setTimeLeft(35);
     setAngle(0);
     setOrbAngle((seed % 360) * (Math.PI / 180));
+    setAligned(false);
     setPhase('playing');
     pairRealtime.sendGame('orbit-catch', { phase: 'start', seed });
     void juice.beat();
@@ -75,7 +91,7 @@ export default function OrbitCatchScreen() {
     if (phase !== 'playing') return;
     const tick = setInterval(() => {
       setAngle((a) => a + speed);
-      setOrbAngle((a) => a + speed * 1.35);
+      setOrbAngle((oa) => oa + speed * 1.35);
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(tick);
@@ -97,6 +113,16 @@ export default function OrbitCatchScreen() {
     return () => clearInterval(tick);
   }, [phase, speed, addMemory]);
 
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const diff = Math.abs(Math.sin(angle - orbAngle));
+    setAligned(diff < 0.22);
+  }, [angle, orbAngle, phase]);
+
+  useEffect(() => {
+    ringPulse.value = withTiming(aligned ? 1.04 : 1, { duration: 120 });
+  }, [aligned, ringPulse]);
+
   const onCatch = () => {
     if (phase !== 'playing') return;
     const diff = Math.abs(Math.sin(angle - orbAngle));
@@ -105,14 +131,32 @@ export default function OrbitCatchScreen() {
       setCaught(caughtRef.current);
       pairRealtime.sendGame('orbit-catch', { caught: caughtRef.current });
       void juice.catch();
+      flash.value = withSequence(
+        withTiming(1, { duration: 40 }),
+        withTiming(0, { duration: 280 }),
+      );
       setOrbAngle(orbAngle + Math.PI * (0.6 + (seed % 5) * 0.08));
+      setAligned(false);
     } else {
       void juice.miss();
+      flash.value = withSpring(0);
     }
   };
 
   const team = caught + partnerCaught;
   const line = pickPostMatchLine(caught, partnerCaught || 1, seed);
+  const px = CX + Math.cos(angle) * R;
+  const py = CY + Math.sin(angle) * R;
+  const ox = CX + Math.cos(orbAngle) * (R * 0.72);
+  const oy = CY + Math.sin(orbAngle) * (R * 0.72);
+
+  const flashStyle = useAnimatedStyle(() => ({
+    opacity: flash.value * 0.35,
+  }));
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: ringPulse.value }],
+    borderColor: aligned ? 'rgba(226,176,122,0.7)' : 'rgba(226,176,122,0.22)',
+  }));
 
   if (phase === 'finished') {
     return (
@@ -133,14 +177,6 @@ export default function OrbitCatchScreen() {
       </LpdBackground>
     );
   }
-
-  const cx = 140;
-  const cy = 140;
-  const r = 100;
-  const px = cx + Math.cos(angle) * r;
-  const py = cy + Math.sin(angle) * r;
-  const ox = cx + Math.cos(orbAngle) * (r * 0.72);
-  const oy = cy + Math.sin(orbAngle) * (r * 0.72);
 
   return (
     <LpdBackground mood="rain">
@@ -164,10 +200,27 @@ export default function OrbitCatchScreen() {
               <Text style={styles.stat}>партнёр {partnerCaught}</Text>
             </View>
             <Pressable style={styles.stage} onPress={onCatch}>
-              <View style={styles.ring} />
-              <View style={[styles.mark, { left: px - 8, top: py - 8 }]} />
-              <View style={[styles.orb, { left: ox - 12, top: oy - 12 }]} />
-              <Text style={styles.hint}>TAP в совпадении</Text>
+              <View style={styles.board}>
+                <Animated.View style={[styles.ring, ringStyle]} />
+                <Animated.View style={[styles.flash, flashStyle]} />
+                <View
+                  style={[
+                    styles.mark,
+                    aligned && styles.markHot,
+                    { left: px - 8, top: py - 8 },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.orb,
+                    aligned && styles.orbHot,
+                    { left: ox - 12, top: oy - 12 },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.hint, aligned && styles.hintHot]}>
+                {aligned ? 'СЕЙЧАС' : 'TAP в совпадении'}
+              </Text>
             </Pressable>
           </>
         )}
@@ -198,13 +251,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: spacing.lg,
+  },
+  board: {
+    width: SIZE,
+    height: SIZE,
+    position: 'relative',
   },
   ring: {
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-    borderWidth: 1,
-    borderColor: colors.stroke,
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: SIZE / 2,
+    borderWidth: 1.5,
+  },
+  flash: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: SIZE / 2,
+    backgroundColor: colors.accentAmber,
   },
   mark: {
     position: 'absolute',
@@ -212,8 +274,12 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     backgroundColor: colors.accentAmber,
-    marginLeft: -140 + 140,
-    marginTop: -140 + 140,
+  },
+  markHot: {
+    shadowColor: colors.accentAmber,
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    transform: [{ scale: 1.15 }],
   },
   orb: {
     position: 'absolute',
@@ -224,14 +290,19 @@ const styles = StyleSheet.create({
     shadowColor: colors.accentRose,
     shadowOpacity: 0.8,
     shadowRadius: 10,
-    marginLeft: -140 + 140,
-    marginTop: -140 + 140,
+  },
+  orbHot: {
+    shadowOpacity: 1,
+    shadowRadius: 16,
   },
   hint: {
-    position: 'absolute',
-    bottom: 40,
     fontFamily: fonts.ui,
     color: colors.textMuted,
+  },
+  hintHot: {
+    color: colors.accentAmber,
+    fontFamily: fonts.uiSemi,
+    letterSpacing: 1.5,
   },
   meta: { fontFamily: fonts.ui, color: colors.textSecondary, marginBottom: spacing.sm },
 });
