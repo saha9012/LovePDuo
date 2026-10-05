@@ -74,6 +74,11 @@ export default function ProfileScreen() {
               }}
             />
             <LpdButton
+              label="Пресет LAN 192.168.0.120"
+              variant="ghost"
+              onPress={() => setWsDraft('ws://192.168.0.120:8787')}
+            />
+            <LpdButton
               label="Сбросить на default"
               variant="ghost"
               onPress={async () => {
