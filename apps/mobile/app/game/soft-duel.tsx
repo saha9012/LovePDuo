@@ -444,7 +444,18 @@ export default function SoftDuelScreen() {
     seedRef.current = next;
     setSyncFinish(false);
     lastRematchAt.current = Date.now();
-    void juice.sync();
+    const racing =
+      flashRef.current === 'Оба: ещё раунд' ||
+      flashRef.current === 'Оба снова' ||
+      flashRef.current === 'Партнёр: ещё раунд';
+    setFlash(
+      flashRef.current === 'Оба: ещё раунд' || flashRef.current === 'Оба снова'
+        ? 'Оба снова'
+        : racing
+          ? 'Оба: ещё раунд'
+          : 'Ещё раунд',
+    );
+    void (racing ? juice.perfect() : juice.sync());
     pairRealtime.sendGame('soft-duel', { rematch: true, seed: next, hello: true });
     start();
   };

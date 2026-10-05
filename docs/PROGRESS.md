@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft rematch local dual · Soft arm dual · Draw гонка  
 - [x] Soft local Жди/ЖМИ dual · Draw гонка · Sky гонка  
 - [x] Draw «Оба в гонке» · Sky/Orbit/HB гонка · Soft гонка  
-- [x] Sky/Orbit/HB «оба в гонке» · Soft гонка · Together пишут  
 
 ## Catalog
 
