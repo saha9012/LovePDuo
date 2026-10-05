@@ -38,8 +38,8 @@ export default function WordVeilScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const seed = Number(params.seed) || 7;
-  const prompt = SEEDS[seed % SEEDS.length];
+  const [matchSeed, setMatchSeed] = useState(Number(params.seed) || 7);
+  const prompt = SEEDS[matchSeed % SEEDS.length];
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [mine, setMine] = useState('');
@@ -52,10 +52,16 @@ export default function WordVeilScreen() {
   const revealY = useSharedValue(24);
   const revealOp = useSharedValue(0);
   const mineRef = useRef(mine);
+  const seedRef = useRef(matchSeed);
+  const resetRef = useRef<() => void>(() => undefined);
 
   useEffect(() => {
     mineRef.current = mine;
   }, [mine]);
+
+  useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
 
   const scoreWords = (a: string, b: string) => {
     const x = a.trim().toLowerCase();
@@ -83,11 +89,34 @@ export default function WordVeilScreen() {
     void juice.sync();
   };
 
+  const resetRound = () => {
+    setMine('');
+    setPartnerWord('');
+    setLocked(false);
+    setWaitingPeer(false);
+    setMyScore(0);
+    setTheirScore(0);
+    veil.value = 1;
+    setPhase('playing');
+  };
+  resetRef.current = resetRound;
+
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type !== 'game' || msg.gameId !== 'word-veil') return;
-      const payload = msg.payload as { word?: string; score?: number } | undefined;
+      const payload = msg.payload as {
+        word?: string;
+        score?: number;
+        rematch?: boolean;
+        seed?: number;
+      } | undefined;
+      if (payload?.rematch && typeof payload.seed === 'number') {
+        setMatchSeed(payload.seed);
+        seedRef.current = payload.seed;
+        resetRef.current();
+        return;
+      }
       if (payload?.word) {
         setPartnerWord(payload.word);
       }
@@ -125,7 +154,7 @@ export default function WordVeilScreen() {
       return;
     }
     if (useDemo) {
-      const demo = SEEDS[(seed + 3) % SEEDS.length];
+      const demo = SEEDS[(seedRef.current + 3) % SEEDS.length];
       setTimeout(() => {
         setPartnerWord(demo);
         doReveal(demo);
@@ -145,7 +174,15 @@ export default function WordVeilScreen() {
     });
   };
 
-  const line = pickPostMatchLine(myScore, theirScore, seed);
+  const rematch = () => {
+    const next = Math.floor(Math.random() * 100000);
+    setMatchSeed(next);
+    seedRef.current = next;
+    pairRealtime.sendGame('word-veil', { rematch: true, seed: next });
+    resetRound();
+  };
+
+  const line = pickPostMatchLine(myScore, theirScore, matchSeed);
   const matchLabel = useMemo(() => {
     if (myScore >= 5) return 'Одинаковый пульс слов';
     if (myScore >= 3) return 'Почти одно слово';
@@ -169,16 +206,7 @@ export default function WordVeilScreen() {
             line={line.text}
             gameId="word-veil"
             winnerLabel="Word Veil"
-            onRematch={() => {
-              setMine('');
-              setPartnerWord('');
-              setLocked(false);
-              setWaitingPeer(false);
-              setMyScore(0);
-              setTheirScore(0);
-              veil.value = 1;
-              setPhase('playing');
-            }}
+            onRematch={rematch}
             onHome={() => router.replace('/(tabs)/play')}
           />
         </View>

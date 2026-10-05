@@ -91,8 +91,14 @@ export default function SignalDrawScreen() {
         clear?: boolean;
         undo?: boolean;
         count?: number;
+        rematch?: boolean;
+        seed?: number;
       } | undefined;
       if (!payload) return;
+      if (payload.rematch) {
+        startRef.current();
+        return;
+      }
       if (payload.clear) {
         setStrokes((prev) => prev.filter((s) => s.by === 'me'));
         showToast('Партнёр стёр свои линии');
@@ -159,6 +165,11 @@ export default function SignalDrawScreen() {
     void juice.beat();
   };
   startRef.current = start;
+
+  const rematch = () => {
+    pairRealtime.sendGame('signal-draw', { rematch: true, seed: Date.now() % 100000 });
+    start();
+  };
 
   useEffect(() => {
     if (params.solo === '1') return;
@@ -323,7 +334,7 @@ export default function SignalDrawScreen() {
             title="Общий холст закрыт"
             gameId="signal-draw"
             line={line.text}
-            onRematch={start}
+            onRematch={rematch}
             onHome={() => router.replace('/(tabs)/play')}
           />
         </View>
