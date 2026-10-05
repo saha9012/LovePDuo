@@ -188,9 +188,10 @@ export default function SoftDuelScreen() {
         } else if (typeof payload.tap === 'number') {
           const label =
             payload.tap < 180 ? 'Партнёр PERFECT' : payload.tap < 420 ? 'Партнёр GOOD' : 'Партнёр OK';
-          setFlash(label);
+          const bothPerfect = payload.tap < 180 && flashRef.current === 'PERFECT';
+          setFlash(bothPerfect ? 'Оба PERFECT' : label);
           flashScale.value = withSpring(1.16, { damping: 10 });
-          void (payload.tap < 180 ? juice.perfect() : juice.hit());
+          void (bothPerfect || payload.tap < 180 ? juice.perfect() : juice.hit());
         } else if (ahead) {
           setFlash('Партнёр впереди');
           flashScale.value = withSpring(1.14, { damping: 10 });

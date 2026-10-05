@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft dual PERFECT flash · Play filter toast · Lobby both-READY  
 - [x] Play filter toast · Lobby both-READY perfect · dual together feels  
 - [x] Lobby both-READY perfect juice · room-name juice · dual typing  
-- [x] Room-name receive juice · Word Veil dual typing · Draw together  
 
 ## Catalog
 
