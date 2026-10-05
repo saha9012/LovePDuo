@@ -294,7 +294,7 @@ export default function OrbitCatchScreen() {
             kind: 'orbit',
             title: 'Orbit Catch',
             detail: partnerFinishedRef.current
-              ? `Синхрон финиш · co-op ${caughtRef.current + partnerRef.current}`
+              ? `Оба финиш · co-op ${caughtRef.current + partnerRef.current}`
               : `Co-op ${caughtRef.current + partnerRef.current} catches`,
           });
           return 0;

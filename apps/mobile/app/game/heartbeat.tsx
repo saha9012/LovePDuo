@@ -358,7 +358,7 @@ export default function HeartbeatScreen() {
           kind: 'heartbeat',
           title: 'Heartbeat Tap',
           detail: partnerFinishedRef.current
-            ? `Синхрон финиш · итог ${total}`
+            ? `Оба финиш · итог ${total}`
             : `Итог ${total} · sync +${syncRef.current}`,
         });
       } else if (Math.floor(t / 1000) % 4 === 0) {

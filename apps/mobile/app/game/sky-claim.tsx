@@ -352,7 +352,7 @@ export default function SkyClaimScreen() {
             kind: 'sky',
             title: 'Sky Claim',
             detail: partnerFinishedRef.current
-              ? `Синхрон финиш · ты ${scoreRef.current}`
+              ? `Оба финиш · ты ${scoreRef.current}`
               : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
           });
           return 0;

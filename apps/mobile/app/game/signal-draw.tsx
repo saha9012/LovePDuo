@@ -346,7 +346,7 @@ export default function SignalDrawScreen() {
             kind: 'draw',
             title: 'Signal Draw',
             detail: partnerFinishedRef.current
-              ? `Синхрон финиш · штрихи ${myCount.current}`
+              ? `Оба финиш · штрихи ${myCount.current}`
               : `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
           });
           if (peerCount.current === 0) {
