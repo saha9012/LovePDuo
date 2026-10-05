@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Soft Duel «Партнёр ЖМИ» · Word Veil start hello  
-- [x] Profile unlink juice · Soft arm pulse  
+- [x] Soft arm «Партнёр ЖМИ» · Word Veil start hello · ANDROID_QA arm check  
+- [x] Profile unlink juice · deep-link join juice  
 
 ## Catalog
 
