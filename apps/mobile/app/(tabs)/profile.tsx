@@ -189,6 +189,16 @@ export default function ProfileScreen() {
               onPress={() => setWsDraft('ws://192.168.0.120:8787')}
             />
             <LpdButton
+              label="Пресет Tunnel wss://…"
+              variant="ghost"
+              onPress={() => {
+                setWsDraft('wss://REPLACE.trycloudflare.com');
+                setWsToast('Вставь URL из cloudflared (см. WSS_PROD)');
+                setTimeout(() => setWsToast(null), 2200);
+                void juice.card();
+              }}
+            />
+            <LpdButton
               label="Сбросить на default"
               variant="ghost"
               onPress={async () => {
@@ -196,6 +206,7 @@ export default function ProfileScreen() {
                 const url = getWsUrl();
                 setWsDraft(url);
                 setWsSaved(url);
+                void juice.hit();
                 if (user && pair) {
                   pairRealtime.connect(pair.code, user.id, user.displayName);
                 }

@@ -78,6 +78,13 @@ export default function TogetherScreen() {
   }, [candleLeft]);
 
   useEffect(() => {
+    if (candleLeft == null || candleLeft <= 0) return;
+    if (candleLeft % 15 === 0 && candleLeft < CANDLE_SEC) {
+      pairRealtime.sendGame('candle', { left: candleLeft });
+    }
+  }, [candleLeft]);
+
+  useEffect(() => {
     if (candleLeft !== 0 || candleLogged.current) return;
     candleLogged.current = true;
     void juice.postMatch();

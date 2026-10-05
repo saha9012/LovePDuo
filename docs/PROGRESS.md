@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Orbit/Draw ready wait · ANDROID_QA Cloudflare Tunnel note  
-- [x] Soft/Sky/HB wait copy · WSS tunnel one-liner  
-- [x] Home peer-lobby CTA  
+- [x] Profile Tunnel wss preset · candle left sync every 15s  
+- [x] Orbit/Draw ready wait · ANDROID_QA tunnel note  
+- [x] Soft/Sky/HB wait copy  
 
 ## Catalog
 
