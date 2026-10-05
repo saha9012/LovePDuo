@@ -100,6 +100,10 @@ export default function SoftDuelScreen() {
         void juice.sync();
         return;
       }
+      if (payload?.phase === 'start') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+      }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -200,10 +204,13 @@ export default function SoftDuelScreen() {
     setMyScore(0);
     setPartnerScore(0);
     setPartnerRound(0);
-    partnerLiveRef.current = false;
-    setPartnerLive(false);
     setPhase('playing');
-    pairRealtime.sendGame('soft-duel', { phase: 'start', seed: seedRef.current });
+    pairRealtime.sendGame('soft-duel', {
+      phase: 'start',
+      seed: seedRef.current,
+      hello: true,
+      fromId: user?.id,
+    });
     nextRound(0);
   };
   startRef.current = start;

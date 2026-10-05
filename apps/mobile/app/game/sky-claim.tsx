@@ -124,6 +124,10 @@ export default function SkyClaimScreen() {
           void juice.sync();
           return;
         }
+        if (payload?.phase === 'start') {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
+        }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
@@ -190,9 +194,13 @@ export default function SkyClaimScreen() {
     setTimeLeft(skyClaimConfig.durationSec);
     timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
-    setPartnerLive(false);
-    partnerLiveRef.current = false;
-    pairRealtime.sendGame('sky-claim', { phase: 'start', seed: seedRef.current, score: 0 });
+    pairRealtime.sendGame('sky-claim', {
+      phase: 'start',
+      seed: seedRef.current,
+      score: 0,
+      hello: true,
+      fromId: user?.id,
+    });
   };
 
   startRef.current = start;

@@ -283,6 +283,9 @@ export default function WordVeilScreen() {
             <Text style={styles.hero}>Ассоциация вдвоём</Text>
             <Text style={styles.body}>
               Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.
+              {params.solo !== '1' && !presenceHint && pair?.partnerPresence !== 'online'
+                ? ' Ждём партнёра за вуалью…'
+                : ''}
             </Text>
             <LpdButton label="Старт" onPress={() => setPhase('playing')} />
           </View>

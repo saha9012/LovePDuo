@@ -116,6 +116,10 @@ export default function HeartbeatScreen() {
         void juice.sync();
         return;
       }
+      if (payload?.phase === 'start') {
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
+      }
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -189,11 +193,15 @@ export default function HeartbeatScreen() {
     cursor.current = 0;
     scoreRef.current = 0;
     syncRef.current = 0;
-    partnerLiveRef.current = false;
-    setPartnerLive(false);
     lastPartnerTapMs.current = null;
     startAt.current = Date.now();
-    pairRealtime.sendGame('heartbeat', { phase: 'start', total: 0, seed: seedRef.current });
+    pairRealtime.sendGame('heartbeat', {
+      phase: 'start',
+      total: 0,
+      seed: seedRef.current,
+      hello: true,
+      fromId: user?.id,
+    });
     void juice.beat();
   };
 

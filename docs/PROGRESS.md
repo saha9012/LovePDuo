@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Profile Tunnel wss preset · candle left sync every 15s  
-- [x] Orbit/Draw ready wait · ANDROID_QA tunnel note  
-- [x] Soft/Sky/HB wait copy  
+- [x] Keep partnerLive across Soft/Sky/HB start · Word Veil wait copy  
+- [x] Profile Tunnel preset · candle 15s sync  
+- [x] Orbit/Draw ready wait  
 
 ## Catalog
 
