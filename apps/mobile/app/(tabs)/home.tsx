@@ -34,6 +34,7 @@ export default function HomeScreen() {
   const lastMemory = memories[0];
   const warmthSeen = React.useRef(0);
   const warmthSentAt = React.useRef(0);
+  const warmthToastRef = React.useRef<string | null>(null);
   const nameSeen = React.useRef(pair?.name ?? '');
   const presenceSeen = React.useRef(pair?.partnerPresence ?? 'offline');
   const partnerNameSeen = React.useRef(pair?.partnerName ?? '');
@@ -224,10 +225,16 @@ export default function HomeScreen() {
       const meet = Date.now() - warmthSentAt.current < 2800;
       const racing =
         meet &&
-        (warmthToast === 'Тепло встречное' || warmthToast === 'Оба в тепле');
-      setWarmthToast(racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло в комнате');
+        (warmthToastRef.current === 'Тепло встречное' ||
+          warmthToastRef.current === 'Оба в тепле');
+      const next = racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло в комнате';
+      warmthToastRef.current = next;
+      setWarmthToast(next);
       void (meet ? juice.perfect() : juice.warmth());
-      const t = setTimeout(() => setWarmthToast(null), 1600);
+      const t = setTimeout(() => {
+        warmthToastRef.current = null;
+        setWarmthToast(null);
+      }, 1600);
       return () => clearTimeout(t);
     }
   }, [warmthPulse, pulse]);
