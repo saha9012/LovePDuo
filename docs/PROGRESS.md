@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music dual stop · Together dual blow · HB dual perfect/great  
 - [x] HB dual perfect/great · ToS dual soft/spicy · Draw dual tools  
 - [x] ToS dual soft/spicy · Draw brush/clear/undo · Word Veil lock  
-- [x] Draw dual brush/clear/undo · Word Veil dual lock · Orbit dual miss  
 
 ## Catalog
 

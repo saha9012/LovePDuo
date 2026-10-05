@@ -43,6 +43,7 @@ export default function MusicScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const peerPulse = useSharedValue(1);
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastStopAt = React.useRef(0);
 
   const showNote = (text: string, ms = 1800) => {
     setNote(text);
@@ -134,8 +135,13 @@ export default function MusicScreen() {
           void juice.hit();
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
-          showNote(`${payload.from ?? 'Партнёр'} остановил трек`);
-          void juice.miss();
+          const both = Date.now() - lastStopAt.current < 2200;
+          showNote(
+            both
+              ? 'Оба остановили'
+              : `${payload.from ?? 'Партнёр'} остановил трек`,
+          );
+          void (both ? juice.sync() : juice.miss());
         }
       }
       if (msg.type === 'game' && msg.gameId === 'playlist-add') {
@@ -387,6 +393,7 @@ export default function MusicScreen() {
               await sound?.unloadAsync();
               setSound(null);
               setNowPlaying(null);
+              lastStopAt.current = Date.now();
               pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
               showNote('Остановили — партнёр видит.');
               void juice.miss();

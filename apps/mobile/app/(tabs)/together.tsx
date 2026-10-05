@@ -36,6 +36,7 @@ export default function TogetherScreen() {
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
   const candleLitRef = useRef(false);
+  const lastBlowAt = useRef(0);
   const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
@@ -145,9 +146,10 @@ export default function TogetherScreen() {
         }
         if (payload?.blow) {
           candleLogged.current = true;
+          const both = Date.now() - lastBlowAt.current < 2200;
           setCandleLeft(0);
-          showPeer('Партнёр погасил свечу');
-          void juice.miss();
+          showPeer(both ? 'Оба погасили' : 'Партнёр погасил свечу');
+          void (both ? juice.sync() : juice.miss());
         }
         if (payload?.end) {
           candleLogged.current = true;
@@ -211,6 +213,7 @@ export default function TogetherScreen() {
   const blowCandle = () => {
     if (!lit) return;
     candleLogged.current = true;
+    lastBlowAt.current = Date.now();
     setCandleLeft(0);
     pairRealtime.sendGame('candle', { blow: true, left: 0 });
     void juice.miss();
