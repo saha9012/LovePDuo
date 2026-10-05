@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
@@ -48,7 +48,8 @@ export default function PairSuccessScreen() {
       -1,
       true,
     );
-    // Soft auto-offer invite once so partner can join without hunting the button
+    // Web: quiet clipboard. Native: keep manual button (Share sheet is too loud auto).
+    if (Platform.OS !== 'web') return;
     const t = setTimeout(() => {
       void copyText(pairInviteMessage(code)).then((ok) => {
         if (ok) {

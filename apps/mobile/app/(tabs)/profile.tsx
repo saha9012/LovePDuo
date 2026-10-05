@@ -123,7 +123,13 @@ export default function ProfileScreen() {
           <Text style={styles.lan}>
             На ПК: backend `npm start`. На телефоне укажи IP ПК, например
             ws://192.168.0.120:8787 — оба устройства в одной Wi‑Fi.
+            Production позже: wss://realtime.lovepduo.app (TLS + auth).
           </Text>
+          {wsDraft.startsWith('wss://') ? (
+            <Text style={styles.wssHint}>
+              wss:// — ок для prod. Пока backend stub слушает только ws://:8787.
+            </Text>
+          ) : null}
           <View style={styles.wsActions}>
             <LpdButton
               label="Сохранить URL"
@@ -272,6 +278,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     color: colors.textMuted,
+  },
+  wssHint: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.accentAmber,
   },
   wsActions: {
     gap: spacing.sm,

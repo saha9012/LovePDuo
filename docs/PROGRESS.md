@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Lobby: unready · peer_left clears Ready · reset on game switch  
-- [x] Together: shared spark · blow candle · peer toasts  
-- [x] Shared rematch across catalog · WS reconnect · mute persist · presence  
+- [x] Lobby unready / peer_left · Together spark+candle sync · post-match → lobby  
+- [x] Play filter persist · pair invite (web clipboard) · wss prod draft doc  
+- [x] Shared rematch catalog · WS reconnect · mute · presence  
 
 ## Catalog
 
@@ -20,4 +20,4 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
 3. Spotify OAuth keys + App Remote stream  
 4. Optional Skia canvas for Signal Draw  
-5. Production `wss://` + auth
+5. Production `wss://` deploy (`docs/WSS_PROD.md`)
