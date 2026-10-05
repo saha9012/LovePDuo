@@ -43,6 +43,9 @@ export default function SoftDuelScreen() {
   const [partnerRound, setPartnerRound] = useState(0);
   const [matchSeed, setMatchSeed] = useState(seed);
   const [syncFinish, setSyncFinish] = useState(false);
+  const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
+    null,
+  );
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const flashRef = useRef('');
@@ -237,10 +240,12 @@ export default function SoftDuelScreen() {
           void juice.sync();
         } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
           partnerFinishedRef.current = true;
-          setSyncFinish(true);
           const racing =
             flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
-          setFlash(racing ? 'Оба на финише' : 'Оба финиш');
+          const dual = racing ? 'Оба на финише' : 'Оба финиш';
+          setFinishDualLabel(dual);
+          setSyncFinish(true);
+          setFlash(dual);
           void juice.perfect();
         } else if (typeof payload.tap === 'number') {
           const grade =
@@ -369,7 +374,9 @@ export default function SoftDuelScreen() {
       if (partnerFinishedRef.current) {
         const racing =
           flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
-        setFlash(racing ? 'Оба на финише' : 'Оба финиш');
+        const dual = racing ? 'Оба на финише' : 'Оба финиш';
+        setFinishDualLabel(dual);
+        setFlash(dual);
         setSyncFinish(true);
         void juice.perfect();
       }
@@ -423,6 +430,7 @@ export default function SoftDuelScreen() {
     myScoreRef.current = 0;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
+    setFinishDualLabel(null);
     setMyScore(0);
     setPartnerScore(0);
     setPartnerRound(0);
@@ -443,6 +451,7 @@ export default function SoftDuelScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     setSyncFinish(false);
+    setFinishDualLabel(null);
     lastRematchAt.current = Date.now();
     const racing =
       flashRef.current === 'Оба: ещё раунд' ||
@@ -594,7 +603,7 @@ export default function SoftDuelScreen() {
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
             gameId="soft-duel"
-            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
+            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}

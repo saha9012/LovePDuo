@@ -45,6 +45,9 @@ export default function OrbitCatchScreen() {
   const [peerSeen, setPeerSeen] = useState(false);
   const [matchSeed, setMatchSeed] = useState(seed);
   const [syncFinish, setSyncFinish] = useState(false);
+  const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
+    null,
+  );
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
   const partnerFinishedRef = useRef(false);
@@ -172,12 +175,12 @@ export default function OrbitCatchScreen() {
             setPartnerCaught(payload.caught);
           }
           if (phaseRef.current === 'finished') {
+            const racing =
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
             setSyncFinish(true);
-            bumpPeerNote(
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-                ? 'оба на финише'
-                : 'оба финиш',
-            );
+            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
             void juice.perfect();
           } else {
             bumpPeerNote('финиш');
@@ -283,6 +286,7 @@ export default function OrbitCatchScreen() {
     partnerRef.current = 0;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
+    setFinishDualLabel(null);
     setCaught(0);
     setPartnerCaught(0);
     setTimeLeft(35);
@@ -349,12 +353,12 @@ export default function OrbitCatchScreen() {
         if (t <= 1) {
           clearInterval(tick);
           if (partnerFinishedRef.current) {
+            const racing =
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
             setSyncFinish(true);
-            bumpPeerNote(
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-                ? 'оба на финише'
-                : 'оба финиш',
-            );
+            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
             void juice.perfect();
           }
           setPhase('finished');
@@ -473,7 +477,7 @@ export default function OrbitCatchScreen() {
           <PostMatchCard
             title="Орбита закрыта"
             gameId="orbit-catch"
-            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
+            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}

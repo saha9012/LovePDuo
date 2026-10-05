@@ -58,6 +58,9 @@ export default function SignalDrawScreen() {
   const [toast, setToast] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
   const [syncFinish, setSyncFinish] = useState(false);
+  const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
+    null,
+  );
   const size = useRef({ w: 1, h: 1 });
   const current = useRef<Stroke | null>(null);
   const myCount = useRef(0);
@@ -195,12 +198,12 @@ export default function SignalDrawScreen() {
           setPartnerStrokes(payload.count);
         }
         if (phaseRef.current === 'finished') {
+          const racing =
+            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише';
+          const dual = racing ? 'Оба на финише' : 'Оба финиш';
+          setFinishDualLabel(dual);
           setSyncFinish(true);
-          showToast(
-            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише'
-              ? 'Оба на финише'
-              : 'Оба финиш',
-          );
+          showToast(dual);
           void juice.perfect();
         } else {
           showToast('Партнёр закончил');
@@ -344,6 +347,7 @@ export default function SignalDrawScreen() {
     peerCount.current = 0;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
+    setFinishDualLabel(null);
     setPartnerStrokes(0);
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
@@ -408,12 +412,12 @@ export default function SignalDrawScreen() {
         if (t <= 1) {
           clearInterval(id);
           if (partnerFinishedRef.current) {
+            const racing =
+              toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
             setSyncFinish(true);
-            showToast(
-            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише'
-              ? 'Оба на финише'
-              : 'Оба финиш',
-          );
+            showToast(dual);
             void juice.perfect();
           }
           setPhase('finished');
@@ -593,7 +597,7 @@ export default function SignalDrawScreen() {
           <PostMatchCard
             title="Общий холст закрыт"
             gameId="signal-draw"
-            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
+            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}

@@ -73,6 +73,9 @@ export default function HeartbeatScreen() {
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const [syncFinish, setSyncFinish] = useState(false);
+  const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
+    null,
+  );
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const peerNoteRef = useRef<string | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
@@ -243,13 +246,12 @@ export default function HeartbeatScreen() {
           partnerLiveRef.current = true;
         }
         if (phaseRef.current === 'finished') {
+          const racing =
+            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+          const dual = racing ? 'Оба на финише' : 'Оба финиш';
+          setFinishDualLabel(dual);
           setSyncFinish(true);
-          bumpPeerNote(
-            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-              ? 'оба на финише'
-              : 'оба финиш',
-            1200,
-          );
+          bumpPeerNote(racing ? 'оба на финише' : 'оба финиш', 1200);
           void juice.perfect();
         } else {
           bumpPeerNote('финиш', 1200);
@@ -344,6 +346,7 @@ export default function HeartbeatScreen() {
     setSyncBonus(0);
     setLast(null);
     setSyncFinish(false);
+    setFinishDualLabel(null);
     cursor.current = 0;
     scoreRef.current = 0;
     syncRef.current = 0;
@@ -430,12 +433,12 @@ export default function HeartbeatScreen() {
           setPartnerScore(partner);
         }
         if (partnerFinishedRef.current) {
+          const racing =
+            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+          const dual = racing ? 'Оба на финише' : 'Оба финиш';
+          setFinishDualLabel(dual);
           setSyncFinish(true);
-          bumpPeerNote(
-            peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-              ? 'оба на финише'
-              : 'оба финиш',
-          );
+          bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
           peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
           void juice.perfect();
@@ -580,7 +583,7 @@ export default function HeartbeatScreen() {
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
             gameId="heartbeat"
-            winnerLabel={syncFinish ? 'Оба финиш' : undefined}
+            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } })}

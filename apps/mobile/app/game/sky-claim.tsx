@@ -61,6 +61,9 @@ export default function SkyClaimScreen() {
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const [syncFinish, setSyncFinish] = useState(false);
+  const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
+    null,
+  );
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
   const size = useRef({ w: 1, h: 1 });
@@ -261,12 +264,12 @@ export default function SkyClaimScreen() {
             void juice.sync();
           } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
             partnerFinishedRef.current = true;
+            const racing =
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
             setSyncFinish(true);
-            bumpPeerNote(
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-                ? 'оба на финише'
-                : 'оба финиш',
-            );
+            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
             void juice.perfect();
           } else if (
             !payload.phase &&
@@ -347,6 +350,7 @@ export default function SkyClaimScreen() {
     scoreRef.current = 0;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
+    setFinishDualLabel(null);
     setTimeLeft(skyClaimConfig.durationSec);
     timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
@@ -450,11 +454,11 @@ export default function SkyClaimScreen() {
           }
           if (partnerFinishedRef.current) {
             setSyncFinish(true);
-            bumpPeerNote(
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише'
-                ? 'оба на финише'
-                : 'оба финиш',
-            );
+            const racing =
+              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
+            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
             void juice.perfect();
           }
           setPhase('finished');
@@ -596,7 +600,9 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
-            winnerLabel={syncFinish ? 'Оба финиш' : 'Post-match'}
+            winnerLabel={
+              syncFinish ? finishDualLabel ?? 'Оба финиш' : 'Post-match'
+            }
             gameId="sky-claim"
             line={line.text}
             onRematch={rematch}
