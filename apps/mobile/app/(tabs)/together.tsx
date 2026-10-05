@@ -36,6 +36,7 @@ export default function TogetherScreen() {
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
   const candleLitRef = useRef(false);
+  const lastNoteSentAt = useRef(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
 
@@ -174,8 +175,13 @@ export default function TogetherScreen() {
           receiveNote(payload);
           const snip =
             payload.text.length > 42 ? `${payload.text.slice(0, 40)}…` : payload.text;
-          showPeer(`${payload.from ?? 'Партнёр'}: ${snip}`);
-          void juice.card();
+          const chatty = Date.now() - lastNoteSentAt.current < 3200;
+          showPeer(
+            chatty
+              ? `Переписка · ${payload.from ?? 'Партнёр'}: ${snip}`
+              : `${payload.from ?? 'Партнёр'}: ${snip}`,
+          );
+          void (chatty ? juice.perfect() : juice.card());
         }
       }
     });
@@ -230,6 +236,7 @@ export default function TogetherScreen() {
       from: user?.displayName ?? 'Ты',
       at: Date.now(),
     };
+    lastNoteSentAt.current = Date.now();
     pairRealtime.sendGame('tiny-note', note);
     setDraft('');
     void juice.card();
