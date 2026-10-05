@@ -67,6 +67,7 @@ export default function SkyClaimScreen() {
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const partnerScoreRef = useRef(0);
   const partnerFinishedRef = useRef(false);
   const flashRef = useRef<string | null>(null);
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
@@ -85,6 +86,10 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     flashRef.current = flash;
   }, [flash]);
+
+  useEffect(() => {
+    partnerScoreRef.current = partnerScore;
+  }, [partnerScore]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -222,6 +227,21 @@ export default function SkyClaimScreen() {
           ) {
             bumpPeerNote('оба ловят');
             void juice.perfect();
+            if (payload.score === scoreRef.current && scoreRef.current > 0) {
+              setTimeout(() => {
+                bumpPeerNote('оба на очках');
+                void juice.sync();
+              }, 380);
+            }
+          } else if (
+            !payload.phase &&
+            !payload.miss &&
+            !payload.decoy &&
+            payload.score === scoreRef.current &&
+            scoreRef.current > 0
+          ) {
+            bumpPeerNote('оба на очках');
+            void juice.sync();
           }
         }
       }
@@ -434,6 +454,17 @@ export default function SkyClaimScreen() {
         } else {
           void juice.catch();
           pairRealtime.sendGame('sky-claim', { score: scoreRef.current });
+        }
+        if (
+          hit.type !== 'decoy' &&
+          partnerLiveRef.current &&
+          scoreRef.current === partnerScoreRef.current &&
+          scoreRef.current > 0
+        ) {
+          setTimeout(() => {
+            bumpPeerNote('оба на очках');
+            void juice.sync();
+          }, 320);
         }
         return rest;
       });

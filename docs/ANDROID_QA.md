@@ -52,7 +52,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 ## 5. Smoke checklist
 
-- [ ] Sky Claim: очки · miss/decoy/combo · оба ловят · оба miss/decoy · оба combo · оба финиш · оба догоняют · оба rematch · peer_left  
+- [ ] Sky Claim: очки · miss/decoy/combo · оба ловят · оба на очках · оба miss/decoy · оба combo · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Heartbeat: sync! dual · оба miss · оба perfect/great · оба финиш · оба догоняют · оба rematch · presence · peer_left  
 - [ ] Truth Or Spark: named turn · skip · оба скипнули · оба soft/spicy · filter · оба колода · оба новая колода · peer_left  
 - [ ] Signal Draw: first stroke · рисуем вместе · оба кисть/clear/undo · brush · 5s · оба финиш · оба догоняют · оба rematch · peer_left  
