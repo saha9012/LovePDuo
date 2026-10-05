@@ -354,6 +354,7 @@ export default function HomeScreen() {
     pair?.pairedAt,
     pair?.partnerPresence,
     pair?.roomSize,
+    pair?.gamesStarted,
     memories,
     notes.length,
     tracks,
