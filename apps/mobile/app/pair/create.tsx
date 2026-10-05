@@ -13,7 +13,7 @@ import { track } from '../../src/analytics/track';
 export default function CreatePairScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { createPair, user, signIn } = useApp();
+  const { createPair, signIn, user } = useApp();
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [loading, setLoading] = useState(false);

@@ -15,17 +15,23 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, unlinkPair, signOut, updateDisplayName } = useApp();
+  const { user, pair, unlinkPair, signOut, updateDisplayName, setPairName } = useApp();
   const [sfxMuted, setSfxMuted] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
+  const [roomDraft, setRoomDraft] = useState(pair?.name ?? '');
   const [wsDraft, setWsDraft] = useState(getWsUrl());
   const [wsSaved, setWsSaved] = useState(getWsUrl());
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const [nameSaved, setNameSaved] = useState(false);
+  const [roomSaved, setRoomSaved] = useState(false);
 
   useEffect(() => {
     setNameDraft(user?.displayName ?? '');
   }, [user?.displayName]);
+
+  useEffect(() => {
+    setRoomDraft(pair?.name ?? '');
+  }, [pair?.name]);
 
   useEffect(() => {
     hydrateWsUrl().then((url) => {
@@ -76,6 +82,26 @@ export default function ProfileScreen() {
               if (pair) {
                 pairRealtime.connect(pair.code, next.id, next.displayName);
               }
+            }}
+          />
+          <Text style={styles.wsLabel}>Имя комнаты</Text>
+          <TextInput
+            value={roomDraft}
+            onChangeText={(t) => {
+              setRoomDraft(t);
+              setRoomSaved(false);
+            }}
+            placeholder="Наша ночь"
+            placeholderTextColor={colors.textMuted}
+            style={styles.nameInput}
+          />
+          <LpdButton
+            label={roomSaved ? 'Комната сохранена' : 'Сохранить комнату'}
+            variant="ghost"
+            onPress={() => {
+              setPairName(roomDraft);
+              setRoomSaved(true);
+              void juice.card();
             }}
           />
         </View>

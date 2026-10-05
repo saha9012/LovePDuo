@@ -71,6 +71,7 @@ type AppState = {
   joinPair: (code: string) => Promise<PairState>;
   unlinkPair: () => Promise<void>;
   setMood: (mood: PairState['mood']) => void;
+  setPairName: (name: string) => void;
   setPartnerInfo: (name: string, presence?: Presence) => void;
   sendWarmth: () => void;
   warmthPulse: number;
@@ -235,6 +236,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPair((prev) => (prev ? { ...prev, mood } : prev));
   }, []);
 
+  const setPairName = useCallback((name: string) => {
+    const clean = name.trim() || 'Наша комната';
+    setPair((prev) => (prev ? { ...prev, name: clean } : prev));
+  }, []);
+
   const setPartnerInfo = useCallback((name: string, presence: Presence = 'online') => {
     setPair((prev) =>
       prev
@@ -320,6 +326,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       joinPair,
       unlinkPair,
       setMood,
+      setPairName,
       setPartnerInfo,
       sendWarmth,
       warmthPulse,
@@ -349,6 +356,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       joinPair,
       unlinkPair,
       setMood,
+      setPairName,
       setPartnerInfo,
       sendWarmth,
       warmthPulse,
