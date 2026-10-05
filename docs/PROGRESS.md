@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Together «Оба пишут»/в длине · ToS по кругу · Music коллекции  
 - [x] ToS «Оба по кругу» · Music коллекции · Sky комбо  
 - [x] Music «Оба в коллекции» · Sky комбо · Together рядом  
-- [x] Sky «оба в комбо» · Together рядом · Word Veil совпали  
 
 ## Catalog
 

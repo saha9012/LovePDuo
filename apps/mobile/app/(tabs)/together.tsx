@@ -238,9 +238,15 @@ export default function TogetherScreen() {
             Date.now() - lastNoteSentAt.current < 5000;
           showPeer(
             sameLen
-              ? `Оба на буквах · ${snip}`
+              ? peerToastRef.current?.startsWith('Оба на буквах') ||
+                peerToastRef.current?.startsWith('Оба в длине')
+                ? `Оба в длине · ${snip}`
+                : `Оба на буквах · ${snip}`
               : chatty
-                ? `Переписка · ${payload.from ?? 'Партнёр'}: ${snip}`
+                ? peerToastRef.current?.startsWith('Переписка') ||
+                  peerToastRef.current?.startsWith('Оба пишут')
+                  ? `Оба пишут · ${payload.from ?? 'Партнёр'}: ${snip}`
+                  : `Переписка · ${payload.from ?? 'Партнёр'}: ${snip}`
                 : `${payload.from ?? 'Партнёр'}: ${snip}`,
           );
           void (sameLen || chatty ? juice.perfect() : juice.card());
