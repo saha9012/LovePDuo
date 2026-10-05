@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type MemoryItem = {
   id: string;
-  kind: 'sky' | 'heartbeat' | 'spark' | 'candle' | 'draw' | 'duel';
+  kind: 'sky' | 'heartbeat' | 'spark' | 'candle' | 'draw' | 'duel' | 'orbit' | 'veil';
   title: string;
   detail: string;
   at: number;

@@ -93,6 +93,7 @@ export default function OrbitCatchScreen() {
           seed?: number;
           miss?: boolean;
           align?: boolean;
+          phase?: string;
         } | undefined;
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
@@ -100,6 +101,15 @@ export default function OrbitCatchScreen() {
           bumpPeerNote('новый раунд');
           void juice.sync();
           startRef.current();
+          return;
+        }
+        if (payload?.phase === 'finished') {
+          bumpPeerNote('финиш');
+          void juice.sync();
+          if (typeof payload.caught === 'number') {
+            partnerRef.current = payload.caught;
+            setPartnerCaught(payload.caught);
+          }
           return;
         }
         if (payload?.miss) {
@@ -180,11 +190,15 @@ export default function OrbitCatchScreen() {
           clearInterval(tick);
           setPhase('finished');
           void juice.postMatch();
+          pairRealtime.sendGame('orbit-catch', {
+            phase: 'finished',
+            caught: caughtRef.current,
+          });
           if (partnerRef.current === 0) {
             setPartnerCaught(Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3)));
           }
           addMemory({
-            kind: 'sky',
+            kind: 'orbit',
             title: 'Orbit Catch',
             detail: `Co-op ${caughtRef.current + partnerRef.current} catches`,
           });

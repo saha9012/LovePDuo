@@ -216,7 +216,7 @@ export default function WordVeilScreen() {
     setPhase('finished');
     void juice.postMatch();
     addMemory({
-      kind: 'spark',
+      kind: 'veil',
       title: 'Word Veil',
       detail: `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
     });

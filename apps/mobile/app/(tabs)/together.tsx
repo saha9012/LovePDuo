@@ -24,7 +24,7 @@ const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
-  const { user, pair, sendWarmth, notes, addNote, receiveNote } = useApp();
+  const { user, pair, sendWarmth, notes, addNote, receiveNote, warmthPulse } = useApp();
   const { items: memories, clearMemories, addMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
@@ -36,12 +36,20 @@ export default function TogetherScreen() {
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warmthSeen = useRef(0);
 
   const showPeer = (text: string) => {
     setPeerToast(text);
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setPeerToast(null), 1800);
   };
+
+  useEffect(() => {
+    if (!warmthPulse || warmthPulse <= warmthSeen.current) return;
+    warmthSeen.current = warmthPulse;
+    showPeer('Тепло от партнёра');
+    void juice.warmth();
+  }, [warmthPulse]);
 
   useEffect(() => {
     if (!lit) {

@@ -65,6 +65,7 @@ export default function SignalDrawScreen() {
   const peerPulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
+  const endWarned = useRef(false);
 
   const myColor = colors.accentAmber;
   const peerColor = colors.accentRose;
@@ -112,12 +113,22 @@ export default function SignalDrawScreen() {
         rematch?: boolean;
         seed?: number;
         brush?: 'fine' | 'bold';
+        phase?: string;
       } | undefined;
       if (!payload) return;
       if (payload.rematch) {
         showToast('Новый раунд');
         void juice.sync();
         startRef.current();
+        return;
+      }
+      if (payload.phase === 'finished') {
+        showToast('Партнёр закончил');
+        void juice.sync();
+        if (typeof payload.count === 'number') {
+          peerCount.current = payload.count;
+          setPartnerStrokes(payload.count);
+        }
         return;
       }
       if (payload.brush === 'fine' || payload.brush === 'bold') {
@@ -192,6 +203,7 @@ export default function SignalDrawScreen() {
     setPartnerStrokes(0);
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
+    endWarned.current = false;
     pairRealtime.sendGame('signal-draw', { phase: 'start', seed });
     void juice.beat();
   };
@@ -214,10 +226,19 @@ export default function SignalDrawScreen() {
     if (phase !== 'playing') return;
     const id = setInterval(() => {
       setTimeLeft((t) => {
+        if (t === 5 && !endWarned.current) {
+          endWarned.current = true;
+          showToast('5 секунд');
+          void juice.hit();
+        }
         if (t <= 1) {
           clearInterval(id);
           setPhase('finished');
           void juice.postMatch();
+          pairRealtime.sendGame('signal-draw', {
+            phase: 'finished',
+            count: myCount.current,
+          });
           addMemory({
             kind: 'draw',
             title: 'Signal Draw',

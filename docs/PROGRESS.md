@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Sky partner finish note while you still play  
-- [x] Word Veil + ToS mid-session presence toasts  
-- [x] Named ToS turns · partner rename on Home  
+- [x] Orbit finish sync + memory kind · Signal Draw 5s / peer finish  
+- [x] Together warmth receive toast · Word Veil memory kind  
+- [x] Sky partner finish · WV/ToS presence  
 
 ## Catalog
 
