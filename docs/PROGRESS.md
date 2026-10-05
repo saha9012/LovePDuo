@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Home «Оба в комнате» · Music dual now-playing · dual hello catalog  
 - [x] Music dual now-playing · dual hello catalog · dual rematch catalog  
 - [x] Dual hello catalog-wide (HB/Draw/Veil/ToS) · Soft/Sky/Orbit  
-- [x] Soft/Sky/Orbit dual hello «оба в игре» · ToS dual reshuffle  
 
 ## Catalog
 
