@@ -68,6 +68,7 @@ export default function SkyClaimScreen() {
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerFinishedRef = useRef(false);
+  const flashRef = useRef<string | null>(null);
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
@@ -77,6 +78,10 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    flashRef.current = flash;
+  }, [flash]);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -193,6 +198,15 @@ export default function SkyClaimScreen() {
           } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
             partnerFinishedRef.current = true;
             setSyncFinish(true);
+            void juice.perfect();
+          } else if (
+            !payload.phase &&
+            !payload.combo &&
+            !payload.miss &&
+            !payload.decoy &&
+            flashRef.current === 'catch'
+          ) {
+            bumpPeerNote('оба ловят');
             void juice.perfect();
           }
         }

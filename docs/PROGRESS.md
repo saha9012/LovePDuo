@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Sky «оба ловят» · Soft dual PERFECT · Play filter toast  
 - [x] Soft dual PERFECT flash · Play filter toast · Lobby both-READY  
 - [x] Play filter toast · Lobby both-READY perfect · dual together feels  
-- [x] Lobby both-READY perfect juice · room-name juice · dual typing  
 
 ## Catalog
 
