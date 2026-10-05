@@ -115,6 +115,7 @@ export default function PlayScreen() {
   const lastFilterMatch = useRef<Filter | null>(null);
   const lastFilterMatchAt = useRef(0);
   const lastGameRef = useRef<string | null>(null);
+  const peekToastRef = useRef<string | null>(null);
 
   useEffect(() => {
     filterRef.current = filter;
@@ -123,6 +124,15 @@ export default function PlayScreen() {
   useEffect(() => {
     lastGameRef.current = lastGame;
   }, [lastGame]);
+
+  const showPeek = (text: string, ms = 1600) => {
+    peekToastRef.current = text;
+    setPeekToast(text);
+    setTimeout(() => {
+      peekToastRef.current = null;
+      setPeekToast(null);
+    }, ms);
+  };
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -183,21 +193,25 @@ export default function PlayScreen() {
       if (!payload || payload.fromId === user.id) return;
       if (payload.leave) {
         setPeerLobby(null);
-        setPeekToast('Партнёр ушёл из лобби');
+        showPeek('Партнёр ушёл из лобби');
         void juice.miss();
-        setTimeout(() => setPeekToast(null), 1600);
         return;
       }
       if (payload.game && payload.title) {
         setPeerLobby({ game: payload.game, title: payload.title });
         const both = lastGameRef.current === payload.game;
-        setPeekToast(
-          both
-            ? `Оба в «${payload.title}»`
-            : `Партнёр в лобби: ${payload.title}`,
+        const racing =
+          both &&
+          (peekToastRef.current?.startsWith('Оба в «') ||
+            peekToastRef.current === 'Оба ждут игру');
+        showPeek(
+          racing
+            ? 'Оба ждут игру'
+            : both
+              ? `Оба в «${payload.title}»`
+              : `Партнёр в лобби: ${payload.title}`,
         );
-        void (both ? juice.perfect() : juice.hit());
-        setTimeout(() => setPeekToast(null), 1600);
+        void (racing || both ? juice.perfect() : juice.hit());
       }
     });
     return () => {
