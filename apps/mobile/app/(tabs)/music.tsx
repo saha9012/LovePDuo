@@ -42,6 +42,13 @@ export default function MusicScreen() {
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const peerPulse = useSharedValue(1);
+  const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNote = (text: string, ms = 1800) => {
+    setNote(text);
+    if (noteTimer.current) clearTimeout(noteTimer.current);
+    noteTimer.current = setTimeout(() => setNote(''), ms);
+  };
 
   const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
   const visibleTracks = useMemo(() => {
@@ -78,12 +85,12 @@ export default function MusicScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         setPartnerNowPlaying(null);
-        setNote('Партнёр ушёл с Music');
+        showNote('Партнёр ушёл с Music');
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
-        setNote('Партнёр снова на связи');
+        showNote('Партнёр снова на связи');
         void juice.sync();
         if (user?.id) {
           pairRealtime.sendGame('music-hello', {
@@ -96,7 +103,7 @@ export default function MusicScreen() {
       if (msg.type === 'game' && msg.gameId === 'music-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId && payload.fromId === user?.id) return;
-        setNote(`${payload?.from ?? 'Партнёр'} на Music`);
+        showNote(`${payload?.from ?? 'Партнёр'} на Music`);
         void juice.hit();
         return;
       }
@@ -116,7 +123,7 @@ export default function MusicScreen() {
           playbackMode: payload.sourceType === 'spotify' ? 'spotify' : 'link',
           addedBy: payload.from ?? 'Партнёр',
         });
-        setNote(`${payload.from ?? 'Партнёр'} добавил «${payload.title}»`);
+        showNote(`${payload.from ?? 'Партнёр'} добавил «${payload.title}»`);
         void juice.sync();
         return;
       }
@@ -127,7 +134,7 @@ export default function MusicScreen() {
           void juice.hit();
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
-          setNote(`${payload.from ?? 'Партнёр'} остановил трек`);
+          showNote(`${payload.from ?? 'Партнёр'} остановил трек`);
           void juice.miss();
         }
       }
@@ -147,7 +154,7 @@ export default function MusicScreen() {
         if (match) {
           addTrackToPlaylist(payload.playlistId, match.id);
           const plName = playlists.find((p) => p.id === payload.playlistId)?.name;
-          setNote(
+          showNote(
             `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
           );
           void juice.hit();
@@ -162,7 +169,7 @@ export default function MusicScreen() {
         } | undefined;
         if (!payload?.title || !payload.reaction) return;
         reactTrackMeta(payload.title, payload.artist ?? '', payload.reaction);
-        setNote(`${payload.from ?? 'Партнёр'} отметил «${payload.title}»`);
+        showNote(`${payload.from ?? 'Партнёр'} отметил «${payload.title}»`);
         void juice.card();
       }
       if (msg.type === 'game' && msg.gameId === 'playlist') {
@@ -174,7 +181,7 @@ export default function MusicScreen() {
           setActivePlaylist(payload.playlistId);
           if (payload.mood && payload.mood !== 'pulse') setMood(payload.mood);
           const name = playlists.find((p) => p.id === payload.playlistId)?.name;
-          setNote(name ? `Партнёр переключил «${name}»` : 'Партнёр сменил плейлист');
+          showNote(name ? `Партнёр переключил «${name}»` : 'Партнёр сменил плейлист');
           void juice.hit();
         }
       }
@@ -194,10 +201,11 @@ export default function MusicScreen() {
 
   const playTrack = async (track: TrackItem) => {
     if (!track.uri || track.playbackMode !== 'local') {
-      setNote(
+      showNote(
         track.playbackMode === 'spotify'
           ? 'Стрим через Spotify — нужен OAuth / App Remote.'
           : 'Для этого трека пока только карточка/ссылка. Загрузите файл в LPD.',
+        2800,
       );
       return;
     }
@@ -213,10 +221,10 @@ export default function MusicScreen() {
         title: track.title,
         from: user?.displayName,
       });
-      setNote('Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.');
+      showNote('Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.');
       void juice.hit();
     } catch {
-      setNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).');
+      showNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).', 2800);
     }
   };
 
@@ -244,7 +252,7 @@ export default function MusicScreen() {
       fromId: user?.id,
     });
     trackEvent('track_uploaded', { source: 'upload' });
-    setNote('Трек сохранён. Партнёр видит карточку (файл — локально у тебя).');
+    showNote('Трек сохранён. Партнёр видит карточку (файл — локально у тебя).');
     void juice.sync();
   };
   const addSpotifyStub = () => {
@@ -264,10 +272,11 @@ export default function MusicScreen() {
       from: user?.displayName,
       fromId: user?.id,
     });
-    setNote(
+    showNote(
       spotifyConfigured()
         ? 'Spotify: метаданные сохранены и отправлены партнёру. Стрим — OAuth / App Remote.'
         : `${spotifyStatusLabel()} · stub ушёл партнёру.`,
+      2800,
     );
     void juice.card();
   };
@@ -289,7 +298,7 @@ export default function MusicScreen() {
       from: user?.displayName,
       fromId: user?.id,
     });
-    setNote('VK: metadata + fallback. Stub ушёл партнёру.');
+    showNote('VK: metadata + fallback. Stub ушёл партнёру.');
     void juice.card();
   };
 
@@ -363,7 +372,7 @@ export default function MusicScreen() {
               setSound(null);
               setNowPlaying(null);
               pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
-              setNote('Остановили — партнёр видит.');
+              showNote('Остановили — партнёр видит.');
               void juice.miss();
             }}
           />
@@ -411,7 +420,7 @@ export default function MusicScreen() {
                           artist: t.artist,
                           from: user?.displayName,
                         });
-                        setNote(`В «${active.name}» — полка у обоих.`);
+                        showNote(`В «${active.name}» — полка у обоих.`);
                         void juice.hit();
                       }
                     }}

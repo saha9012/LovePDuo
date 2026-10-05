@@ -170,11 +170,20 @@ export default function WordVeilScreen() {
         seed?: number;
         typing?: boolean;
         hello?: boolean;
+        phase?: string;
       } | undefined;
       if (payload?.hello) {
         setPresenceHint('Партнёр в игре');
         void juice.sync();
         setTimeout(() => setPresenceHint(null), 1600);
+        return;
+      }
+      if (payload?.phase === 'finished') {
+        if (typeof payload.score === 'number') setTheirScore(payload.score);
+        setPresenceHint('Партнёр закрыл раунд');
+        setTimeout(() => setPresenceHint(null), 1600);
+        setPhase('finished');
+        void juice.postMatch();
         return;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
@@ -252,6 +261,10 @@ export default function WordVeilScreen() {
   const finish = () => {
     setPhase('finished');
     void juice.postMatch();
+    pairRealtime.sendGame('word-veil', {
+      phase: 'finished',
+      score: myScore,
+    });
     addMemory({
       kind: 'veil',
       title: 'Word Veil',

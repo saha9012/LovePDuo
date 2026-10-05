@@ -60,12 +60,14 @@ export default function SkyClaimScreen() {
   const [flash, setFlash] = useState<string | null>(null);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
+  const [syncFinish, setSyncFinish] = useState(false);
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
   const size = useRef({ w: 1, h: 1 });
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const partnerFinishedRef = useRef(false);
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
@@ -185,7 +187,12 @@ export default function SkyClaimScreen() {
           );
           setTimeout(() => setPartnerFlash(false), 420);
           if (payload.phase === 'finished' && phaseRef.current === 'playing') {
+            partnerFinishedRef.current = true;
             bumpPeerNote('финиш');
+            void juice.sync();
+          } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
+            partnerFinishedRef.current = true;
+            setSyncFinish(true);
             void juice.sync();
           }
         }
@@ -208,6 +215,8 @@ export default function SkyClaimScreen() {
     setCombo(0);
     comboRef.current = 0;
     scoreRef.current = 0;
+    partnerFinishedRef.current = false;
+    setSyncFinish(false);
     setTimeLeft(skyClaimConfig.durationSec);
     timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
@@ -286,12 +295,15 @@ export default function SkyClaimScreen() {
             );
             setPartnerScore(partner);
           }
+          if (partnerFinishedRef.current) setSyncFinish(true);
           setPhase('finished');
           void juice.postMatch();
           addMemory({
             kind: 'sky',
             title: 'Sky Claim',
-            detail: `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+            detail: partnerFinishedRef.current
+              ? `Синхрон финиш · ты ${scoreRef.current}`
+              : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
           });
           return 0;
         }
@@ -389,7 +401,7 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
-            winnerLabel="Post-match"
+            winnerLabel={syncFinish ? 'Синхрон финиш' : 'Post-match'}
             gameId="sky-claim"
             line={line.text}
             onRematch={rematch}

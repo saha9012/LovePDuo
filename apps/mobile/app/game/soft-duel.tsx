@@ -42,6 +42,7 @@ export default function SoftDuelScreen() {
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [partnerRound, setPartnerRound] = useState(0);
   const [matchSeed, setMatchSeed] = useState(seed);
+  const [syncFinish, setSyncFinish] = useState(false);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerFinishedRef = useRef(false);
@@ -176,6 +177,7 @@ export default function SoftDuelScreen() {
           void juice.sync();
         } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
           partnerFinishedRef.current = true;
+          setSyncFinish(true);
           void juice.sync();
         } else if (typeof payload.tap === 'number') {
           const label =
@@ -218,6 +220,7 @@ export default function SoftDuelScreen() {
       });
       if (partnerFinishedRef.current) {
         setFlash('Синхрон финиш');
+        setSyncFinish(true);
       }
       if (!partnerLiveRef.current) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
@@ -244,6 +247,7 @@ export default function SoftDuelScreen() {
   const start = () => {
     myScoreRef.current = 0;
     partnerFinishedRef.current = false;
+    setSyncFinish(false);
     setMyScore(0);
     setPartnerScore(0);
     setPartnerRound(0);
@@ -335,6 +339,7 @@ export default function SoftDuelScreen() {
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
             gameId="soft-duel"
+            winnerLabel={syncFinish ? 'Синхрон финиш' : undefined}
             line={line.text}
             onRematch={rematch}
             onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}

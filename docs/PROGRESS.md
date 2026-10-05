@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft/Sky sync-finish PostMatch · Word Veil finish sync · Music note fade  
 - [x] Lobby/Music/Together peer leave+rejoin · Word Veil match juice  
 - [x] Word Veil match juice · peer_joined rejoin hello across games  
-- [x] Mid-match peer_left toast across Soft/Sky/HB/Orbit/Draw/Veil/ToS  
 
 ## Catalog
 
