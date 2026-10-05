@@ -27,6 +27,7 @@ export default function MusicScreen() {
     addTrack,
     removeTrack,
     removeTrackMeta,
+    clearTracks,
     user,
     pair,
     reactTrack,
@@ -44,6 +45,7 @@ export default function MusicScreen() {
   } = useApp();
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const soundRef = React.useRef<Audio.Sound | null>(null);
   const peerPulse = useSharedValue(1);
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const noteRef = React.useRef('');
@@ -53,6 +55,8 @@ export default function MusicScreen() {
   const lastReactChoice = React.useRef<string | null>(null);
   const lastListenMatchAt = React.useRef(0);
   const lastListenTitle = React.useRef<string | null>(null);
+  const playTrackRef = React.useRef<(track: TrackItem) => Promise<void>>(async () => undefined);
+  const visibleTracksRef = React.useRef<TrackItem[]>([]);
 
   const showNote = (text: string, ms = 1800) => {
     noteRef.current = text;
@@ -74,6 +78,11 @@ export default function MusicScreen() {
     const rest = tracks.filter((t) => !set.has(t.id));
     return [...ordered, ...rest];
   }, [tracks, active]);
+  visibleTracksRef.current = visibleTracks;
+
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
 
   useEffect(() => {
     return () => {
@@ -298,6 +307,25 @@ export default function MusicScreen() {
         }
         return;
       }
+      if (msg.type === 'game' && msg.gameId === 'track-clear') {
+        const payload = msg.payload as { from?: string; fromId?: string } | undefined;
+        if (payload?.fromId === user?.id) return;
+        void (async () => {
+          try {
+            await soundRef.current?.stopAsync();
+            await soundRef.current?.unloadAsync();
+          } catch {
+            /* ignore */
+          }
+          setSound(null);
+          setNowPlaying(null);
+          clearTracks();
+          setPartnerNowPlaying(null);
+          showNote(`${payload?.from ?? 'Партнёр'} очистил библиотеку`);
+          void juice.miss();
+        })();
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'playlist-remove') {
         const payload = msg.payload as {
           playlistId?: string;
@@ -352,7 +380,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, removeTrackMeta, removeTrackFromPlaylist, clearTracks, playlists, tracks, user?.id, addTrack, addTrackToPlaylist, activePlaylistId, nowPlayingId, partnerNowPlaying]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -384,6 +412,18 @@ export default function MusicScreen() {
         setSound(null);
         setNowPlaying(null);
         lastStopAt.current = Date.now();
+        const list = visibleTracksRef.current;
+        const idx = list.findIndex((t) => t.id === track.id);
+        const following = idx >= 0 ? list.slice(idx + 1) : list;
+        const nextLocal = following.find(
+          (t) => Boolean(t.uri) && t.playbackMode === 'local',
+        );
+        if (nextLocal) {
+          showNote(`Дальше: «${nextLocal.title}»`);
+          void juice.sync();
+          void playTrackRef.current(nextLocal);
+          return;
+        }
         pairRealtime.sendGame('now-playing', {
           title: null,
           from: user?.displayName,
@@ -403,6 +443,48 @@ export default function MusicScreen() {
     } catch {
       showNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).', 2800);
     }
+  };
+  playTrackRef.current = playTrack;
+
+  const clearLibrary = () => {
+    if (tracks.length === 0) return;
+    Alert.alert(
+      'Очистить библиотеку?',
+      `Удалить все ${tracks.length} трек(ов) у тебя и у партнёра? Полки тоже опустеют.`,
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Очистить',
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              try {
+                await sound?.stopAsync();
+                await sound?.unloadAsync();
+              } catch {
+                /* ignore */
+              }
+              setSound(null);
+              setNowPlaying(null);
+              setPartnerNowPlaying(null);
+              lastStopAt.current = Date.now();
+              clearTracks();
+              pairRealtime.sendGame('now-playing', {
+                title: null,
+                from: user?.displayName,
+              });
+              pairRealtime.sendGame('track-clear', {
+                from: user?.displayName,
+                fromId: user?.id,
+              });
+              showNote('Библиотека очищена.');
+              void juice.miss();
+              trackEvent('track_removed', { source: 'clear_all' });
+            })();
+          },
+        },
+      ],
+    );
   };
 
   const deleteTrack = (track: TrackItem) => {
@@ -615,26 +697,49 @@ export default function MusicScreen() {
           </Text>
         ) : null}
         {nowPlayingId ? (
-          <LpdButton
-            label="Стоп"
-            variant="ghost"
-            onPress={async () => {
-              await sound?.stopAsync();
-              await sound?.unloadAsync();
-              setSound(null);
-              setNowPlaying(null);
-              lastStopAt.current = Date.now();
-              pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
-              showNote('Остановили — партнёр видит.');
-              void juice.miss();
-            }}
-          />
+          <View style={styles.playbackRow}>
+            <LpdButton
+              label="Стоп"
+              variant="ghost"
+              onPress={async () => {
+                await sound?.stopAsync();
+                await sound?.unloadAsync();
+                setSound(null);
+                setNowPlaying(null);
+                lastStopAt.current = Date.now();
+                pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
+                showNote('Остановили — партнёр видит.');
+                void juice.miss();
+              }}
+            />
+            <LpdButton
+              label="Следующий"
+              variant="ghost"
+              onPress={() => {
+                const list = visibleTracksRef.current;
+                const idx = list.findIndex((t) => t.id === nowPlayingId);
+                const following = idx >= 0 ? list.slice(idx + 1) : list;
+                const nextLocal = following.find(
+                  (t) => Boolean(t.uri) && t.playbackMode === 'local',
+                );
+                if (!nextLocal) {
+                  showNote('Дальше локальных треков нет.');
+                  void juice.miss();
+                  return;
+                }
+                void playTrackRef.current(nextLocal);
+              }}
+            />
+          </View>
         ) : null}
 
         <View style={styles.actions}>
           <LpdButton label="Загрузить трек" onPress={() => void upload()} />
           <LpdButton label="Добавить из Spotify (мета)" variant="ghost" onPress={addSpotifyStub} />
           <LpdButton label="Импорт VK (fallback)" variant="ghost" onPress={addVkStub} />
+          {tracks.length > 0 ? (
+            <LpdButton label="Очистить библиотеку" variant="ghost" onPress={clearLibrary} />
+          ) : null}
         </View>
         <Text style={styles.spotifyHint}>{spotifyStatusLabel()}</Text>
         {note ? <Text style={styles.note}>{note}</Text> : null}

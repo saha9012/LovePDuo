@@ -25,7 +25,7 @@ const CANDLE_SEC = 120;
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, notes, addNote, removeNote, receiveNote, warmthPulse } = useApp();
-  const { items: memories, clearMemories, addMemory } = useMemories();
+  const { items: memories, clearMemories, removeMemory, addMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -435,16 +435,47 @@ export default function TogetherScreen() {
           <View style={styles.memories}>
             <Text style={styles.memTitle}>Memories</Text>
             {memories.slice(0, 5).map((m) => (
-              <Text key={m.id} style={styles.memItem}>
-                {m.title} — {m.detail}
-              </Text>
+              <View key={m.id} style={styles.memRow}>
+                <Text style={styles.memItem}>
+                  {m.title} — {m.detail}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    Alert.alert('Удалить memory?', `${m.title}\n${m.detail}`, [
+                      { text: 'Отмена', style: 'cancel' },
+                      {
+                        text: 'Удалить',
+                        style: 'destructive',
+                        onPress: () => {
+                          removeMemory(m.id);
+                          void juice.miss();
+                        },
+                      },
+                    ]);
+                  }}
+                  style={styles.noteDelete}
+                  accessibilityLabel="Удалить memory"
+                  hitSlop={8}
+                >
+                  <Text style={styles.noteDeleteLabel}>×</Text>
+                </Pressable>
+              </View>
             ))}
             <LpdButton
               label="Очистить memories"
               variant="ghost"
               onPress={() => {
-                clearMemories();
-                void juice.miss();
+                Alert.alert('Очистить все memories?', 'Локальная история партии.', [
+                  { text: 'Отмена', style: 'cancel' },
+                  {
+                    text: 'Очистить',
+                    style: 'destructive',
+                    onPress: () => {
+                      clearMemories();
+                      void juice.miss();
+                    },
+                  },
+                ]);
               }}
             />
           </View>
@@ -594,8 +625,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
   },
   memItem: {
+    flex: 1,
     fontFamily: fonts.ui,
     color: colors.textSecondary,
     fontSize: 13,
+  },
+  memRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
   },
 });

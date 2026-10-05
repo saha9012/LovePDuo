@@ -80,6 +80,7 @@ type AppState = {
   addTrack: (track: Omit<TrackItem, 'id'>) => void;
   removeTrack: (id: string) => void;
   removeTrackMeta: (title: string, artist?: string) => boolean;
+  clearTracks: () => void;
   reactTrack: (id: string, reaction: TrackItem['reaction']) => void;
   reactTrackMeta: (
     title: string,
@@ -318,6 +319,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return true;
   }, []);
 
+  const clearTracks = useCallback(() => {
+    setTracks([]);
+    setPlaylists((prev) => prev.map((pl) => ({ ...pl, trackIds: [] })));
+    setNowPlayingId(null);
+  }, []);
+
   const reactTrack = useCallback((id: string, reaction: TrackItem['reaction']) => {
     setTracks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, reaction } : t)),
@@ -418,6 +425,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addTrack,
       removeTrack,
       removeTrackMeta,
+      clearTracks,
       reactTrack,
       reactTrackMeta,
       nowPlayingId,
@@ -454,6 +462,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addTrack,
       removeTrack,
       removeTrackMeta,
+      clearTracks,
       reactTrack,
       reactTrackMeta,
       nowPlayingId,

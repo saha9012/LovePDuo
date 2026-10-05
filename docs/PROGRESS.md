@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music auto-advance + clear library sync · Together memory delete  
 - [x] Music auto-stop on finish · Together note delete + sync · fix note id mismatch  
 - [x] Signal Draw: Svg path canvas (no View-dot strokes)  
-- [x] Music: shelf-remove sync · no duplicate stubs · clear partner NP on delete  
 
 ## Catalog
 

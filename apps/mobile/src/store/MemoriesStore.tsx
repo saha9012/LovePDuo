@@ -19,6 +19,7 @@ export type MemoryItem = {
 type MemoriesApi = {
   items: MemoryItem[];
   addMemory: (item: Omit<MemoryItem, 'id' | 'at'>) => void;
+  removeMemory: (id: string) => void;
   clearMemories: () => void;
 };
 
@@ -61,13 +62,17 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const removeMemory = useCallback((id: string) => {
+    setItems((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+
   const clearMemories = useCallback(() => {
     setItems([]);
   }, []);
 
   const value = useMemo(
-    () => ({ items, addMemory, clearMemories }),
-    [items, addMemory, clearMemories],
+    () => ({ items, addMemory, removeMemory, clearMemories }),
+    [items, addMemory, removeMemory, clearMemories],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
