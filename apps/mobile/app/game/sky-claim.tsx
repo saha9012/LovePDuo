@@ -1,0 +1,324 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LpdBackground } from '../../src/components/LpdBackground';
+import { PostMatchCard } from '../../src/components/PostMatchCard';
+import { colors, fonts, spacing } from '../../src/theme/tokens';
+import {
+  createSkySpawner,
+  scoreCatch,
+  SkyObject,
+  skyClaimConfig,
+} from '../../src/games/skyClaim';
+import { pickPostMatchLine } from '../../src/content/postMatch';
+
+type Phase = 'ready' | 'playing' | 'finished';
+
+export default function SkyClaimScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const seed = useMemo(() => Date.now() % 100000, []);
+  const spawner = useMemo(() => createSkySpawner(seed), [seed]);
+
+  const [phase, setPhase] = useState<Phase>('ready');
+  const [objects, setObjects] = useState<SkyObject[]>([]);
+  const [score, setScore] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);
+  const [partnerScore, setPartnerScore] = useState(0);
+  const [flash, setFlash] = useState<string | null>(null);
+  const size = useRef({ w: 1, h: 1 });
+  const comboRef = useRef(0);
+  const scoreRef = useRef(0);
+
+  const start = () => {
+    setPhase('playing');
+    setObjects([]);
+    setScore(0);
+    setCombo(0);
+    comboRef.current = 0;
+    scoreRef.current = 0;
+    setTimeLeft(skyClaimConfig.durationSec);
+    setFlash(null);
+  };
+
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const spawnTimer = setInterval(() => {
+      setObjects((prev) => [...prev, spawner()].slice(-18));
+    }, skyClaimConfig.spawnEveryMs);
+
+    const tick = setInterval(() => {
+      setObjects((prev) => {
+        const next: SkyObject[] = [];
+        for (const obj of prev) {
+          const y = obj.y + obj.speed * 0.05;
+          if (y > 1.12) {
+            if (obj.points > 0) {
+              comboRef.current = 0;
+              setCombo(0);
+            }
+            continue;
+          }
+          next.push({ ...obj, y });
+        }
+        return next;
+      });
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(spawnTimer);
+          clearInterval(tick);
+          const partner = Math.max(
+            0,
+            Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
+          );
+          setPartnerScore(partner);
+          setPhase('finished');
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 50);
+
+    return () => {
+      clearInterval(spawnTimer);
+      clearInterval(tick);
+    };
+  }, [phase, spawner]);
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    size.current = {
+      w: e.nativeEvent.layout.width,
+      h: e.nativeEvent.layout.height,
+    };
+  };
+
+  const onTap = useCallback(
+    (x: number, y: number) => {
+      if (phase !== 'playing') return;
+      const nx = x / size.current.w;
+      const ny = y / size.current.h;
+      setObjects((prev) => {
+        let hit: SkyObject | null = null;
+        const rest: SkyObject[] = [];
+        for (const obj of prev) {
+          if (hit) {
+            rest.push(obj);
+            continue;
+          }
+          const dx = obj.x - nx;
+          const dy = obj.y - ny;
+          if (Math.hypot(dx, dy) <= obj.radius * 1.8) {
+            hit = obj;
+          } else {
+            rest.push(obj);
+          }
+        }
+        if (!hit) {
+          comboRef.current = 0;
+          setCombo(0);
+          setFlash('miss');
+          void Haptics.selectionAsync();
+          return prev;
+        }
+        const result = scoreCatch(comboRef.current, hit.points);
+        comboRef.current = result.combo;
+        scoreRef.current += result.scoreDelta;
+        setCombo(result.combo);
+        setScore(scoreRef.current);
+        setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
+        void Haptics.impactAsync(
+          hit.type === 'decoy'
+            ? Haptics.ImpactFeedbackStyle.Medium
+            : Haptics.ImpactFeedbackStyle.Light,
+        );
+        return rest;
+      });
+    },
+    [phase],
+  );
+
+  const line = pickPostMatchLine(score, partnerScore, seed);
+
+  if (phase === 'finished') {
+    return (
+      <LpdBackground mood="warm">
+        <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+          <Text style={styles.hud}>Sky Claim</Text>
+          <Text style={styles.scoreline}>
+            Ты {score} · Партнёр {partnerScore}
+          </Text>
+          <PostMatchCard
+            title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
+            winnerLabel="Post-match"
+            line={line.text}
+            onRematch={start}
+            onHome={() => router.replace('/(tabs)/play')}
+          />
+        </View>
+      </LpdBackground>
+    );
+  }
+
+  return (
+    <LpdBackground mood="night">
+      <View style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
+        <View style={styles.topHud}>
+          <Text style={styles.hud}>Sky Claim</Text>
+          <Text style={styles.timer}>{timeLeft}s</Text>
+        </View>
+        <View style={styles.stats}>
+          <Text style={styles.stat}>Очки {score}</Text>
+          <Text style={styles.stat}>Комбо ×{combo}</Text>
+        </View>
+
+        {phase === 'ready' ? (
+          <View style={styles.ready}>
+            <Text style={styles.readyTitle}>Лови огни</Text>
+            <Text style={styles.readyBody}>
+              Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд.
+            </Text>
+            <Pressable onPress={start} style={styles.startBtn}>
+              <Text style={styles.startLabel}>Старт</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <Pressable
+            style={styles.field}
+            onLayout={onLayout}
+            onPress={(e) => onTap(e.nativeEvent.locationX, e.nativeEvent.locationY)}
+          >
+            {objects.map((obj) => (
+              <View
+                key={obj.id}
+                style={[
+                  styles.orb,
+                  {
+                    left: `${obj.x * 100}%`,
+                    top: `${obj.y * 100}%`,
+                    width: obj.radius * 2 * size.current.w || 28,
+                    height: obj.radius * 2 * size.current.w || 28,
+                    marginLeft: -((obj.radius * size.current.w) || 14),
+                    marginTop: -((obj.radius * size.current.w) || 14),
+                    backgroundColor:
+                      obj.type === 'amber'
+                        ? colors.accentAmber
+                        : obj.type === 'decoy'
+                          ? colors.accentWine
+                          : colors.accentRose,
+                    shadowColor:
+                      obj.type === 'amber' ? colors.accentAmber : colors.accentRose,
+                  },
+                ]}
+              />
+            ))}
+            {flash ? (
+              <Text style={styles.flash}>
+                {flash === 'catch' ? 'CATCH' : flash === 'decoy' ? 'DECOY' : 'MISS'}
+              </Text>
+            ) : null}
+          </Pressable>
+        )}
+      </View>
+    </LpdBackground>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  topHud: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  hud: {
+    fontFamily: fonts.uiSemi,
+    color: colors.textPrimary,
+    fontSize: 18,
+  },
+  timer: {
+    fontFamily: fonts.mono,
+    color: colors.accentAmber,
+    fontSize: 20,
+  },
+  stats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  stat: {
+    fontFamily: fonts.uiMedium,
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+  ready: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: spacing.md,
+  },
+  readyTitle: {
+    fontFamily: fonts.display,
+    fontSize: 36,
+    color: colors.textPrimary,
+  },
+  readyBody: {
+    fontFamily: fonts.ui,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    fontSize: 15,
+  },
+  startBtn: {
+    marginTop: spacing.lg,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.accentWine,
+    borderRadius: 16,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.35)',
+  },
+  startLabel: {
+    fontFamily: fonts.uiSemi,
+    color: colors.textPrimary,
+    fontSize: 16,
+  },
+  field: {
+    flex: 1,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(18,16,24,0.55)',
+    overflow: 'hidden',
+  },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+    shadowOpacity: 0.7,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  flash: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '42%',
+    fontFamily: fonts.uiSemi,
+    color: colors.accentAmber,
+    letterSpacing: 2,
+  },
+  scoreline: {
+    fontFamily: fonts.uiMedium,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+});

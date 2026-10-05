@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "LovePDuo",
+    "slug": "lovepduo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "lovepduo",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#07060A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.lovepduo"
+    },
+    "android": {
+      "package": "app.lovepduo",
+      "adaptiveIcon": {
+        "backgroundColor": "#07060A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

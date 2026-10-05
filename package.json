@@ -1,0 +1,16 @@
+{
+  "name": "lovepduo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LovePDuo (LPD) — dark romantic playground for couples",
+  "scripts": {
+    "mobile": "npm --prefix apps/mobile start",
+    "mobile:web": "npm --prefix apps/mobile run web",
+    "mobile:android": "npm --prefix apps/mobile run android",
+    "backend": "npm --prefix backend start",
+    "typecheck": "npm --prefix apps/mobile run typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
