@@ -127,6 +127,13 @@ export default function WordVeilScreen() {
       setPresenceHint('Оба: одно слово');
       void juice.perfect();
       setTimeout(() => setPresenceHint(null), 1800);
+    } else if (
+      mineRef.current.trim().length > 0 &&
+      mineRef.current.trim().length === peer.trim().length
+    ) {
+      setPresenceHint('Оба на буквах');
+      void juice.sync();
+      setTimeout(() => setPresenceHint(null), 1600);
     } else if (pts >= 3) {
       setPresenceHint('Почти наравне…');
       void juice.sync();

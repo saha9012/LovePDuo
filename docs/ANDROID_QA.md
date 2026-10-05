@@ -58,7 +58,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Signal Draw: first stroke · рисуем вместе · оба на штрихах · оба кисть/clear/undo · brush · 5s · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Orbit Catch: miss/align · sync-align · оба catch · оба на очках · оба miss · оба финиш · оба догоняют · оба rematch · peer_left  
 - [ ] Soft Duel: tap grade · оба PERFECT/GOOD/OK · оба на очках · оба рано · оба ЖМИ · оба ждут · наравне · гонка · оба финиш · оба догоняют · arm · sync-finish · оба rematch · late-start · peer_left  
-- [ ] Word Veil: typing · пишем вместе · оба закрыли · оба: одно слово · оба догоняют · lock clear · match juice · finish sync · оба rematch · peer_left  
+- [ ] Word Veil: typing · пишем вместе · оба закрыли · оба: одно слово · оба на буквах · оба догоняют · lock clear · match juice · finish sync · оба rematch · peer_left  
 - [ ] Lobby: Ready toast · оба сняли Ready · оба в этом лобби · оба догоняют · cancel mid-count · peer leave/rejoin · Ready rebroadcast · late-start «догоняем» · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast · оба фильтр MVP/New · оба в игре из каталога  
 - [ ] Music: now-playing · оба слушают · stop · оба остановили · shelf · оба полка · оба на полке · оба добавили · оба на Music · reaction sync · reaction match · leave/rejoin
