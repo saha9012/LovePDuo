@@ -49,6 +49,14 @@ export default function PlayScreen() {
             badge="MVP"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'truth-or-spark' } })}
           />
+          <GameTile
+            title="Soft Duel"
+            subtitle="Реакция на вспышку слова. Perfect / рано / реванш."
+            accent="rose"
+            cover="heartbeat"
+            badge="NEW"
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
+          />
         </View>
       </ScrollView>
     </LpdBackground>

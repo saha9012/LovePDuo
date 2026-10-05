@@ -14,6 +14,7 @@ const routes = {
   'sky-claim': '/game/sky-claim',
   heartbeat: '/game/heartbeat',
   'truth-or-spark': '/game/truth-or-spark',
+  'soft-duel': '/game/soft-duel',
 } as const;
 
 export default function GameLobbyScreen() {

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../src/components/LpdBackground';
 import { BrandMark } from '../src/components/BrandMark';
 import { LpdButton } from '../src/components/LpdButton';
-import { colors, fonts, spacing } from '../src/theme/tokens';
+import { colors, fonts, radii, spacing } from '../src/theme/tokens';
 import { typography } from '../src/theme/typography';
 import { useApp } from '../src/store/AppStore';
 import { juice } from '../src/audio/juice';
@@ -22,6 +22,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair, signIn } = useApp();
+  const [name, setName] = useState(user?.displayName ?? '');
   const veil = useSharedValue(0);
   const rise = useSharedValue(28);
   const orbit = useSharedValue(0);
@@ -49,11 +50,15 @@ export default function WelcomeScreen() {
     transform: [{ rotate: `${orbit.value * 360}deg` }, { scale: 0.92 + veil.value * 0.08 }],
   }));
 
+  const ensureUser = async () => {
+    if (!user || (name.trim() && name.trim() !== user.displayName)) {
+      await signIn(name.trim() || 'Ты');
+    }
+  };
+
   const enter = async () => {
     void juice.warmth();
-    if (!user) {
-      await signIn('Ты');
-    }
+    await ensureUser();
     if (pair) {
       router.replace('/(tabs)/home');
     } else {
@@ -65,7 +70,7 @@ export default function WelcomeScreen() {
     <LpdBackground mood="night">
       <View style={[styles.root, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 24 }]}>
         <Animated.View style={[styles.orbitWrap, orbitStyle]} pointerEvents="none">
-          <Image
+          <Animated.Image
             source={require('../assets/welcome_orbit.png')}
             style={styles.orbit}
             resizeMode="contain"
@@ -78,6 +83,13 @@ export default function WelcomeScreen() {
           <Text style={[typography.body, styles.sub]}>
             Тёмная игровая зона для двоих. Янтарь, пыльная роза и раунды с двух телефонов.
           </Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder="Как тебя зовут"
+            placeholderTextColor={colors.textMuted}
+            style={styles.input}
+          />
         </Animated.View>
 
         <Animated.View style={[styles.cta, contentStyle]}>
@@ -87,7 +99,7 @@ export default function WelcomeScreen() {
             variant="ghost"
             onPress={async () => {
               void juice.card();
-              if (!user) await signIn('Ты');
+              await ensureUser();
               router.push('/pair/join');
             }}
           />
@@ -129,6 +141,18 @@ const styles = StyleSheet.create({
   sub: {
     maxWidth: 340,
     marginTop: spacing.md,
+  },
+  input: {
+    marginTop: spacing.sm,
+    minHeight: 50,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.65)',
+    paddingHorizontal: spacing.lg,
+    color: colors.textPrimary,
+    fontFamily: fonts.ui,
+    fontSize: 16,
   },
   cta: {
     gap: spacing.md,
