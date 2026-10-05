@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft «Оба финиш» · Together dual candle end · ToS dual deck wrap  
 - [x] Together dual candle end · ToS dual deck wrap · Word Veil одно слово  
 - [x] ToS dual deck wrap · Word Veil одно слово · Soft Наравне  
-- [x] Word Veil «Оба: одно слово» · Soft Наравне · Lobby оба в лобби  
 
 ## Catalog
 
