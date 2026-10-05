@@ -186,16 +186,24 @@ export default function MusicScreen() {
     });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
+    const title = asset.name.replace(/\.[^.]+$/, '');
     addTrack({
-      title: asset.name.replace(/\.[^.]+$/, ''),
+      title,
       artist: 'Загружено в LPD',
       sourceType: 'upload',
       playbackMode: 'local',
       addedBy: user?.displayName ?? 'Ты',
       uri: asset.uri,
     });
+    pairRealtime.sendGame('track-meta', {
+      title,
+      artist: 'Загружено в LPD',
+      sourceType: 'upload',
+      from: user?.displayName,
+      fromId: user?.id,
+    });
     trackEvent('track_uploaded', { source: 'upload' });
-    setNote('Трек сохранён в библиотеке пары. Никуда не денется.');
+    setNote('Трек сохранён. Партнёр видит карточку (файл — локально у тебя).');
     void juice.sync();
   };
   const addSpotifyStub = () => {
