@@ -75,6 +75,7 @@ export default function SkyClaimScreen() {
   const phaseRef = useRef<Phase>('ready');
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lateStartAt = useRef(0);
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
@@ -153,6 +154,10 @@ export default function SkyClaimScreen() {
         if (payload?.phase === 'start') {
           setPartnerLive(true);
           partnerLiveRef.current = true;
+          if (Date.now() - lateStartAt.current < 2500) {
+            bumpPeerNote('оба догоняют');
+            void juice.perfect();
+          }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setPartnerLive(true);
@@ -270,6 +275,7 @@ export default function SkyClaimScreen() {
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
+      lateStartAt.current = Date.now();
       bumpPeerNote('догоняем');
       void juice.hit();
       const id = setTimeout(() => startRef.current(), delay);

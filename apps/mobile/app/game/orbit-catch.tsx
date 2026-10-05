@@ -62,6 +62,7 @@ export default function OrbitCatchScreen() {
   const lastMissAt = useRef(0);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  const lateStartAt = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -130,6 +131,10 @@ export default function OrbitCatchScreen() {
             bumpPeerNote(both ? 'оба в игре' : 'в игре');
             void (both ? juice.perfect() : juice.sync());
             return;
+          }
+          if (payload?.phase === 'start' && Date.now() - lateStartAt.current < 2500) {
+            bumpPeerNote('оба догоняют');
+            void juice.perfect();
           }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
@@ -244,6 +249,7 @@ export default function OrbitCatchScreen() {
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
+      lateStartAt.current = Date.now();
       bumpPeerNote('догоняем');
       void juice.hit();
       const id = setTimeout(() => startRef.current(), delay);
