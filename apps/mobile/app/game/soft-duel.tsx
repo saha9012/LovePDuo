@@ -45,6 +45,7 @@ export default function SoftDuelScreen() {
   const [syncFinish, setSyncFinish] = useState(false);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const flashRef = useRef('');
   const partnerFinishedRef = useRef(false);
   const roundRef = useRef(0);
   const phaseRef = useRef<Phase>('ready');
@@ -63,6 +64,10 @@ export default function SoftDuelScreen() {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  useEffect(() => {
+    flashRef.current = flash;
+  }, [flash]);
 
   useEffect(() => {
     if (phase !== 'playing') {
@@ -146,14 +151,15 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.early) {
-        setFlash('Партнёр рано');
+        const both = flashRef.current === 'Рано';
+        setFlash(both ? 'Оба рано' : 'Партнёр рано');
         setPartnerFlash(true);
         partnerScale.value = withSequence(
           withSpring(1.08, { damping: 10 }),
           withTiming(1, { duration: 200 }),
         );
         setTimeout(() => setPartnerFlash(false), 420);
-        void juice.miss();
+        void (both ? juice.sync() : juice.miss());
         return;
       }
       if (typeof payload?.score === 'number') {
