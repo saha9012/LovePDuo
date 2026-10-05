@@ -1,30 +1,31 @@
 # LovePDuo — PROGRESS
 
 **Repo:** `https://github.com/saha9012/LovePDuo.git`  
-**Updated:** 2026-10-05 (continuous Ideal Bar)  
-**Test:** http://localhost:8081 · WS `:8787`
+**Updated:** 2026-10-05 continuous  
+**Test URL:** http://localhost:8081 · WS `:8787`
 
-## Done this sprint
+## Latest pushes
 
-- [x] Procedural WAV SFX pack + juice audio+haptics
-- [x] Custom LPD icon / splash / favicon / orbit welcome art
-- [x] Welcome orbit motion + pair-link cinematic orbs
-- [x] Sky Claim trails + live partner HUD + difficulty ramp
-- [x] Heartbeat / Truth Or Spark dual sync
-- [x] Candle timer, music reactions, now-playing
-- [x] Deep link route `lovepduo://join/CODE` → `/join/[code]`
-- [x] Profile SFX mute
+- SFX WAV pack + juice audio/haptics + mute
+- LPD icon/splash/orbit brand
+- Pair cinematic, Sky trails/ramp, Heartbeat/TOS sync
+- Soft Duel, Word Veil
+- Tiny Notes persist + WS
+- Memories, Candle, deep join `lovepduo://join/CODE`
+- Store listing draft
 
-## Still open vs Ideal Bar
+## MVP games
 
-1. Physical dual Android device QA (Expo Go + LAN IP)
-2. Store screenshots pack
-3. Spotify OAuth keys
-4. Server-authoritative beat clock
+| Game | Dual sync | Feel |
+|------|-----------|------|
+| Sky Claim | seed + score | trails + ramp + SFX |
+| Heartbeat | seed + tap sync | live sync bonus |
+| Truth Or Spark | shared deck | soft/spicy |
+| Soft Duel | score | reaction |
+| Word Veil | words | association |
 
-## Run
+## Open
 
-```bash
-cd backend && npm start
-cd apps/mobile && npm start
-```
+- Dual Android Expo Go QA (LAN IP)
+- Spotify OAuth keys
+- Store screenshots shoot

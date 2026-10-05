@@ -57,6 +57,14 @@ export default function PlayScreen() {
             badge="NEW"
             onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
           />
+          <GameTile
+            title="Word Veil"
+            subtitle="Ассоциации на одно слово. Сравниваем совпадение."
+            accent="mist"
+            cover="spark"
+            badge="NEW"
+            onPress={() => router.push({ pathname: '/game/lobby', params: { game: 'word-veil' } })}
+          />
         </View>
       </ScrollView>
     </LpdBackground>
