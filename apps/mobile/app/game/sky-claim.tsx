@@ -30,6 +30,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
+import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
@@ -632,6 +633,15 @@ export default function SkyClaimScreen() {
       <View style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.topHud}>
           <Text style={styles.hud}>Sky Claim</Text>
+          <Pressable
+            onPress={() => {
+              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+                if (ok) router.back();
+              });
+            }}
+          >
+            <Text style={styles.leave}>Выйти</Text>
+          </Pressable>
           <Text style={styles.timer}>{timeLeft}s</Text>
         </View>
         <View style={styles.stats}>
@@ -734,6 +744,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
     color: colors.textPrimary,
     fontSize: 18,
+  },
+  leave: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentAmber,
+    marginHorizontal: spacing.sm,
   },
   timer: {
     fontFamily: fonts.mono,

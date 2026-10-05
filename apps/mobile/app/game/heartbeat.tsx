@@ -24,6 +24,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
+import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
@@ -613,7 +614,18 @@ export default function HeartbeatScreen() {
   return (
     <LpdBackground mood="rain">
       <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
-        <Text style={styles.title}>Heartbeat Tap · seed {matchSeed}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Heartbeat Tap · seed {matchSeed}</Text>
+          <Pressable
+            onPress={() => {
+              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+                if (ok) router.back();
+              });
+            }}
+          >
+            <Text style={styles.leave}>Выйти</Text>
+          </Pressable>
+        </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
@@ -683,6 +695,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiSemi,
     color: colors.textPrimary,
     fontSize: 18,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  leave: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentAmber,
   },
   ready: {
     flex: 1,

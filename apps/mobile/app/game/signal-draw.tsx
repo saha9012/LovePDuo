@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   PanResponder,
+  Pressable,
   StyleSheet,
   Text,
   View,
@@ -17,6 +18,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
+import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
@@ -634,7 +636,18 @@ export default function SignalDrawScreen() {
   return (
     <LpdBackground mood="night">
       <View style={[styles.root, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 12 }]}>
-        <Text style={styles.title}>Signal Draw</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Signal Draw</Text>
+          <Pressable
+            onPress={() => {
+              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+                if (ok) router.back();
+              });
+            }}
+          >
+            <Text style={styles.leave}>Выйти</Text>
+          </Pressable>
+        </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
             <Text style={styles.hero}>Рисуйте сигнал</Text>
@@ -706,6 +719,16 @@ export default function SignalDrawScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, paddingHorizontal: spacing.lg, gap: spacing.sm },
   title: { fontFamily: fonts.uiSemi, color: colors.textPrimary, fontSize: 18 },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  leave: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentAmber,
+  },
   ready: { flex: 1, justifyContent: 'center', gap: spacing.md, paddingHorizontal: spacing.sm },
   hero: { fontFamily: fonts.display, fontSize: 34, color: colors.textPrimary },
   body: { fontFamily: fonts.ui, color: colors.textSecondary, lineHeight: 22 },
