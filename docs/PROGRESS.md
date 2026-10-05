@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Home memory toast · CodeInput paste juice  
-- [x] Join/create already-paired reconnect juice  
+- [x] Deep-link join juice · Home memory toast · Code paste  
+- [x] Join/create already-paired reconnect  
 
 ## Catalog
 

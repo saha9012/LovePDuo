@@ -38,6 +38,7 @@ export default function DeepJoinScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не вышло войти');
       setStatus('Не вышло');
+      void juice.miss();
     } finally {
       setLoading(false);
     }
@@ -46,14 +47,18 @@ export default function DeepJoinScreen() {
   useEffect(() => {
     if (!hydrated || tried.current) return;
     if (pair?.code === clean && clean.length === 6) {
+      void juice.sync();
+      setStatus('Уже в этой паре');
       router.replace('/(tabs)/home');
       return;
     }
     if (clean.length === 6) {
       tried.current = true;
+      void juice.hit();
       void go();
     } else {
       setStatus('Код битый — войди вручную');
+      void juice.miss();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, clean, pair?.code]);
