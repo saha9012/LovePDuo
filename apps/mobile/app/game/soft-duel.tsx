@@ -228,9 +228,10 @@ export default function SoftDuelScreen() {
               : juice.hit()
           );
         } else if (ahead) {
-          setFlash('Партнёр впереди');
+          const racing = flashRef.current === 'Партнёр впереди';
+          setFlash(racing ? 'Гонка' : 'Партнёр впереди');
           flashScale.value = withSpring(1.14, { damping: 10 });
-          void juice.hit();
+          void (racing ? juice.sync() : juice.hit());
         } else if (
           typeof payload.round === 'number' &&
           payload.round === roundRef.current &&
