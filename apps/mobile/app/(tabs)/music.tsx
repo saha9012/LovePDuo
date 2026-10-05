@@ -2,6 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Audio } from 'expo-av';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
@@ -32,6 +38,7 @@ export default function MusicScreen() {
   } = useApp();
   const [note, setNote] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const peerPulse = useSharedValue(1);
 
   const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
   const visibleTracks = useMemo(() => {
@@ -49,6 +56,20 @@ export default function MusicScreen() {
       void sound?.unloadAsync();
     };
   }, [sound]);
+
+  useEffect(() => {
+    if (!partnerNowPlaying) return;
+    peerPulse.value = withSequence(
+      withTiming(1.04, { duration: 160 }),
+      withTiming(1, { duration: 280 }),
+    );
+    void juice.card();
+  }, [partnerNowPlaying, peerPulse]);
+
+  const peerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: peerPulse.value }],
+    opacity: 0.85 + (peerPulse.value - 1) * 2,
+  }));
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
@@ -176,7 +197,14 @@ export default function MusicScreen() {
         </ScrollView>
 
         {partnerNowPlaying ? (
-          <Text style={styles.nowPlaying}>♪ {partnerNowPlaying}</Text>
+          <Animated.Text style={[styles.nowPlaying, peerStyle]}>
+            ♪ {partnerNowPlaying}
+          </Animated.Text>
+        ) : null}
+        {active && active.trackIds.length === 0 && tracks.length > 0 ? (
+          <Text style={styles.playlistHint}>
+            «{active.name}» пуст — жми + у трека, чтобы положить на полку настроения.
+          </Text>
         ) : null}
         {nowPlayingId ? (
           <LpdButton
@@ -212,7 +240,8 @@ export default function MusicScreen() {
                 <View
                   key={t.id}
                   style={[styles.row, nowPlayingId === t.id && styles.rowPlaying]}
-                >                  <Pressable style={{ flex: 1, gap: 4 }} onPress={() => void playTrack(t)}>
+                >
+                  <Pressable style={{ flex: 1, gap: 4 }} onPress={() => void playTrack(t)}>
                     <Text style={styles.trackTitle}>
                       {nowPlayingId === t.id ? '▶ ' : ''}
                       {t.title}
@@ -300,6 +329,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.uiMedium,
     color: colors.accentRose,
     fontSize: 14,
+  },
+  playlistHint: {
+    fontFamily: fonts.ui,
+    color: colors.accentMist,
+    fontSize: 13,
+    lineHeight: 18,
   },
   actions: {
     gap: spacing.sm,

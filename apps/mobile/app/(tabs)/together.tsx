@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
@@ -25,7 +25,7 @@ const CANDLE_SEC = 120;
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, sendWarmth, notes, addNote, receiveNote } = useApp();
-  const { items: memories, clearMemories } = useMemories();
+  const { items: memories, clearMemories, addMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -33,6 +33,7 @@ export default function TogetherScreen() {
   const card = soft[idx % soft.length];
   const flame = useSharedValue(1);
   const lit = candleLeft != null && candleLeft > 0;
+  const candleLogged = useRef(false);
 
   useEffect(() => {
     if (!lit) {
@@ -61,11 +62,25 @@ export default function TogetherScreen() {
   }, [candleLeft]);
 
   useEffect(() => {
+    if (candleLeft !== 0 || candleLogged.current) return;
+    candleLogged.current = true;
+    void juice.postMatch();
+    addMemory({
+      kind: 'candle',
+      title: 'Candle',
+      detail: 'Две минуты огня. Тепло осталось.',
+    });
+  }, [candleLeft, addMemory]);
+
+  useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'game' && msg.gameId === 'candle') {
         const payload = msg.payload as { left?: number; start?: boolean } | undefined;
-        if (payload?.start) setCandleLeft(CANDLE_SEC);
+        if (payload?.start) {
+          candleLogged.current = false;
+          setCandleLeft(CANDLE_SEC);
+        }
         if (typeof payload?.left === 'number') setCandleLeft(payload.left);
       }
       if (msg.type === 'game' && msg.gameId === 'tiny-note') {
@@ -79,6 +94,7 @@ export default function TogetherScreen() {
   }, [pair?.code, user?.id, receiveNote]);
 
   const startCandle = () => {
+    candleLogged.current = false;
     setCandleLeft(CANDLE_SEC);
     pairRealtime.sendGame('candle', { start: true, left: CANDLE_SEC });
     void juice.warmth();

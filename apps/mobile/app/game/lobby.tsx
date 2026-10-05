@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
@@ -48,9 +49,19 @@ export default function GameLobbyScreen() {
     user?.id && pair?.hostUserId && pair.hostUserId === user.id,
   );
 
+  const peerReadyScale = useSharedValue(1);
+
   useEffect(() => {
     return pairRealtime.onStatus(setWsOnline);
   }, []);
+
+  useEffect(() => {
+    if (!readyPeer) return;
+    peerReadyScale.value = withSequence(
+      withSpring(1.06, { damping: 10 }),
+      withTiming(1, { duration: 220 }),
+    );
+  }, [readyPeer, peerReadyScale]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -66,6 +77,7 @@ export default function GameLobbyScreen() {
         } | undefined;
         if (payload?.ready && payload.userId !== user.id) {
           setReadyPeer(true);
+          void juice.sync();
         }
         if (payload?.start && typeof payload.seed === 'number') {
           const at = payload.startAtMs ?? Date.now() + 2500;
@@ -125,6 +137,9 @@ export default function GameLobbyScreen() {
     transform: [{ scale: countScale.value }],
     opacity: countOpacity.value,
   }));
+  const peerReadyStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: peerReadyScale.value }],
+  }));
 
   const onReady = () => {
     if (!user) return;
@@ -159,9 +174,9 @@ export default function GameLobbyScreen() {
           <Text style={[styles.pill, readyMe && styles.pillReady]}>
             {readyMe ? 'Ты: READY' : 'Ты: …'}
           </Text>
-          <Text style={[styles.pill, readyPeer && styles.pillReady]}>
+          <Animated.Text style={[styles.pill, readyPeer && styles.pillReady, peerReadyStyle]}>
             {readyPeer ? 'Партнёр: READY' : 'Партнёр: …'}
-          </Text>
+          </Animated.Text>
         </View>
 
         {countdown != null ? (
