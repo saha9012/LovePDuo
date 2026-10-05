@@ -29,6 +29,7 @@ export default function PlayScreen() {
             title="Sky Claim"
             subtitle="Лови огни с неба на своём поле. Комбо, обманки, реванш."
             accent="amber"
+            cover="sky"
             badge="MVP"
             onPress={() => router.push('/game/sky-claim')}
           />
@@ -36,6 +37,7 @@ export default function PlayScreen() {
             title="Heartbeat Tap"
             subtitle="Общий бит. Личная точность + sync bonus."
             accent="rose"
+            cover="heartbeat"
             badge="MVP"
             onPress={() => router.push('/game/heartbeat')}
           />
@@ -43,6 +45,7 @@ export default function PlayScreen() {
             title="Truth Or Spark"
             subtitle="Вопросы, задания и искры. Soft / spicy, без ваты."
             accent="mist"
+            cover="spark"
             badge="MVP"
             onPress={() => router.push('/game/truth-or-spark')}
           />

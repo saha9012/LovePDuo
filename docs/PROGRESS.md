@@ -3,7 +3,8 @@
 **Repo:** `https://github.com/saha9012/LovePDuo.git` (НЕ pom)  
 **Local:** `C:\prodject\LovePDio`  
 **TZ:** v1.1.2  
-**Updated:** 2026-10-05
+**Updated:** 2026-10-05  
+**Branch:** `cursor/phase0-foundation-lovepduo-8960` (+ pushed to `main`)
 
 ## Stack decision
 
@@ -11,74 +12,59 @@ Expo RN + TypeScript (Flutter SDK отсутствует в среде). Заф�
 
 ## Status by phase
 
-### Phase 0 — Foundation ✅ (MVP-level)
+### Phase 0 — Foundation ✅
 
-- [x] Monorepo structure (`apps/mobile`, `backend`, `assets`, `docs`, `packages/*`)
-- [x] Theme tokens amber + dusty rose
+- [x] Monorepo + Expo app `app.lovepduo`
+- [x] Theme tokens amber + dusty rose / Fraunces+Sora+Plex
 - [x] `LpdBackground` breathing glow
-- [x] Fraunces / Sora / IBM Plex Mono
-- [x] Splash/welcome hero with LovePDuo brand
-- [x] README + run scripts
+- [x] Welcome hero brand LovePDuo
+- [x] README + docs (TZ / DESIGN / GAMES / PROGRESS)
 
-### Phase 1 — Pair core ✅ (local persist)
+### Phase 1 — Pair core ✅ (local + WS stub)
 
-- [x] Sign-in (display name) + persist
-- [x] Create pair → 6-char code
-- [x] Join pair by code
-- [x] Pair success cinematic
-- [x] Home room + presence UI + mood presets + warmth pulse
-- [x] Profile unlink / sign out
-- [ ] True dual-device presence via WS (server stub ready)
+- [x] Sign-in persist, create/join 6-char, success cinematic
+- [x] Home room, mood, warmth pulse
+- [x] WS backend `:8787` + client `PairRealtime`
+- [ ] QR deep-link join UI polish
 
-### Phase 2 — Games MVP ✅ (playable, polish ongoing)
+### Phase 2 — Games MVP ✅ (playable)
 
-- [x] Sky Claim playable + juice + post-match
-- [x] Heartbeat Tap playable + sync bonus
-- [x] Truth Or Spark ≥60 cards + soft/spicy + skip
-- [x] Post-match phrase pool ≥30
-- [ ] Authoritative 2-phone score sync (WS integrate next)
-- [ ] Ideal Bar feel pass (spawn curves, SFX, covers)
+- [x] Sky Claim + juice + post-match + WS score relay (fallback demo partner)
+- [x] Heartbeat Tap + sync bonus
+- [x] Truth Or Spark 62 cards soft/spicy
+- [x] Post-match ≥30 lines + GameCover tiles
+- [ ] Shared seed countdown lobby UX
 
 ### Phase 3 — Music 🚧
 
-- [x] Upload picker → pair library persist (AsyncStorage metadata + local URI)
-- [x] Spotify metadata stub (honest: OAuth/App Remote next)
-- [x] VK fallback stub (honest blocker: official audio pull limited)
-- [ ] In-app AV playback polish + now playing presence
-- [ ] Real Spotify OAuth when keys available
+- [x] Upload → library persist + in-app AV play for local URI
+- [x] Spotify/VK metadata stubs + honest notes in UI/PROGRESS
+- [ ] Spotify OAuth keys / App Remote
+- [ ] VK official audio (blocked → upload fallback)
 
-### Phase 4 — Polish
+## Gaps vs Ideal Bar
 
-- [ ] Custom game covers / tab icons SVG set
-- [ ] Analytics events
-- [ ] Store listing screenshots
-- [ ] Crash-free pass on mid Android
+1. Shared authoritative spawn seed still soft (per-client seed + score sync).
+2. Custom SVG icon set / SFX packs incomplete.
+3. Device dual-phone QA pending (need 2 clients + backend running).
+4. PR API 401 без token — ветки запушены; PR можно открыть вручную.
 
-## Known gaps vs Ideal Bar
+## Run
 
-1. Dual-phone sync ещё на stub-сервере, не вшит в game clients.
-2. Partner score в Sky/Heartbeat — simulation до WS wiring.
-3. Ассеты A06–A12 частично procedural/code, не отдельные SVG packs.
-4. Spotify/VK — metadata path only until API keys.
+```bash
+cd apps/mobile && npm start
+# optional realtime:
+cd backend && npm start
+```
 
-## Next sprint
-
-1. Подключить mobile → `backend` WS для pair presence + Sky Claim seed/score.
-2. AV playback для upload tracks.
-3. Game covers + empty-state illustrations.
-4. Feel pass Sky Claim (spawn difficulty curve).
-
-## Acceptance snapshot (§14.1)
+## Acceptance snapshot
 
 | Criterion | Status |
 |-----------|--------|
-| Android install / pair flow | In progress (Expo) |
-| Dark romantic visual | ✅ direction locked |
-| Brand on first screen | ✅ |
-| 3 MVP games playable | ✅ (solo + simulated partner) |
-| Sky Claim post-match | ✅ |
-| Music upload persist | ✅ metadata/URI |
-| Spotify/VK attempt logged | ✅ honest stubs |
-| No critical crashes main flow | needs device QA |
-| Non-placeholder assets | partial |
-| Git push LovePDuo | in progress |
+| Canonical repo LovePDuo | ✅ pushed |
+| Brand first screen | ✅ |
+| Dark romantic | ✅ |
+| 3 games playable | ✅ |
+| Music upload persist + play | ✅ local |
+| Spotify/VK attempt logged | ✅ |
+| Dual-phone live score | 🟡 WS ready, needs 2-device QA |

@@ -19,12 +19,15 @@ import {
   skyClaimConfig,
 } from '../../src/games/skyClaim';
 import { pickPostMatchLine } from '../../src/content/postMatch';
+import { useApp } from '../../src/store/AppStore';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
 export default function SkyClaimScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { user, pair } = useApp();
   const seed = useMemo(() => Date.now() % 100000, []);
   const spawner = useMemo(() => createSkySpawner(seed), [seed]);
 
@@ -34,10 +37,30 @@ export default function SkyClaimScreen() {
   const [combo, setCombo] = useState(0);
   const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);
   const [partnerScore, setPartnerScore] = useState(0);
+  const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const size = useRef({ w: 1, h: 1 });
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
+  const partnerLiveRef = useRef(false);
+
+  useEffect(() => {
+    if (!pair || !user) return;
+    pairRealtime.connect(pair.code, user.id, user.displayName);
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'game' && msg.gameId === 'sky-claim') {
+        const payload = msg.payload as { score?: number; phase?: string } | undefined;
+        if (typeof payload?.score === 'number') {
+          setPartnerScore(payload.score);
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
+        }
+      }
+    });
+    return () => {
+      off();
+    };
+  }, [pair?.code, user?.id]);
 
   const start = () => {
     setPhase('playing');
@@ -48,6 +71,9 @@ export default function SkyClaimScreen() {
     scoreRef.current = 0;
     setTimeLeft(skyClaimConfig.durationSec);
     setFlash(null);
+    setPartnerLive(false);
+    partnerLiveRef.current = false;
+    pairRealtime.sendGame('sky-claim', { phase: 'start', seed, score: 0 });
   };
 
   useEffect(() => {
@@ -76,13 +102,25 @@ export default function SkyClaimScreen() {
         if (t <= 1) {
           clearInterval(spawnTimer);
           clearInterval(tick);
-          const partner = Math.max(
-            0,
-            Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
-          );
-          setPartnerScore(partner);
+          pairRealtime.sendGame('sky-claim', {
+            phase: 'finished',
+            score: scoreRef.current,
+          });
+          if (!partnerLiveRef.current) {
+            const partner = Math.max(
+              0,
+              Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
+            );
+            setPartnerScore(partner);
+          }
           setPhase('finished');
           return 0;
+        }
+        if (t % 5 === 0) {
+          pairRealtime.sendGame('sky-claim', {
+            phase: 'playing',
+            score: scoreRef.current,
+          });
         }
         return t - 1;
       });
@@ -155,6 +193,7 @@ export default function SkyClaimScreen() {
           <Text style={styles.hud}>Sky Claim</Text>
           <Text style={styles.scoreline}>
             Ты {score} · Партнёр {partnerScore}
+            {partnerLive ? ' · live' : ' · demo'}
           </Text>
           <PostMatchCard
             title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}

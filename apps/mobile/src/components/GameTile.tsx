@@ -1,11 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, radii, spacing } from '../theme/tokens';
+import { GameCover } from './GameCover';
 
 type Props = {
   title: string;
   subtitle: string;
   accent?: 'rose' | 'amber' | 'mist';
+  cover?: 'sky' | 'heartbeat' | 'spark';
   onPress?: () => void;
   badge?: string;
 };
@@ -20,6 +22,7 @@ export function GameTile({
   title,
   subtitle,
   accent = 'amber',
+  cover,
   onPress,
   badge,
 }: Props) {
@@ -29,6 +32,11 @@ export function GameTile({
       style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
     >
       <View style={[styles.bar, { backgroundColor: accents[accent] }]} />
+      {cover ? (
+        <View style={styles.coverWrap}>
+          <GameCover game={cover} />
+        </View>
+      ) : null}
       <View style={styles.body}>
         <View style={styles.row}>
           <Text style={styles.title}>{title}</Text>
@@ -49,6 +57,7 @@ const styles = StyleSheet.create({
     borderColor: colors.stroke,
     backgroundColor: 'rgba(36,28,49,0.55)',
     minHeight: 96,
+    alignItems: 'center',
   },
   pressed: {
     opacity: 0.9,
@@ -56,6 +65,10 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: 5,
+    alignSelf: 'stretch',
+  },
+  coverWrap: {
+    paddingLeft: spacing.md,
   },
   body: {
     flex: 1,
