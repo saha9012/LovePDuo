@@ -249,7 +249,13 @@ export default function SignalDrawScreen() {
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
     endWarned.current = false;
-    pairRealtime.sendGame('signal-draw', { phase: 'start', seed, hello: true, fromId: user?.id });
+    pairRealtime.sendGame('signal-draw', {
+      phase: 'start',
+      seed,
+      hello: true,
+      brush,
+      fromId: user?.id,
+    });
     void juice.beat();
   };
   startRef.current = start;
