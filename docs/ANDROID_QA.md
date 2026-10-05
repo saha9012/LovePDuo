@@ -57,7 +57,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 - [ ] Truth Or Spark: named turn · skip · оба скипнули · оба soft/spicy · filter · deck-wrap · оба новая колода · peer_left  
 - [ ] Signal Draw: first stroke · рисуем вместе · оба кисть/clear/undo · brush · 5s · sync-finish · оба rematch · peer_left  
 - [ ] Orbit Catch: miss/align · sync-align · оба catch · оба miss · sync-finish · оба rematch · peer_left  
-- [ ] Soft Duel: tap grade · оба PERFECT/GOOD/OK · оба рано · оба ЖМИ · arm · sync-finish · оба rematch · late-start · peer_left  
+- [ ] Soft Duel: tap grade · оба PERFECT/GOOD/OK · оба рано · оба ЖМИ · наравне · arm · sync-finish · оба rematch · late-start · peer_left  
 - [ ] Word Veil: typing · пишем вместе · оба закрыли · lock clear · match juice · finish sync · оба rematch · peer_left  
 - [ ] Lobby: Ready toast · оба сняли Ready · cancel mid-count · peer leave/rejoin · Ready rebroadcast · late-start «догоняем» · peek  
 - [ ] Play: peer-lobby banner → one-tap join · leave toast · оба фильтр MVP/New  

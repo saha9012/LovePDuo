@@ -48,6 +48,7 @@ export default function SoftDuelScreen() {
   const flashRef = useRef('');
   const partnerFinishedRef = useRef(false);
   const roundRef = useRef(0);
+  const partnerRoundRef = useRef(0);
   const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
@@ -152,6 +153,7 @@ export default function SoftDuelScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setPartnerRound(0);
+        partnerRoundRef.current = 0;
         const both = Date.now() - lastRematchAt.current < 2500;
         setFlash(both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         void (both ? juice.perfect() : juice.sync());
@@ -178,7 +180,11 @@ export default function SoftDuelScreen() {
           typeof payload.round === 'number' &&
           payload.round > roundRef.current &&
           phaseRef.current === 'playing';
-        if (typeof payload.round === 'number') setPartnerRound(payload.round);
+        const prevPartnerRound = partnerRoundRef.current;
+        if (typeof payload.round === 'number') {
+          partnerRoundRef.current = payload.round;
+          setPartnerRound(payload.round);
+        }
         setPartnerFlash(true);
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),
@@ -224,6 +230,15 @@ export default function SoftDuelScreen() {
           setFlash('Партнёр впереди');
           flashScale.value = withSpring(1.14, { damping: 10 });
           void juice.hit();
+        } else if (
+          typeof payload.round === 'number' &&
+          payload.round === roundRef.current &&
+          prevPartnerRound < roundRef.current &&
+          phaseRef.current === 'playing'
+        ) {
+          setFlash('Наравне');
+          flashScale.value = withSpring(1.14, { damping: 10 });
+          void juice.perfect();
         }
       }
     });
@@ -288,6 +303,7 @@ export default function SoftDuelScreen() {
     setMyScore(0);
     setPartnerScore(0);
     setPartnerRound(0);
+    partnerRoundRef.current = 0;
     setPhase('playing');
     pairRealtime.sendGame('soft-duel', {
       phase: 'start',

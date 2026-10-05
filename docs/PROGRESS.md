@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Soft «Наравне» race · Welcome/Home оба в комнате · Music dual play  
 - [x] Welcome «Оба в комнате» · Home room dual · Music dual now-playing  
 - [x] Home «Оба в комнате» · Music dual now-playing · dual hello catalog  
-- [x] Music dual now-playing · dual hello catalog · dual rematch catalog  
 
 ## Catalog
 
