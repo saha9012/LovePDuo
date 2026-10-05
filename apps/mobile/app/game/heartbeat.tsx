@@ -60,6 +60,8 @@ export default function HeartbeatScreen() {
   const startRef = useRef<() => void>(() => undefined);
   const padScale = useSharedValue(1);
   const syncGlow = useSharedValue(0);
+  const partnerScale = useSharedValue(1);
+  const [partnerFlash, setPartnerFlash] = useState(false);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -74,6 +76,12 @@ export default function HeartbeatScreen() {
         setPartnerScore(payload.total);
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setPartnerFlash(true);
+        partnerScale.value = withSequence(
+          withSpring(1.12, { damping: 10 }),
+          withTiming(1, { duration: 200 }),
+        );
+        setTimeout(() => setPartnerFlash(false), 400);
       }
       if (typeof payload?.tapAt === 'number') {
         lastPartnerTapMs.current = payload.tapAt;
@@ -82,7 +90,7 @@ export default function HeartbeatScreen() {
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, partnerScale]);
 
   const start = () => {
     setPhase('playing');
@@ -211,6 +219,9 @@ export default function HeartbeatScreen() {
   const syncStyle = useAnimatedStyle(() => ({
     opacity: syncGlow.value * 0.45,
   }));
+  const partnerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: partnerScale.value }],
+  }));
 
   if (phase === 'finished') {
     return (
@@ -252,6 +263,12 @@ export default function HeartbeatScreen() {
             <View style={styles.hud}>
               <Text style={styles.stat}>Очки {score}</Text>
               <Text style={styles.stat}>Sync +{syncBonus}</Text>
+              <Animated.Text
+                style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
+              >
+                партнёр {partnerScore}
+                {partnerLive ? ' ·live' : ''}
+              </Animated.Text>
               <Text style={styles.stat}>
                 {Math.max(0, Math.ceil((heartbeatConfig.durationMs - elapsed) / 1000))}s
               </Text>
@@ -335,6 +352,10 @@ const styles = StyleSheet.create({
   stat: {
     fontFamily: fonts.uiMedium,
     color: colors.textSecondary,
+  },
+  partnerHot: {
+    color: colors.accentRose,
+    fontFamily: fonts.uiSemi,
   },
   stage: {
     flex: 1,

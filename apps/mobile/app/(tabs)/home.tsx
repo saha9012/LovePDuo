@@ -76,6 +76,7 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.meta}>
             Код пары: {pair?.code ?? '—'} · Realtime: {wsOnline ? 'online' : 'offline'}
+            {typeof pair?.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''}
           </Text>
           {Platform.OS === 'web' ? (
             <Text style={styles.hint}>

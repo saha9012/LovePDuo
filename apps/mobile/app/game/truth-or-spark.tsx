@@ -150,6 +150,16 @@ export default function TruthOrSparkScreen() {
     void juice.card();
   };
 
+  const reshuffle = () => {
+    setIndex(0);
+    setSkips(SKIP_LIMIT);
+    setTurnMine(true);
+    broadcast(0, filter, SKIP_LIMIT);
+    void juice.sync();
+  };
+
+  const progress = deck.length > 0 ? ((index % deck.length) + 1) / deck.length : 0;
+
   const cardStyle = useAnimatedStyle(() => ({
     opacity: cardOpacity.value,
     transform: [
@@ -172,6 +182,10 @@ export default function TruthOrSparkScreen() {
           seed {seed} · {live ? `live с ${peerName ?? 'партнёром'}` : params.solo === '1' ? 'solo' : 'ожидаем партнёра'}
           {isHost ? ' · host' : ''} · ход: {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
+
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
+        </View>
 
         <View style={styles.filters}>
           {(['soft', 'spicy'] as const).map((f) => (
@@ -207,6 +221,9 @@ export default function TruthOrSparkScreen() {
             disabled={skips <= 0 || (!turnMine && params.solo !== '1' && live)}
             onPress={skip}
           />
+          {index > 0 && index % deck.length === 0 ? (
+            <LpdButton label="Перетасовать колоду" variant="ghost" onPress={reshuffle} />
+          ) : null}
         </View>
       </View>
     </LpdBackground>
@@ -237,6 +254,17 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     fontSize: 12,
     color: colors.textMuted,
+  },
+  progressTrack: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.accentRose,
   },
   filters: {
     flexDirection: 'row',

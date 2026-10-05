@@ -6,10 +6,10 @@
 
 ## Latest
 
-- [x] Backend room roster on join (`peers`/`size`) + join/leave logs  
-- [x] RealtimeConnector hydrates partner from `joined.peers`  
-- [x] Copy/share pair code helper (Home + Success)  
-- [x] Soft Duel partner live HUD pulse  
+- [x] Home room size from WS · partner hydrate from roster  
+- [x] Sky Claim / Heartbeat partner score flash  
+- [x] Truth Or Spark deck progress + reshuffle  
+- [x] Word Veil wait for partner · Soft Duel live HUD · copy code  
 - [x] Profile rename · Signal Draw undo · Memories persist  
 
 ## Catalog

@@ -8,6 +8,13 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
@@ -50,12 +57,14 @@ export default function SkyClaimScreen() {
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
+  const [partnerFlash, setPartnerFlash] = useState(false);
   const size = useRef({ w: 1, h: 1 });
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const timeLeftRef = useRef(skyClaimConfig.durationSec);
   const startRef = useRef<() => void>(() => undefined);
+  const partnerScale = useSharedValue(1);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -66,13 +75,19 @@ export default function SkyClaimScreen() {
           setPartnerScore(payload.score);
           setPartnerLive(true);
           partnerLiveRef.current = true;
+          setPartnerFlash(true);
+          partnerScale.value = withSequence(
+            withSpring(1.14, { damping: 10 }),
+            withTiming(1, { duration: 220 }),
+          );
+          setTimeout(() => setPartnerFlash(false), 420);
         }
       }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, partnerScale]);
 
   const start = () => {
     setPhase('playing');
@@ -228,6 +243,9 @@ export default function SkyClaimScreen() {
   );
 
   const line = pickPostMatchLine(score, partnerScore, seed);
+  const partnerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: partnerScale.value }],
+  }));
 
   if (phase === 'finished') {
     return (
@@ -261,10 +279,17 @@ export default function SkyClaimScreen() {
         <View style={styles.stats}>
           <Text style={styles.stat}>Очки {score}</Text>
           <Text style={[styles.stat, combo >= 5 && styles.comboHot]}>Комбо ×{combo}</Text>
-          <Text style={styles.stat}>
+          <Animated.Text
+            style={[
+              styles.stat,
+              partnerLive && styles.partnerLive,
+              partnerFlash && styles.partnerHot,
+              partnerStyle,
+            ]}
+          >
             Партнёр {partnerScore}
-            {partnerLive ? '·live' : ''}
-          </Text>
+            {partnerLive ? ' ·live' : ''}
+          </Animated.Text>
         </View>
 
         {phase === 'ready' ? (
@@ -366,6 +391,13 @@ const styles = StyleSheet.create({
   },
   comboHot: {
     color: colors.accentAmber,
+    fontFamily: fonts.uiSemi,
+  },
+  partnerLive: {
+    color: colors.textSecondary,
+  },
+  partnerHot: {
+    color: colors.accentRose,
     fontFamily: fonts.uiSemi,
   },
   ready: {

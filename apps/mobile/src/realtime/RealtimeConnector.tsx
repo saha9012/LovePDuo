@@ -4,12 +4,15 @@ import { pairRealtime } from './PairRealtime';
 
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
-  const { user, pair, sendWarmth, setPartnerInfo } = useApp();
+  const { user, pair, sendWarmth, setPartnerInfo, setRoomSize } = useApp();
 
   useEffect(() => {
     if (!user || !pair) return;
     pairRealtime.connect(pair.code, user.id, user.displayName);
     const off = pairRealtime.onMessage((msg) => {
+      if (typeof msg.size === 'number') {
+        setRoomSize(msg.size);
+      }
       if (msg.type === 'warmth') {
         sendWarmth();
       }
@@ -34,7 +37,15 @@ export function RealtimeConnector() {
     return () => {
       off();
     };
-  }, [user?.id, pair?.code, pair?.partnerName, sendWarmth, setPartnerInfo, user?.displayName]);
+  }, [
+    user?.id,
+    pair?.code,
+    pair?.partnerName,
+    sendWarmth,
+    setPartnerInfo,
+    setRoomSize,
+    user?.displayName,
+  ]);
 
   return null;
 }

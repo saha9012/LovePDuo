@@ -27,6 +27,7 @@ export type PairState = {
   partnerName: string;
   partnerPresence: Presence;
   mood: 'night' | 'warm' | 'rain';
+  roomSize?: number;
 };
 
 export type TrackItem = {
@@ -72,6 +73,7 @@ type AppState = {
   unlinkPair: () => Promise<void>;
   setMood: (mood: PairState['mood']) => void;
   setPairName: (name: string) => void;
+  setRoomSize: (size: number) => void;
   setPartnerInfo: (name: string, presence?: Presence) => void;
   sendWarmth: () => void;
   warmthPulse: number;
@@ -241,6 +243,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPair((prev) => (prev ? { ...prev, name: clean } : prev));
   }, []);
 
+  const setRoomSize = useCallback((size: number) => {
+    setPair((prev) => (prev ? { ...prev, roomSize: size } : prev));
+  }, []);
+
   const setPartnerInfo = useCallback((name: string, presence: Presence = 'online') => {
     setPair((prev) =>
       prev
@@ -327,6 +333,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlinkPair,
       setMood,
       setPairName,
+      setRoomSize,
       setPartnerInfo,
       sendWarmth,
       warmthPulse,
@@ -357,6 +364,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlinkPair,
       setMood,
       setPairName,
+      setRoomSize,
       setPartnerInfo,
       sendWarmth,
       warmthPulse,
