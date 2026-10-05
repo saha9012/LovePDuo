@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Music «Оба на Music» · dual add track · Soft «Наравне»  
 - [x] Music dual add track · Soft «Наравне» · Welcome/Home оба в комнате  
 - [x] Soft «Наравне» race · Welcome/Home оба в комнате · Music dual play  
-- [x] Welcome «Оба в комнате» · Home room dual · Music dual now-playing  
 
 ## Catalog
 

@@ -44,6 +44,7 @@ export default function MusicScreen() {
   const peerPulse = useSharedValue(1);
   const noteTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastStopAt = React.useRef(0);
+  const lastHelloAt = React.useRef(0);
 
   const showNote = (text: string, ms = 1800) => {
     setNote(text);
@@ -94,6 +95,7 @@ export default function MusicScreen() {
         showNote('Партнёр снова на связи');
         void juice.sync();
         if (user?.id) {
+          lastHelloAt.current = Date.now();
           pairRealtime.sendGame('music-hello', {
             from: user.displayName,
             fromId: user.id,
@@ -104,8 +106,9 @@ export default function MusicScreen() {
       if (msg.type === 'game' && msg.gameId === 'music-hello') {
         const payload = msg.payload as { from?: string; fromId?: string } | undefined;
         if (payload?.fromId && payload.fromId === user?.id) return;
-        showNote(`${payload?.from ?? 'Партнёр'} на Music`);
-        void juice.hit();
+        const both = Date.now() - lastHelloAt.current < 2500;
+        showNote(both ? 'Оба на Music' : `${payload?.from ?? 'Партнёр'} на Music`);
+        void (both ? juice.perfect() : juice.hit());
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'track-meta') {
@@ -242,6 +245,7 @@ export default function MusicScreen() {
 
   useEffect(() => {
     if (!pair || !user) return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('music-hello', {
       from: user.displayName,
       fromId: user.id,
