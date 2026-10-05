@@ -230,10 +230,16 @@ export default function TruthOrSparkScreen() {
         const who = payload.fromName || 'Партнёр';
         if (payload.deckWrap) {
           const both = Date.now() - lastDeckWrapAt.current < 2800;
+          const racing =
+            both &&
+            (turnToastRef.current === 'Оба: колода по кругу' ||
+              turnToastRef.current === 'Оба по кругу');
           showTurnToast(
-            both
-              ? 'Оба: колода по кругу'
-              : `${who}: колода по кругу — твой ход`,
+            racing
+              ? 'Оба по кругу'
+              : both
+                ? 'Оба: колода по кругу'
+                : `${who}: колода по кругу — твой ход`,
           );
           void (both ? juice.perfect() : juice.sync());
         } else if (payload.skipped) {
