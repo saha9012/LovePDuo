@@ -61,6 +61,7 @@ export default function HeartbeatScreen() {
   const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
@@ -125,6 +126,7 @@ export default function HeartbeatScreen() {
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('heartbeat', { hello: true, fromId: user.id });
         return;
       }
@@ -143,10 +145,11 @@ export default function HeartbeatScreen() {
       if (payload?.hello) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setPeerNote('в игре');
+        const both = Date.now() - lastHelloAt.current < 2500;
+        setPeerNote(both ? 'оба в игре' : 'в игре');
         if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
         peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
-        void juice.sync();
+        void (both ? juice.perfect() : juice.sync());
         return;
       }
       if (payload?.phase === 'start') {
@@ -246,6 +249,7 @@ export default function HeartbeatScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('heartbeat', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 

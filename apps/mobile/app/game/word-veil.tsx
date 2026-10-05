@@ -58,6 +58,7 @@ export default function WordVeilScreen() {
   const resetRef = useRef<() => void>(() => undefined);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
 
@@ -159,6 +160,7 @@ export default function WordVeilScreen() {
       if (msg.type === 'peer_joined') {
         setPresenceHint('Партнёр вернулся');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
         setTimeout(() => setPresenceHint(null), 1600);
         return;
@@ -174,8 +176,9 @@ export default function WordVeilScreen() {
         phase?: string;
       } | undefined;
       if (payload?.hello) {
-        setPresenceHint('Партнёр в игре');
-        void juice.sync();
+        const both = Date.now() - lastHelloAt.current < 2500;
+        setPresenceHint(both ? 'Оба в игре' : 'Партнёр в игре');
+        void (both ? juice.perfect() : juice.sync());
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
@@ -238,6 +241,7 @@ export default function WordVeilScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 

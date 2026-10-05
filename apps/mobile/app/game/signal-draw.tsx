@@ -73,6 +73,7 @@ export default function SignalDrawScreen() {
   const lastClearAt = useRef(0);
   const lastUndoAt = useRef(0);
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const brushRef = useRef<'fine' | 'bold'>('fine');
 
   const myColor = colors.accentAmber;
@@ -129,6 +130,7 @@ export default function SignalDrawScreen() {
         setPeerSeen(true);
         showToast('Партнёр вернулся');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame('signal-draw', { hello: true, fromId: user.id });
         return;
       }
@@ -149,8 +151,9 @@ export default function SignalDrawScreen() {
       if (payload.hello || payload.phase === 'start') {
         setPeerSeen(true);
         if (payload.hello) {
-          showToast('Партнёр в игре');
-          void juice.sync();
+          const both = Date.now() - lastHelloAt.current < 2500;
+          showToast(both ? 'Оба в игре' : 'Партнёр в игре');
+          void (both ? juice.perfect() : juice.sync());
           return;
         }
       }
@@ -255,6 +258,7 @@ export default function SignalDrawScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame('signal-draw', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 

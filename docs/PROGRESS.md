@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Dual hello catalog-wide (HB/Draw/Veil/ToS) · Soft/Sky/Orbit  
 - [x] Soft/Sky/Orbit dual hello «оба в игре» · ToS dual reshuffle  
 - [x] ToS dual reshuffle · dual rematch catalog-wide · Play dual filter  
-- [x] Dual rematch across Orbit/HB/Draw/Veil · Soft/Sky rematch  
 
 ## Catalog
 

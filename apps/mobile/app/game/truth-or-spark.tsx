@@ -67,6 +67,7 @@ export default function TruthOrSparkScreen() {
   const lastFilterAt = useRef(0);
   const lastFilterChoice = useRef<SparkFilter>('soft');
   const lastRematchAt = useRef(0);
+  const lastHelloAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
@@ -124,6 +125,7 @@ export default function TruthOrSparkScreen() {
         setLive(true);
         showTurnToast('Партнёр вернулся');
         void juice.sync();
+        lastHelloAt.current = Date.now();
         pairRealtime.sendGame(GAME_ID, {
           hello: true,
           fromName: user.displayName,
@@ -149,8 +151,13 @@ export default function TruthOrSparkScreen() {
       setLive(true);
       if (payload.hello) {
         if (payload.fromName) setPeerName(payload.fromName);
-        showTurnToast(`${payload.fromName ?? 'Партнёр'} в игре`);
-        void juice.sync();
+        const both = Date.now() - lastHelloAt.current < 2500;
+        showTurnToast(
+          both
+            ? 'Оба в игре'
+            : `${payload.fromName ?? 'Партнёр'} в игре`,
+        );
+        void (both ? juice.perfect() : juice.sync());
         return;
       }
       if (payload.rematch && typeof payload.seed === 'number') {
@@ -214,6 +221,7 @@ export default function TruthOrSparkScreen() {
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
+    lastHelloAt.current = Date.now();
     pairRealtime.sendGame(GAME_ID, {
       hello: true,
       fromName: user.displayName,
