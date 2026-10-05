@@ -7,6 +7,8 @@ import { WebSocketServer } from 'ws';
  *  { type: 'presence', status }
  *  { type: 'game', gameId, payload }
  *  { type: 'warmth' }
+ *  server → { type: 'joined', code, peers, size }
+ *  server → { type: 'peer_joined' | 'peer_left', userId, name?, size }
  */
 
 const PORT = Number(process.env.PORT || 8787);
@@ -16,6 +18,19 @@ function roomOf(code) {
   const key = String(code || '').toUpperCase();
   if (!rooms.has(key)) rooms.set(key, new Set());
   return rooms.get(key);
+}
+
+function roomPeers(code, except) {
+  const peers = [];
+  for (const client of roomOf(code)) {
+    if (client === except) continue;
+    if (client.readyState !== 1) continue;
+    peers.push({
+      userId: client.lpd?.userId ?? null,
+      name: client.lpd?.name ?? null,
+    });
+  }
+  return peers;
 }
 
 function broadcast(code, data, except) {
@@ -48,13 +63,29 @@ wss.on('connection', (socket) => {
         userId: msg.userId,
         name: msg.name,
       };
-      roomOf(socket.lpd.code).add(socket);
-      broadcast(socket.lpd.code, {
-        type: 'peer_joined',
-        userId: socket.lpd.userId,
-        name: socket.lpd.name,
-      }, socket);
-      socket.send(JSON.stringify({ type: 'joined', code: socket.lpd.code }));
+      const room = roomOf(socket.lpd.code);
+      room.add(socket);
+      const size = room.size;
+      const peers = roomPeers(socket.lpd.code, socket);
+      console.log(`[LPD] join ${socket.lpd.code} · ${socket.lpd.name} · size=${size}`);
+      broadcast(
+        socket.lpd.code,
+        {
+          type: 'peer_joined',
+          userId: socket.lpd.userId,
+          name: socket.lpd.name,
+          size,
+        },
+        socket,
+      );
+      socket.send(
+        JSON.stringify({
+          type: 'joined',
+          code: socket.lpd.code,
+          peers,
+          size,
+        }),
+      );
       return;
     }
 
@@ -67,10 +98,15 @@ wss.on('connection', (socket) => {
 
   socket.on('close', () => {
     if (!socket.lpd?.code) return;
-    roomOf(socket.lpd.code).delete(socket);
-    broadcast(socket.lpd.code, {
+    const code = socket.lpd.code;
+    roomOf(code).delete(socket);
+    const size = roomOf(code).size;
+    console.log(`[LPD] leave ${code} · ${socket.lpd.name} · size=${size}`);
+    broadcast(code, {
       type: 'peer_left',
       userId: socket.lpd.userId,
+      size,
     });
+    if (size === 0) rooms.delete(code);
   });
 });

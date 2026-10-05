@@ -6,11 +6,11 @@
 
 ## Latest
 
-- [x] Profile rename (name + room) · LAN WS preset  
-- [x] Signal Draw undo + peer live pulse  
-- [x] Memories persist + Home last-match + Together clear  
-- [x] Join screen display name  
-- [x] Share pair · game feel passes · Android QA docs  
+- [x] Backend room roster on join (`peers`/`size`) + join/leave logs  
+- [x] RealtimeConnector hydrates partner from `joined.peers`  
+- [x] Copy/share pair code helper (Home + Success)  
+- [x] Soft Duel partner live HUD pulse  
+- [x] Profile rename · Signal Draw undo · Memories persist  
 
 ## Catalog
 

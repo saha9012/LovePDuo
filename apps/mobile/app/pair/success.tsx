@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Share, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
@@ -17,6 +17,7 @@ import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
+import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 
 export default function PairSuccessScreen() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function PairSuccessScreen() {
   const opacity = useSharedValue(0);
   const spin = useSharedValue(0);
   const pulse = useSharedValue(0);
+  const [copied, setCopied] = useState(false);
   const code = pair?.code ?? '------';
   const deepLink = `lovepduo://join/${code}`;
 
@@ -62,14 +64,11 @@ export default function PairSuccessScreen() {
   }));
 
   const shareCode = async () => {
-    try {
-      await Share.share({
-        message: `LovePDuo — зайди в пару по коду ${code}\n${deepLink}`,
-        title: 'LovePDuo pair',
-      });
+    const ok = await copyText(pairInviteMessage(code));
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
       void juice.warmth();
-    } catch {
-      // cancelled
     }
   };
 
@@ -92,7 +91,11 @@ export default function PairSuccessScreen() {
           <Text style={styles.hint}>Покажи код партнёру или deep link {deepLink}</Text>
         </Animated.View>
         <View style={styles.actions}>
-          <LpdButton label="Поделиться кодом" variant="ghost" onPress={() => void shareCode()} />
+          <LpdButton
+            label={copied ? 'Скопировано' : 'Скопировать / поделиться кодом'}
+            variant="ghost"
+            onPress={() => void shareCode()}
+          />
           <LpdButton
             label="В комнату пары"
             onPress={() => {

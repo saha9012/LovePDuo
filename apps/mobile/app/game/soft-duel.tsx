@@ -39,6 +39,7 @@ export default function SoftDuelScreen() {
   const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState('');
   const [armed, setArmed] = useState(false);
+  const [partnerFlash, setPartnerFlash] = useState(false);
   const myScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const roundRef = useRef(0);
@@ -46,6 +47,7 @@ export default function SoftDuelScreen() {
   const armAt = useRef(0);
   const padScale = useSharedValue(1);
   const flashScale = useSharedValue(1);
+  const partnerScale = useSharedValue(1);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -56,12 +58,18 @@ export default function SoftDuelScreen() {
         setPartnerScore(payload.score);
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setPartnerFlash(true);
+        partnerScale.value = withSequence(
+          withSpring(1.12, { damping: 10 }),
+          withTiming(1, { duration: 220 }),
+        );
+        setTimeout(() => setPartnerFlash(false), 450);
       }
     });
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, partnerScale]);
 
   const nextRound = (r: number) => {
     if (r >= ROUNDS) {
@@ -147,6 +155,9 @@ export default function SoftDuelScreen() {
   const flashStyle = useAnimatedStyle(() => ({
     transform: [{ scale: flashScale.value }],
   }));
+  const partnerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: partnerScale.value }],
+  }));
 
   if (phase === 'finished') {
     return (
@@ -185,10 +196,20 @@ export default function SoftDuelScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.meta}>
-              Раунд {round + 1}/{ROUNDS} · ты {myScore}
-              {partnerLive ? ` · партнёр ${partnerScore}` : ''}
-            </Text>
+            <View style={styles.hudRow}>
+              <Text style={styles.meta}>
+                Раунд {round + 1}/{ROUNDS} · ты {myScore}
+              </Text>
+              {partnerLive ? (
+                <Animated.Text
+                  style={[styles.partnerHud, partnerFlash && styles.partnerHudHot, partnerStyle]}
+                >
+                  партнёр {partnerScore} · live
+                </Animated.Text>
+              ) : (
+                <Text style={styles.meta}>партнёр offline</Text>
+              )}
+            </View>
             <Animated.View style={[styles.padWrap, padStyle]}>
               <Pressable
                 style={[styles.pad, armed && styles.padArmed]}
@@ -221,7 +242,22 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(226,176,122,0.35)',
   },
   btnLabel: { fontFamily: fonts.uiSemi, color: colors.textPrimary },
+  hudRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   meta: { fontFamily: fonts.ui, color: colors.textSecondary },
+  partnerHud: {
+    fontFamily: fonts.uiMedium,
+    color: colors.textSecondary,
+    fontSize: 13,
+  },
+  partnerHudHot: {
+    color: colors.accentRose,
+    fontFamily: fonts.uiSemi,
+  },
   padWrap: { flex: 1 },
   pad: {
     flex: 1,

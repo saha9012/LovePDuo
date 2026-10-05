@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, Share, StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
@@ -18,6 +18,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -26,6 +27,7 @@ export default function HomeScreen() {
   const { items: memories } = useMemories();
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
+  const [copied, setCopied] = useState(false);
   const lastMemory = memories[0];
 
   useEffect(() => {
@@ -103,12 +105,15 @@ export default function HomeScreen() {
             }}
           />
           <LpdButton
-            label="Поделиться кодом пары"
+            label={copied ? 'Код скопирован' : 'Скопировать / поделиться кодом'}
             variant="ghost"
             onPress={() => {
               const code = pair?.code ?? '';
-              void Share.share({
-                message: `LovePDuo код: ${code}\nlovepduo://join/${code}`,
+              void copyText(pairInviteMessage(code)).then((ok) => {
+                if (ok) {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1600);
+                }
               });
               void juice.hit();
             }}
