@@ -8,6 +8,8 @@ import { GameTile } from '../../src/components/GameTile';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
+import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { useApp } from '../../src/store/AppStore';
 
 type GameTag = 'mvp' | 'new';
 type Filter = 'all' | GameTag;
@@ -103,9 +105,11 @@ const CATALOG: CatalogItem[] = [
 export default function PlayScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { pair, user } = useApp();
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [lastGame, setLastGame] = useState<string | null>(null);
+  const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -119,6 +123,31 @@ export default function PlayScreen() {
   useEffect(() => {
     void AsyncStorage.setItem(FILTER_KEY, filter);
   }, [filter]);
+
+  useEffect(() => {
+    if (!pair || !user) return;
+    const off = pairRealtime.onMessage((msg) => {
+      if (msg.type !== 'game' || msg.gameId !== 'play-peek') return;
+      const payload = msg.payload as {
+        game?: string;
+        title?: string;
+        fromId?: string;
+        leave?: boolean;
+      } | undefined;
+      if (!payload || payload.fromId === user.id) return;
+      if (payload.leave) {
+        setPeerLobby(null);
+        return;
+      }
+      if (payload.game && payload.title) {
+        setPeerLobby({ game: payload.game, title: payload.title });
+        void juice.hit();
+      }
+    });
+    return () => {
+      off();
+    };
+  }, [pair?.code, user?.id]);
 
   const recent = useMemo(
     () => (lastGame ? CATALOG.find((g) => g.game === lastGame) ?? null : null),
@@ -141,6 +170,12 @@ export default function PlayScreen() {
     setLastGame(game);
     void AsyncStorage.setItem(LAST_GAME_KEY, game);
     void juice.hit();
+    const title = CATALOG.find((g) => g.game === game)?.title ?? game;
+    pairRealtime.sendGame('play-peek', {
+      game,
+      title,
+      fromId: user?.id,
+    });
     router.push({ pathname: '/game/lobby', params: { game } });
   };
 
@@ -158,6 +193,14 @@ export default function PlayScreen() {
         <Text style={[typography.body, styles.sub]}>
           MVP + расширения. Два телефона. Живой post-match.
         </Text>
+
+        {peerLobby ? (
+          <Pressable onPress={() => openGame(peerLobby.game)} style={styles.peerLobby}>
+            <Text style={styles.peerLobbyKicker}>Партнёр ждёт</Text>
+            <Text style={styles.peerLobbyTitle}>{peerLobby.title}</Text>
+            <Text style={styles.peerLobbySub}>Тапни — в лобби к партнёру</Text>
+          </Pressable>
+        ) : null}
 
         <TextInput
           value={q}
@@ -230,6 +273,32 @@ const styles = StyleSheet.create({
   },
   sub: {
     marginBottom: spacing.sm,
+  },
+  peerLobby: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.45)',
+    backgroundColor: 'rgba(196,92,110,0.16)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: 4,
+  },
+  peerLobbyKicker: {
+    fontFamily: fonts.uiMedium,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: colors.accentAmber,
+    fontSize: 11,
+  },
+  peerLobbyTitle: {
+    fontFamily: fonts.uiSemi,
+    color: colors.textPrimary,
+    fontSize: 18,
+  },
+  peerLobbySub: {
+    fontFamily: fonts.ui,
+    color: colors.textMuted,
+    fontSize: 13,
   },
   search: {
     minHeight: 46,

@@ -78,7 +78,21 @@ export default function GameLobbyScreen() {
 
   useEffect(() => {
     if (!pair || !user) return;
+    const titles: Record<string, string> = {
+      'sky-claim': 'Sky Claim',
+      heartbeat: 'Heartbeat Tap',
+      'truth-or-spark': 'Truth Or Spark',
+      'soft-duel': 'Soft Duel',
+      'word-veil': 'Word Veil',
+      'signal-draw': 'Signal Draw',
+      'orbit-catch': 'Orbit Catch',
+    };
     pairRealtime.connect(pair.code, user.id, user.displayName);
+    pairRealtime.sendGame('play-peek', {
+      game: gameId,
+      title: titles[gameId] ?? gameId,
+      fromId: user.id,
+    });
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         const wasCounting = countdownRef.current != null;
@@ -89,6 +103,16 @@ export default function GameLobbyScreen() {
         startSent.current = false;
         void juice.miss();
         if (wasCounting) showCancelToast('Партнёр вышел — старт отменён');
+        return;
+      }
+      if (msg.type === 'game' && msg.gameId === 'play-peek') {
+        const peek = msg.payload as { game?: string; fromId?: string; leave?: boolean } | undefined;
+        if (peek?.fromId === user.id) return;
+        if (peek?.leave) return;
+        if (peek?.game === gameId) {
+          showCancelToast('Партнёр тоже в этом лобби');
+          void juice.sync();
+        }
         return;
       }
       if (msg.type === 'game' && msg.gameId === gameId) {
@@ -131,6 +155,7 @@ export default function GameLobbyScreen() {
       }
     });
     return () => {
+      pairRealtime.sendGame('play-peek', { leave: true, fromId: user.id });
       off();
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };

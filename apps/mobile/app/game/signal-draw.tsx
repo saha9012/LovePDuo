@@ -111,12 +111,18 @@ export default function SignalDrawScreen() {
         count?: number;
         rematch?: boolean;
         seed?: number;
+        brush?: 'fine' | 'bold';
       } | undefined;
       if (!payload) return;
       if (payload.rematch) {
         showToast('Новый раунд');
         void juice.sync();
         startRef.current();
+        return;
+      }
+      if (payload.brush === 'fine' || payload.brush === 'bold') {
+        showToast(payload.brush === 'bold' ? 'Партнёр: жирная кисть' : 'Партнёр: тонкая кисть');
+        void juice.hit();
         return;
       }
       if (payload.clear) {
@@ -394,6 +400,7 @@ export default function SignalDrawScreen() {
               <Text
                 onPress={() => {
                   setBrush('fine');
+                  pairRealtime.sendGame('signal-draw', { brush: 'fine' });
                   void juice.hit();
                 }}
                 style={[styles.tool, brush === 'fine' && styles.toolOn]}
@@ -403,6 +410,7 @@ export default function SignalDrawScreen() {
               <Text
                 onPress={() => {
                   setBrush('bold');
+                  pairRealtime.sendGame('signal-draw', { brush: 'bold' });
                   void juice.beat();
                 }}
                 style={[styles.tool, brush === 'bold' && styles.toolOn]}

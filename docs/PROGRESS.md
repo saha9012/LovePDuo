@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Home presence + mood toasts · Lobby cancel reason toast  
-- [x] Truth Or Spark peer filter-change toast  
-- [x] Sky peer HUD notes · Music playlist juice  
+- [x] Play peer-lobby peek banner · Lobby «партнёр тоже здесь»  
+- [x] Signal Draw brush-change toast sync  
+- [x] Home presence/mood · ToS filter · lobby cancel toasts  
 
 ## Catalog
 
