@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Word Veil peer-locked hint · Soft Duel tap grade mirror · HB miss HUD  
-- [x] Signal Draw rematch toast · mid-match partner presence flash  
-- [x] Lobby cancel mid-countdown · ToS skip sync juice  
+- [x] Sky peer HUD notes (no local flash steal) · Orbit miss/align notes  
+- [x] Music playlist + now-playing juice · rematch sync across Soft/HB/WV  
+- [x] Mid-match presence on Sky / Orbit  
 
 ## Catalog
 

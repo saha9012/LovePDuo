@@ -79,6 +79,7 @@ export default function MusicScreen() {
         const payload = msg.payload as { title?: string | null; from?: string } | undefined;
         if (payload?.title) {
           setPartnerNowPlaying(`${payload.from ?? 'Партнёр'}: ${payload.title}`);
+          void juice.hit();
         } else if (payload && payload.title === null) {
           setPartnerNowPlaying(null);
         }
@@ -103,6 +104,8 @@ export default function MusicScreen() {
         if (payload?.playlistId) {
           setActivePlaylist(payload.playlistId);
           if (payload.mood && payload.mood !== 'pulse') setMood(payload.mood);
+          const name = playlists.find((p) => p.id === payload.playlistId)?.name;
+          setNote(name ? `Партнёр переключил «${name}»` : 'Партнёр сменил плейлист');
           void juice.hit();
         }
       }
@@ -110,7 +113,7 @@ export default function MusicScreen() {
     return () => {
       off();
     };
-  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta]);
+  }, [setPartnerNowPlaying, setActivePlaylist, setMood, reactTrackMeta, playlists]);
 
   const playTrack = async (track: TrackItem) => {
     if (!track.uri || track.playbackMode !== 'local') {

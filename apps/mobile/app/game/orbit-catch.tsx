@@ -41,11 +41,14 @@ export default function OrbitCatchScreen() {
   const [timeLeft, setTimeLeft] = useState(35);
   const [aligned, setAligned] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [peerNote, setPeerNote] = useState<string | null>(null);
   const [matchSeed, setMatchSeed] = useState(seed);
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
+  const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
   const flash = useSharedValue(0);
   const ringPulse = useSharedValue(1);
   const partnerScale = useSharedValue(1);
@@ -53,9 +56,32 @@ export default function OrbitCatchScreen() {
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
+  const bumpPeerNote = (text: string) => {
+    setPeerNote(text);
+    if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+    peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+  };
+
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  useEffect(() => {
+    if (phase !== 'playing') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      bumpPeerNote('offline');
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      bumpPeerNote('online');
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -71,10 +97,13 @@ export default function OrbitCatchScreen() {
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
+          bumpPeerNote('новый раунд');
+          void juice.sync();
           startRef.current();
           return;
         }
         if (payload?.miss) {
+          bumpPeerNote('промах');
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),
@@ -85,6 +114,7 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (payload?.align) {
+          bumpPeerNote('align');
           ringPulse.value = withSequence(
             withTiming(1.08, { duration: 90 }),
             withTiming(1, { duration: 220 }),
@@ -265,6 +295,7 @@ export default function OrbitCatchScreen() {
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
                 партнёр {partnerCaught}
+                {peerNote ? ` · ${peerNote}` : ''}
               </Animated.Text>
             </View>
             <Pressable style={styles.stage} onPress={onCatch}>

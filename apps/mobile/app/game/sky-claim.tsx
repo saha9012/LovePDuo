@@ -59,6 +59,9 @@ export default function SkyClaimScreen() {
   const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [partnerFlash, setPartnerFlash] = useState(false);
+  const [peerNote, setPeerNote] = useState<string | null>(null);
+  const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPresence = useRef(pair?.partnerPresence);
   const size = useRef({ w: 1, h: 1 });
   const comboRef = useRef(0);
   const scoreRef = useRef(0);
@@ -71,6 +74,29 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     seedRef.current = matchSeed;
   }, [matchSeed]);
+
+  const bumpPeerNote = (text: string) => {
+    setPeerNote(text);
+    if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+    peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+  };
+
+  useEffect(() => {
+    if (phase !== 'playing') {
+      prevPresence.current = pair?.partnerPresence;
+      return;
+    }
+    const cur = pair?.partnerPresence;
+    const prev = prevPresence.current;
+    if (prev === 'online' && (cur === 'away' || cur === 'offline')) {
+      bumpPeerNote('offline');
+      void juice.miss();
+    } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      bumpPeerNote('online');
+      void juice.hit();
+    }
+    prevPresence.current = cur;
+  }, [pair?.partnerPresence, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -88,11 +114,13 @@ export default function SkyClaimScreen() {
         if (payload?.rematch && typeof payload.seed === 'number') {
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
+          bumpPeerNote('новый раунд');
+          void juice.sync();
           setTimeout(() => startRef.current(), 0);
           return;
         }
         if (payload?.miss || payload?.decoy) {
-          setFlash(payload.decoy ? 'decoy' : 'miss');
+          bumpPeerNote(payload.decoy ? 'decoy' : 'miss');
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),
@@ -103,7 +131,7 @@ export default function SkyClaimScreen() {
           return;
         }
         if (typeof payload?.combo === 'number' && payload.combo > 0) {
-          setFlash('catch');
+          bumpPeerNote(`combo×${payload.combo}`);
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(1.16, { damping: 9 }),
@@ -345,6 +373,7 @@ export default function SkyClaimScreen() {
           >
             Партнёр {partnerScore}
             {partnerLive ? ' ·live' : ''}
+            {peerNote ? ` · ${peerNote}` : ''}
           </Animated.Text>
         </View>
 

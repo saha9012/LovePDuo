@@ -91,6 +91,8 @@ export default function SoftDuelScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setPartnerRound(0);
+        setFlash('Новый раунд');
+        void juice.sync();
         startRef.current();
         return;
       }

@@ -87,6 +87,10 @@ export default function HeartbeatScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
+        setPeerNote('новый раунд');
+        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
+        void juice.sync();
         // delay start until chart memo updates
         setTimeout(() => startRef.current(), 0);
         return;

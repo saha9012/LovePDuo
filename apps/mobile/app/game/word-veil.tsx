@@ -125,6 +125,7 @@ export default function WordVeilScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         resetRef.current();
+        void juice.sync();
         return;
       }
       if (payload?.typing) {
