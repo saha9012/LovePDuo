@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ToS deck-wrap peer toast · local/remote sync-finish perfect  
 - [x] Local sync-finish perfect when you close after partner  
 - [x] Sync-finish perfect juice when partner closes after you  
-- [x] Welcome room-size foot · ANDROID_QA sync-finish · display-name dual  
 
 ## Catalog
 

@@ -54,7 +54,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 - [ ] Sky Claim: очки партнёра · miss/decoy/combo · sync-finish PostMatch · rematch hello · peer_left  
 - [ ] Heartbeat: sync · miss HUD · sync-finish PostMatch · rematch hello · presence · peer_left  
-- [ ] Truth Or Spark: named turn · skip juice · filter-change toast · deck-wrap · Перетасовать · peer_left  
+- [ ] Truth Or Spark: named turn · skip juice · filter-change · deck-wrap peer toast · Перетасовать · peer_left  
 - [ ] Signal Draw: first stroke · brush · 5s · sync-finish PostMatch · rematch hello · peer_left  
 - [ ] Orbit Catch: miss/align · sync-finish PostMatch · rematch hello · presence · peer_left  
 - [ ] Soft Duel: tap grade · arm ЖМИ · sync-finish PostMatch · rematch hello · peer_left · presence  

@@ -139,6 +139,7 @@ export default function TruthOrSparkScreen() {
         skipped?: boolean;
         filterChange?: boolean;
         hello?: boolean;
+        deckWrap?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
@@ -177,7 +178,10 @@ export default function TruthOrSparkScreen() {
       if (payload.fromId && payload.fromId !== user.id) {
         setTurnMine(true);
         const who = payload.fromName || 'Партнёр';
-        if (payload.skipped) {
+        if (payload.deckWrap) {
+          showTurnToast(`${who}: колода по кругу — твой ход`);
+          void juice.sync();
+        } else if (payload.skipped) {
           showTurnToast(`${who} скипнул — твой ход`);
           void juice.miss();
         } else {
@@ -204,7 +208,7 @@ export default function TruthOrSparkScreen() {
     nextIndex: number,
     nextFilter: SparkFilter,
     nextSkips: number,
-    opts?: { skipped?: boolean; filterChange?: boolean },
+    opts?: { skipped?: boolean; filterChange?: boolean; deckWrap?: boolean },
   ) => {
     pairRealtime.sendGame(GAME_ID, {
       index: nextIndex,
@@ -215,18 +219,20 @@ export default function TruthOrSparkScreen() {
       seed: matchSeed,
       skipped: opts?.skipped === true,
       filterChange: opts?.filterChange === true,
+      deckWrap: opts?.deckWrap === true,
     });
   };
 
   const next = () => {
     const ni = index + 1;
-    if (ni > 0 && ni % deck.length === 0) {
+    const wrapped = ni > 0 && ni % deck.length === 0;
+    if (wrapped) {
       showTurnToast('Колода по кругу');
       void juice.sync();
     }
     setIndex(ni);
     setTurnMine(false);
-    broadcast(ni, filter, skips);
+    broadcast(ni, filter, skips, wrapped ? { deckWrap: true } : undefined);
     void juice.card();
   };
 
