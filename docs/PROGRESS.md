@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Draw кисть/чисто/назад escalate · ToS мимо карт · miss мимо  
 - [x] ToS «Оба мимо карт» · miss мимо · Home «Оба дома»  
 - [x] Sky/Orbit/HB miss «оба мимо» · Home «Оба дома» · late-start  
-- [x] Home/Welcome «Оба дома» · late-start в старте · hello здесь  
 
 ## Catalog
 

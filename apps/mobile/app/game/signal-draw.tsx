@@ -210,14 +210,21 @@ export default function SignalDrawScreen() {
       }
       if (payload.brush === 'fine' || payload.brush === 'bold') {
         const both = brushRef.current === payload.brush;
+        const racing =
+          both &&
+          (toastRef.current === 'Оба: жирная кисть' ||
+            toastRef.current === 'Оба: тонкая кисть' ||
+            toastRef.current === 'Оба одной кистью');
         showToast(
-          both
-            ? payload.brush === 'bold'
-              ? 'Оба: жирная кисть'
-              : 'Оба: тонкая кисть'
-            : payload.brush === 'bold'
-              ? 'Партнёр: жирная кисть'
-              : 'Партнёр: тонкая кисть',
+          racing
+            ? 'Оба одной кистью'
+            : both
+              ? payload.brush === 'bold'
+                ? 'Оба: жирная кисть'
+                : 'Оба: тонкая кисть'
+              : payload.brush === 'bold'
+                ? 'Партнёр: жирная кисть'
+                : 'Партнёр: тонкая кисть',
         );
         void (both ? juice.perfect() : juice.hit());
         return;
@@ -225,7 +232,12 @@ export default function SignalDrawScreen() {
       if (payload.clear) {
         setStrokes((prev) => prev.filter((s) => s.by === 'me'));
         const both = Date.now() - lastClearAt.current < 1600;
-        showToast(both ? 'Оба стёрли' : 'Партнёр стёр свои линии');
+        const racing =
+          both &&
+          (toastRef.current === 'Оба стёрли' || toastRef.current === 'Оба чисто');
+        showToast(
+          racing ? 'Оба чисто' : both ? 'Оба стёрли' : 'Партнёр стёр свои линии',
+        );
         void (both ? juice.sync() : juice.miss());
         return;
       }
@@ -240,7 +252,12 @@ export default function SignalDrawScreen() {
         setPartnerStrokes(peerCount.current);
         bumpPeer();
         const both = Date.now() - lastUndoAt.current < 1200;
-        showToast(both ? 'Оба undo' : 'Партнёр отменил штрих');
+        const racing =
+          both &&
+          (toastRef.current === 'Оба undo' || toastRef.current === 'Оба назад');
+        showToast(
+          racing ? 'Оба назад' : both ? 'Оба undo' : 'Партнёр отменил штрих',
+        );
         void (both ? juice.sync() : juice.hit());
         return;
       }
