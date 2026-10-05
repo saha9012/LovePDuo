@@ -24,7 +24,7 @@ const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
-  const { user, pair, sendWarmth, notes, addNote, receiveNote, warmthPulse } = useApp();
+  const { user, pair, notes, addNote, receiveNote, warmthPulse } = useApp();
   const { items: memories, clearMemories, addMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
@@ -313,8 +313,8 @@ export default function TogetherScreen() {
             label="Отправить тепло"
             variant="ghost"
             onPress={() => {
-              sendWarmth();
               pairRealtime.sendWarmth();
+              showPeer('Тепло ушло');
               void juice.warmth();
               track('warmth_sent');
             }}

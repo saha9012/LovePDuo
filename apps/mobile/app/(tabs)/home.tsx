@@ -23,7 +23,7 @@ import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user, pair, sendWarmth, warmthPulse, setMood } = useApp();
+  const { user, pair, warmthPulse, setMood } = useApp();
   const { items: memories } = useMemories();
   const pulse = useSharedValue(1);
   const [wsOnline, setWsOnline] = useState(false);
@@ -290,8 +290,10 @@ export default function HomeScreen() {
             label="Отправить тепло"
             variant="ghost"
             onPress={() => {
-              sendWarmth();
               pairRealtime.sendWarmth();
+              setWarmthToast('Тепло ушло');
+              void juice.warmth();
+              setTimeout(() => setWarmthToast(null), 1400);
             }}
           />
           <LpdButton
