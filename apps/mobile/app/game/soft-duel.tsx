@@ -405,9 +405,14 @@ export default function SoftDuelScreen() {
       withSpring(1, { damping: 12, stiffness: 220 }),
     );
     if (now < armAt.current) {
-      setFlash('Рано');
+      const peerEarly =
+        flashRef.current === 'Партнёр рано' ||
+        flashRef.current === 'Оба рано' ||
+        flashRef.current === 'Оба спешат';
+      const racing = flashRef.current === 'Оба рано' || flashRef.current === 'Оба спешат';
+      setFlash(racing ? 'Оба спешат' : peerEarly ? 'Оба рано' : 'Рано');
       setArmed(false);
-      void juice.miss();
+      void (peerEarly ? juice.sync() : juice.miss());
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
       pairRealtime.sendGame('soft-duel', {

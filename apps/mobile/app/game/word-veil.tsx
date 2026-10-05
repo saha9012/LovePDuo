@@ -62,10 +62,15 @@ export default function WordVeilScreen() {
   const lateStartAt = useRef(0);
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
+  const hintRef = useRef<string | null>(null);
 
   useEffect(() => {
     mineRef.current = mine;
   }, [mine]);
+
+  useEffect(() => {
+    hintRef.current = presenceHint;
+  }, [presenceHint]);
 
   useEffect(() => {
     lockedRef.current = locked;
@@ -220,12 +225,19 @@ export default function WordVeilScreen() {
           setPeerTyping((was) => {
             if (!was) {
               if (mineRef.current.trim()) {
-                setPresenceHint('Пишем вместе');
+                const again =
+                  hintRef.current === 'Пишем вместе' ||
+                  hintRef.current === 'Оба на буквах';
+                setPresenceHint(again ? 'Оба на буквах' : 'Пишем вместе');
                 setTimeout(() => setPresenceHint(null), 1200);
                 void juice.perfect();
               } else {
                 void juice.hit();
               }
+            } else if (mineRef.current.trim().length > 0) {
+              setPresenceHint('Оба на буквах');
+              setTimeout(() => setPresenceHint(null), 1200);
+              void juice.sync();
             }
             return true;
           });
