@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Upload track cards sync to partner · Spotify/VK stubs dual  
-- [x] Soft rematch flash · backend hello/peek logs  
+- [x] Pair success toast when partner arrives  
+- [x] Upload/Spotify/VK track cards sync dual  
 
 ## Catalog
 

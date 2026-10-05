@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
@@ -28,6 +28,8 @@ export default function PairSuccessScreen() {
   const spin = useSharedValue(0);
   const pulse = useSharedValue(0);
   const [copied, setCopied] = useState(false);
+  const [peerToast, setPeerToast] = useState<string | null>(null);
+  const seenPeer = useRef(false);
   const code = pair?.code ?? '------';
   const deepLink = `lovepduo://join/${code}`;
 
@@ -60,6 +62,18 @@ export default function PairSuccessScreen() {
     }, 900);
     return () => clearTimeout(t);
   }, [opacity, scale, spin, pulse, code]);
+
+  useEffect(() => {
+    const size = pair?.roomSize ?? 0;
+    const online = pair?.partnerPresence === 'online';
+    if ((size >= 2 || online) && !seenPeer.current) {
+      seenPeer.current = true;
+      setPeerToast(`${pair?.partnerName ?? 'Партнёр'} в комнате`);
+      void juice.sync();
+      const t = setTimeout(() => setPeerToast(null), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [pair?.roomSize, pair?.partnerPresence, pair?.partnerName]);
 
   const style = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -95,6 +109,7 @@ export default function PairSuccessScreen() {
           <Text style={styles.kicker}>Pair link</Text>
           <Text style={styles.title}>Вы связаны</Text>
           <Text style={typography.tease}>Два телефона. Одна комната. Можно жечь.</Text>
+          {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
           <View style={styles.codeBlock}>
             <Text style={styles.codeLabel}>Код пары</Text>
             <Text style={typography.code}>{code}</Text>
@@ -177,6 +192,12 @@ const styles = StyleSheet.create({
     fontSize: 44,
     lineHeight: 48,
     color: colors.textPrimary,
+  },
+  peerToast: {
+    marginTop: spacing.sm,
+    fontFamily: fonts.uiSemi,
+    fontSize: 15,
+    color: colors.accentRose,
   },
   codeBlock: {
     marginTop: spacing.xl,
