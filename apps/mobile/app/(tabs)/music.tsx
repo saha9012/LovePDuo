@@ -179,12 +179,16 @@ export default function MusicScreen() {
             (payload.artist ? t.artist === payload.artist : true),
         );
         if (match) {
-          addTrackToPlaylist(payload.playlistId, match.id);
-          const plName = playlists.find((p) => p.id === payload.playlistId)?.name;
+          const pl = playlists.find((p) => p.id === payload.playlistId);
+          const alreadyIn = Boolean(pl?.trackIds.includes(match.id));
+          if (!alreadyIn) addTrackToPlaylist(payload.playlistId, match.id);
+          const plName = pl?.name;
           showNote(
-            `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
+            alreadyIn
+              ? `Оба на полке «${payload.title}»`
+              : `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
           );
-          void juice.hit();
+          void (alreadyIn ? juice.perfect() : juice.hit());
         } else {
           showNote(
             `${payload.from ?? 'Партнёр'} положил «${payload.title}» — добавь тот же трек`,
