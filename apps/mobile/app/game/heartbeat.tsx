@@ -74,7 +74,18 @@ export default function HeartbeatScreen() {
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const [syncFinish, setSyncFinish] = useState(false);
   const peerNoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerNoteRef = useRef<string | null>(null);
   const prevPresence = useRef(pair?.partnerPresence);
+
+  const bumpPeerNote = (text: string, ms = 1000) => {
+    peerNoteRef.current = text;
+    setPeerNote(text);
+    if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+    peerNoteTimer.current = setTimeout(() => {
+      peerNoteRef.current = null;
+      setPeerNote(null);
+    }, ms);
+  };
 
   useEffect(() => {
     seedRef.current = matchSeed;
@@ -260,9 +271,18 @@ export default function HeartbeatScreen() {
           }
         } else if (payload.total === myTotal && myTotal > 0) {
           setPeerNote('оба на очках');
+          peerNoteRef.current = 'оба на очках';
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+          peerNoteTimer.current = setTimeout(() => {
+            peerNoteRef.current = null;
+            setPeerNote(null);
+          }, 1000);
           void juice.sync();
+        } else if (payload.total > myTotal + 40 && phaseRef.current === 'playing') {
+          const racing =
+            peerNoteRef.current === 'партнёр впереди' || peerNoteRef.current === 'гонка';
+          bumpPeerNote(racing ? 'гонка' : 'партнёр впереди');
+          void (racing ? juice.sync() : juice.hit());
         }
         partnerScale.value = withSequence(
           withSpring(1.12, { damping: 10 }),

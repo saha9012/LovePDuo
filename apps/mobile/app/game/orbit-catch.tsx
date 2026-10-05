@@ -63,13 +63,18 @@ export default function OrbitCatchScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerNoteRef = useRef<string | null>(null);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
   const bumpPeerNote = (text: string) => {
+    peerNoteRef.current = text;
     setPeerNote(text);
     if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-    peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1000);
+    peerNoteTimer.current = setTimeout(() => {
+      peerNoteRef.current = null;
+      setPeerNote(null);
+    }, 1000);
   };
 
   useEffect(() => {
@@ -206,6 +211,11 @@ export default function OrbitCatchScreen() {
           } else if (payload.caught === caughtRef.current && caughtRef.current > 0) {
             bumpPeerNote('оба на очках');
             void juice.sync();
+          } else if (grew && payload.caught > caughtRef.current + 1) {
+            const racing =
+              peerNoteRef.current === 'партнёр впереди' || peerNoteRef.current === 'гонка';
+            bumpPeerNote(racing ? 'гонка' : 'партнёр впереди');
+            void (racing ? juice.sync() : juice.hit());
           }
         }
       }
