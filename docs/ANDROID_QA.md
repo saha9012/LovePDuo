@@ -52,7 +52,7 @@ EXPO_PUBLIC_LPD_WS_URL=ws://192.168.0.120:8787
 
 ## 5. Smoke checklist
 
-- [ ] Sky Claim: очки · miss/decoy/combo · оба ловят · sync-finish · rematch · peer_left  
+- [ ] Sky Claim: очки · miss/decoy/combo · оба ловят · оба miss/decoy · sync-finish · rematch · peer_left  
 - [ ] Heartbeat: sync! dual · оба miss · sync-finish · rematch · presence · peer_left  
 - [ ] Truth Or Spark: named turn · skip · оба скипнули · filter · deck-wrap · Перетасовать · peer_left  
 - [ ] Signal Draw: first stroke · рисуем вместе · brush · 5s · sync-finish · rematch · peer_left  

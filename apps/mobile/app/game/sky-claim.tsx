@@ -161,14 +161,16 @@ export default function SkyClaimScreen() {
           return;
         }
         if (payload?.miss || payload?.decoy) {
-          bumpPeerNote(payload.decoy ? 'decoy' : 'miss');
+          const kind = payload.decoy ? 'decoy' : 'miss';
+          const both = flashRef.current === kind;
+          bumpPeerNote(both ? (kind === 'decoy' ? 'оба decoy' : 'оба miss') : kind);
           setPartnerFlash(true);
           partnerScale.value = withSequence(
             withSpring(0.94, { damping: 10 }),
             withTiming(1, { duration: 200 }),
           );
           setTimeout(() => setPartnerFlash(false), 420);
-          void (payload.decoy ? juice.decoy() : juice.miss());
+          void (both ? juice.sync() : payload.decoy ? juice.decoy() : juice.miss());
           return;
         }
         if (typeof payload?.combo === 'number' && payload.combo > 0) {
