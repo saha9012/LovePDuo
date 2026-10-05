@@ -47,6 +47,7 @@ export default function WordVeilScreen() {
   const [partnerWord, setPartnerWord] = useState('');
   const [locked, setLocked] = useState(false);
   const [waitingPeer, setWaitingPeer] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [peerTyping, setPeerTyping] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
@@ -55,8 +56,12 @@ export default function WordVeilScreen() {
   const revealOp = useSharedValue(0);
   const mineRef = useRef(mine);
   const lockedRef = useRef(false);
+  const waitingPeerRef = useRef(false);
+  const partnerWordRef = useRef('');
+  const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
+  const doRevealRef = useRef<(peer: string) => void>(() => undefined);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
@@ -76,6 +81,18 @@ export default function WordVeilScreen() {
   useEffect(() => {
     lockedRef.current = locked;
   }, [locked]);
+
+  useEffect(() => {
+    waitingPeerRef.current = waitingPeer;
+  }, [waitingPeer]);
+
+  useEffect(() => {
+    partnerWordRef.current = partnerWord;
+  }, [partnerWord]);
+
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
   useEffect(() => {
     seedRef.current = matchSeed;
@@ -168,6 +185,19 @@ export default function WordVeilScreen() {
       void juice.sync();
     }
   };
+  doRevealRef.current = doReveal;
+
+  const continueSolo = () => {
+    if (!lockedRef.current || partnerWordRef.current) return;
+    setForceSolo(true);
+    setWaitingPeer(false);
+    const demo = SEEDS[(seedRef.current + 3) % SEEDS.length];
+    setPartnerWord(demo);
+    doRevealRef.current(demo);
+    setPresenceHint('Продолжаем соло');
+    void juice.hit();
+    setTimeout(() => setPresenceHint(null), 1600);
+  };
 
   const resetRound = () => {
     setMine('');
@@ -186,8 +216,22 @@ export default function WordVeilScreen() {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
-        setPresenceHint('Партнёр вышел');
         void juice.miss();
+        const stuckWaiting =
+          waitingPeerRef.current ||
+          (lockedRef.current &&
+            !partnerWordRef.current &&
+            phaseRef.current === 'playing');
+        if (stuckWaiting) {
+          setForceSolo(true);
+          setWaitingPeer(false);
+          const demo = SEEDS[(seedRef.current + 3) % SEEDS.length];
+          setPartnerWord(demo);
+          doRevealRef.current(demo);
+          setPresenceHint('Партнёр вышел · соло');
+        } else {
+          setPresenceHint('Партнёр вышел');
+        }
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
@@ -356,7 +400,7 @@ export default function WordVeilScreen() {
     pairRealtime.sendGame('word-veil', { word: mine.trim(), typing: false });
     void juice.card();
 
-    const useDemo = params.solo === '1' || !pair;
+    const useDemo = params.solo === '1' || forceSolo || !pair;
     if (partnerWord) {
       doReveal(partnerWord);
       return;
@@ -496,7 +540,14 @@ export default function WordVeilScreen() {
                   </Text>
                 </Pressable>
                 {waitingPeer ? (
-                  <Text style={styles.waitHint}>Твоё слово закрыто. Партнёр ещё пишет.</Text>
+                  <>
+                    <Text style={styles.waitHint}>Твоё слово закрыто. Партнёр ещё пишет.</Text>
+                    <LpdButton
+                      label="Продолжить соло"
+                      variant="ghost"
+                      onPress={continueSolo}
+                    />
+                  </>
                 ) : null}
               </>
             )}
