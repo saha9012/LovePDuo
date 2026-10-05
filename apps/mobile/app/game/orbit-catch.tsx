@@ -58,6 +58,7 @@ export default function OrbitCatchScreen() {
   const partnerScale = useSharedValue(1);
   const lastAlignSend = useRef(0);
   const alignedRef = useRef(false);
+  const lastCatchAt = useRef(0);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
 
@@ -171,6 +172,7 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (typeof payload?.caught === 'number') {
+          const grew = payload.caught > partnerRef.current;
           partnerRef.current = payload.caught;
           setPartnerCaught(payload.caught);
           setPartnerFlash(true);
@@ -179,6 +181,10 @@ export default function OrbitCatchScreen() {
             withTiming(1, { duration: 200 }),
           );
           setTimeout(() => setPartnerFlash(false), 400);
+          if (grew && Date.now() - lastCatchAt.current < 900) {
+            bumpPeerNote('оба catch');
+            void juice.perfect();
+          }
         }
       }
     });
