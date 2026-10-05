@@ -35,8 +35,13 @@ export default function TogetherScreen() {
   const flame = useSharedValue(1);
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
+  const candleLitRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warmthSeen = useRef(0);
+
+  useEffect(() => {
+    candleLitRef.current = lit;
+  }, [lit]);
 
   const showPeer = (text: string) => {
     setPeerToast(text);
@@ -129,10 +134,11 @@ export default function TogetherScreen() {
           end?: boolean;
         } | undefined;
         if (payload?.start) {
+          const alreadyLit = candleLitRef.current;
           candleLogged.current = false;
           setCandleLeft(CANDLE_SEC);
-          showPeer('Партнёр зажёг свечу');
-          void juice.warmth();
+          showPeer(alreadyLit ? 'Свеча синхрон' : 'Партнёр зажёг свечу');
+          void (alreadyLit ? juice.perfect() : juice.warmth());
         }
         if (payload?.blow) {
           candleLogged.current = true;
@@ -151,10 +157,14 @@ export default function TogetherScreen() {
         }
       }
       if (msg.type === 'game' && msg.gameId === 'spark') {
-        const payload = msg.payload as { idx?: number } | undefined;
+        const payload = msg.payload as { idx?: number; from?: string } | undefined;
         if (typeof payload?.idx === 'number') {
           setIdx(payload.idx);
-          showPeer('Новая искра от партнёра');
+          showPeer(
+            payload.from
+              ? `${payload.from}: новая искра`
+              : 'Новая искра от партнёра',
+          );
           void juice.card();
         }
       }
@@ -201,7 +211,10 @@ export default function TogetherScreen() {
   const nextSpark = () => {
     setIdx((v) => {
       const next = v + 1;
-      pairRealtime.sendGame('spark', { idx: next });
+      pairRealtime.sendGame('spark', {
+        idx: next,
+        from: user?.displayName,
+      });
       return next;
     });
     void juice.card();
