@@ -237,7 +237,10 @@ export default function OrbitCatchScreen() {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(tick);
-          if (partnerFinishedRef.current) setSyncFinish(true);
+          if (partnerFinishedRef.current) {
+            setSyncFinish(true);
+            void juice.perfect();
+          }
           setPhase('finished');
           void juice.postMatch();
           pairRealtime.sendGame('orbit-catch', {

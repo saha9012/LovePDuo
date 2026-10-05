@@ -221,6 +221,7 @@ export default function SoftDuelScreen() {
       if (partnerFinishedRef.current) {
         setFlash('Синхрон финиш');
         setSyncFinish(true);
+        void juice.perfect();
       }
       if (!partnerLiveRef.current) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));

@@ -278,7 +278,10 @@ export default function SignalDrawScreen() {
         }
         if (t <= 1) {
           clearInterval(id);
-          if (partnerFinishedRef.current) setSyncFinish(true);
+          if (partnerFinishedRef.current) {
+            setSyncFinish(true);
+            void juice.perfect();
+          }
           setPhase('finished');
           void juice.postMatch();
           pairRealtime.sendGame('signal-draw', {

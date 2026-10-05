@@ -283,7 +283,10 @@ export default function HeartbeatScreen() {
           );
           setPartnerScore(partner);
         }
-        if (partnerFinishedRef.current) setSyncFinish(true);
+        if (partnerFinishedRef.current) {
+          setSyncFinish(true);
+          void juice.perfect();
+        }
         setPhase('finished');
         void juice.postMatch();
         addMemory({

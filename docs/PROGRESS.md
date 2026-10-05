@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Local sync-finish perfect when you close after partner  
 - [x] Sync-finish perfect juice when partner closes after you  
 - [x] Welcome room-size foot · ANDROID_QA sync-finish · display-name dual  
-- [x] Profile display-name dual sync · Word Veil typing clear on lock  
 
 ## Catalog
 
