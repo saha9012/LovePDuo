@@ -16,6 +16,7 @@ import {
 import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppProvider, useApp } from '../src/store/AppStore';
+import { MemoriesProvider } from '../src/store/MemoriesStore';
 import { RealtimeConnector } from '../src/realtime/RealtimeConnector';
 import { colors } from '../src/theme/tokens';
 
@@ -30,7 +31,12 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     const root = String(segments[0] ?? '');
     const inWelcomeFlow =
-      root === '' || root === 'welcome' || root === 'auth' || root === 'pair' || root === 'index';
+      root === '' ||
+      root === 'welcome' ||
+      root === 'auth' ||
+      root === 'pair' ||
+      root === 'join' ||
+      root === 'index';
     const inTabs = root === '(tabs)';
     const inGame = root === 'game';
 
@@ -42,13 +48,13 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     }
 
     if (!pair) {
-      if (root !== 'pair' && root !== 'auth') {
+      if (root !== 'pair' && root !== 'auth' && root !== 'join') {
         router.replace('/pair/create');
       }
       return;
     }
 
-    if (!inTabs && !inGame && root !== 'pair') {
+    if (!inTabs && !inGame && root !== 'pair' && root !== 'join') {
       router.replace('/(tabs)/home');
     }
   }, [hydrated, user, pair, segments, router]);
@@ -95,7 +101,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
-        <RootNavigator />
+        <MemoriesProvider>
+          <RootNavigator />
+        </MemoriesProvider>
       </AppProvider>
     </GestureHandlerRootView>
   );

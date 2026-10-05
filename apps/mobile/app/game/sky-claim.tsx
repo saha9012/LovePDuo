@@ -23,6 +23,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
+import { useMemories } from '../../src/store/MemoriesStore';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -30,6 +31,7 @@ export default function SkyClaimScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
+  const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const seed = useMemo(() => {
     const fromParam = Number(params.seed);
@@ -147,6 +149,11 @@ export default function SkyClaimScreen() {
           }
           setPhase('finished');
           void juice.postMatch();
+          addMemory({
+            kind: 'sky',
+            title: 'Sky Claim',
+            detail: `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+          });
           return 0;
         }
         if (t % 5 === 0) {
@@ -247,7 +254,10 @@ export default function SkyClaimScreen() {
         <View style={styles.stats}>
           <Text style={styles.stat}>Очки {score}</Text>
           <Text style={styles.stat}>Комбо ×{combo}</Text>
-          <Text style={styles.stat}>seed {seed}</Text>
+          <Text style={styles.stat}>
+            Партнёр {partnerScore}
+            {partnerLive ? '·live' : ''}
+          </Text>
         </View>
 
         {phase === 'ready' ? (
@@ -266,30 +276,45 @@ export default function SkyClaimScreen() {
             onLayout={onLayout}
             onPress={(e) => onTap(e.nativeEvent.locationX, e.nativeEvent.locationY)}
           >
-            {objects.map((obj) => (
-              <View
-                key={obj.id}
-                style={[
-                  styles.orb,
-                  {
-                    left: `${obj.x * 100}%`,
-                    top: `${obj.y * 100}%`,
-                    width: obj.radius * 2 * size.current.w || 28,
-                    height: obj.radius * 2 * size.current.w || 28,
-                    marginLeft: -((obj.radius * size.current.w) || 14),
-                    marginTop: -((obj.radius * size.current.w) || 14),
-                    backgroundColor:
-                      obj.type === 'amber'
-                        ? colors.accentAmber
-                        : obj.type === 'decoy'
-                          ? colors.accentWine
-                          : colors.accentRose,
-                    shadowColor:
-                      obj.type === 'amber' ? colors.accentAmber : colors.accentRose,
-                  },
-                ]}
-              />
-            ))}
+            {objects.map((obj) => {
+              const dim = obj.radius * 2 * size.current.w || 28;
+              const color =
+                obj.type === 'amber'
+                  ? colors.accentAmber
+                  : obj.type === 'decoy'
+                    ? colors.accentWine
+                    : colors.accentRose;
+              return (
+                <View key={obj.id} style={StyleSheet.absoluteFill} pointerEvents="none">
+                  <View
+                    style={[
+                      styles.trail,
+                      {
+                        left: `${obj.x * 100}%`,
+                        top: `${Math.max(0, (obj.y - 0.08) * 100)}%`,
+                        backgroundColor: color,
+                        opacity: 0.25,
+                      },
+                    ]}
+                  />
+                  <View
+                    style={[
+                      styles.orb,
+                      {
+                        left: `${obj.x * 100}%`,
+                        top: `${obj.y * 100}%`,
+                        width: dim,
+                        height: dim,
+                        marginLeft: -(dim / 2),
+                        marginTop: -(dim / 2),
+                        backgroundColor: color,
+                        shadowColor: color,
+                      },
+                    ]}
+                  />
+                </View>
+              );
+            })}
             {flash ? (
               <Text style={styles.flash}>
                 {flash === 'catch' ? 'CATCH' : flash === 'decoy' ? 'DECOY' : 'MISS'}
@@ -374,9 +399,16 @@ const styles = StyleSheet.create({
   orb: {
     position: 'absolute',
     borderRadius: 999,
-    shadowOpacity: 0.7,
-    shadowRadius: 12,
+    shadowOpacity: 0.85,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 0 },
+  },
+  trail: {
+    position: 'absolute',
+    width: 3,
+    height: 28,
+    marginLeft: -1.5,
+    borderRadius: 2,
   },
   flash: {
     position: 'absolute',

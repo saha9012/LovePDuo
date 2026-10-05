@@ -3,9 +3,11 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
+  withRepeat,
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
@@ -15,6 +17,7 @@ import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
+import { juice } from '../../src/audio/juice';
 
 export default function PairSuccessScreen() {
   const router = useRouter();
@@ -22,24 +25,50 @@ export default function PairSuccessScreen() {
   const { pair } = useApp();
   const scale = useSharedValue(0.86);
   const opacity = useSharedValue(0);
+  const spin = useSharedValue(0);
+  const pulse = useSharedValue(0);
 
   useEffect(() => {
+    void juice.postMatch();
     opacity.value = withTiming(1, { duration: 700 });
     scale.value = withSequence(
-      withTiming(1.04, { duration: 520, easing: Easing.out(Easing.cubic) }),
-      withTiming(1, { duration: 280 }),
+      withTiming(1.06, { duration: 560, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 320 }),
     );
-  }, [opacity, scale]);
+    spin.value = withRepeat(
+      withTiming(1, { duration: 5000, easing: Easing.linear }),
+      -1,
+      false,
+    );
+    pulse.value = withRepeat(
+      withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true,
+    );
+  }, [opacity, scale, spin, pulse]);
 
   const style = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ scale: scale.value }],
   }));
 
+  const ringStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${spin.value * 360}deg` },
+      { scale: 1 + pulse.value * 0.04 },
+    ],
+    opacity: interpolate(pulse.value, [0, 1], [0.55, 0.95]),
+  }));
+
   return (
     <LpdBackground mood="warm">
       <View style={[styles.root, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
         <Animated.View style={[styles.center, style]}>
+          <View style={styles.stage}>
+            <Animated.View style={[styles.ring, ringStyle]} />
+            <View style={[styles.orb, styles.orbAmber]} />
+            <View style={[styles.orb, styles.orbRose]} />
+          </View>
           <Text style={styles.kicker}>Pair link</Text>
           <Text style={styles.title}>Вы связаны</Text>
           <Text style={typography.tease}>Два телефона. Одна комната. Можно жечь.</Text>
@@ -47,9 +76,17 @@ export default function PairSuccessScreen() {
             <Text style={styles.codeLabel}>Код пары</Text>
             <Text style={typography.code}>{pair?.code ?? '------'}</Text>
           </View>
-          <Text style={styles.hint}>Покажи код партнёру или оставь для deep link lovepduo://join/{pair?.code}</Text>
+          <Text style={styles.hint}>
+            Покажи код партнёру или deep link lovepduo://join/{pair?.code}
+          </Text>
         </Animated.View>
-        <LpdButton label="В комнату пары" onPress={() => router.replace('/(tabs)/home')} />
+        <LpdButton
+          label="В комнату пары"
+          onPress={() => {
+            void juice.warmth();
+            router.replace('/(tabs)/home');
+          }}
+        />
       </View>
     </LpdBackground>
   );
@@ -65,6 +102,40 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     gap: spacing.md,
+  },
+  stage: {
+    height: 120,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 1.5,
+    borderColor: 'rgba(226,176,122,0.55)',
+  },
+  orb: {
+    position: 'absolute',
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  orbAmber: {
+    left: '32%',
+    backgroundColor: colors.accentAmber,
+    shadowColor: colors.accentAmber,
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+  },
+  orbRose: {
+    right: '32%',
+    backgroundColor: colors.accentRose,
+    shadowColor: colors.accentRose,
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
   },
   kicker: {
     fontFamily: fonts.uiMedium,

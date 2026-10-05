@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,11 +8,13 @@ import { PairAvatar } from '../../src/components/PairAvatar';
 import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
+import { juice } from '../../src/audio/juice';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user, pair, unlinkPair, signOut } = useApp();
+  const [sfxMuted, setSfxMuted] = useState(false);
 
   return (
     <LpdBackground mood="night">
@@ -30,6 +32,15 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.actions}>
+          <LpdButton
+            label={sfxMuted ? 'SFX: выкл (включить)' : 'SFX: вкл (выключить)'}
+            variant="ghost"
+            onPress={() => {
+              const next = !sfxMuted;
+              setSfxMuted(next);
+              juice.setMuted(next);
+            }}
+          />
           <LpdButton
             label="Отвязать пару"
             variant="ghost"

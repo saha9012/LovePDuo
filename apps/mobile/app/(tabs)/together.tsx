@@ -9,12 +9,14 @@ import { sparksRu } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useApp } from '../../src/store/AppStore';
+import { useMemories } from '../../src/store/MemoriesStore';
 
 const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, sendWarmth } = useApp();
+  const { items: memories } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const soft = useMemo(() => sparksRu.filter((s) => s.filter === 'soft'), []);
@@ -103,6 +105,17 @@ export default function TogetherScreen() {
             }}
           />
         </View>
+
+        {memories.length > 0 ? (
+          <View style={styles.memories}>
+            <Text style={styles.memTitle}>Memories</Text>
+            {memories.slice(0, 5).map((m) => (
+              <Text key={m.id} style={styles.memItem}>
+                {m.title} — {m.detail}
+              </Text>
+            ))}
+          </View>
+        ) : null}
       </View>
     </LpdBackground>
   );
@@ -186,5 +199,22 @@ const styles = StyleSheet.create({
   actions: {
     marginTop: 'auto',
     gap: spacing.sm,
+  },
+  memories: {
+    gap: 6,
+    marginTop: spacing.sm,
+    paddingBottom: spacing.md,
+  },
+  memTitle: {
+    fontFamily: fonts.uiMedium,
+    color: colors.accentAmber,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    fontSize: 11,
+  },
+  memItem: {
+    fontFamily: fonts.ui,
+    color: colors.textSecondary,
+    fontSize: 13,
   },
 });

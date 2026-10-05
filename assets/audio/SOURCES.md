@@ -1,7 +1,24 @@
 # Источники аудио LovePDuo
 
-- UI ticks / catch SFX / heartbeat loop: генерируются процедурно или добавляются royalty-free.
-- Ambient toggle: опционально, тихий слой.
-- Upload-треки пользователей: ответственность загрузившего (ToS / store listing).
+## Procedural SFX (сгенерированы агентом, 2026-10-05)
 
-Пока SFX — haptic-first; wav/ogg packs появятся в Phase 4 polish.
+Файлы в `assets/audio/*.wav` и копия в `apps/mobile/assets/sfx/`:
+
+| Файл | Назначение |
+|------|------------|
+| ui_tick | лёгкий UI |
+| catch | Sky Claim catch |
+| perfect | Heartbeat perfect |
+| miss | miss / skip |
+| decoy | обманка |
+| sync | sync bonus |
+| warmth | тепло / candle |
+| post_match | результат |
+| card | Truth Or Spark |
+| beat_tick | heartbeat start |
+
+Лицензия: оригинальные процедурные тоны, free for LovePDuo.
+
+## Upload-треки пользователей
+
+Ответственность загрузившего (ToS / store listing).
