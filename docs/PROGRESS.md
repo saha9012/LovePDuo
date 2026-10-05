@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Shared rematch seed: Soft Duel · Orbit · Heartbeat · Sky Claim  
-- [x] Warmth toast · WS reconnect backoff · AppState away · Profile WS label  
-- [x] SFX mute persist · presence ping · store capture helpers  
+- [x] Shared rematch across catalog (Sky · Heartbeat · Orbit · Soft Duel · Word Veil · Signal Draw)  
+- [x] Warmth toast · WS reconnect backoff · AppState away · mute persist · presence ping  
+- [x] Store capture helpers + Spotify env stub  
 
 ## Catalog
 
