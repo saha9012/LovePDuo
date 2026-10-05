@@ -17,6 +17,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
+import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 
 const SKIP_LIMIT = 3;
 const GAME_ID = 'truth-or-spark';
@@ -458,7 +459,13 @@ export default function TruthOrSparkScreen() {
       <View style={[styles.root, { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }]}>
         <View style={styles.top}>
           <Text style={styles.title}>Truth Or Spark</Text>
-          <Pressable onPress={() => router.back()}>
+          <Pressable
+            onPress={() => {
+              void confirmLeaveMatch(sessionStarted && index > 0).then((ok) => {
+                if (ok) router.back();
+              });
+            }}
+          >
             <Text style={styles.back}>Закрыть</Text>
           </Pressable>
         </View>
