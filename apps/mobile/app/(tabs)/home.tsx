@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, Share, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useAnimatedStyle,
@@ -92,6 +92,17 @@ export default function HomeScreen() {
               sendWarmth();
               pairRealtime.sendWarmth();
               void juice.warmth();
+            }}
+          />
+          <LpdButton
+            label="Поделиться кодом пары"
+            variant="ghost"
+            onPress={() => {
+              const code = pair?.code ?? '';
+              void Share.share({
+                message: `LovePDuo код: ${code}\nlovepduo://join/${code}`,
+              });
+              void juice.hit();
             }}
           />
           <View style={styles.moodRow}>
