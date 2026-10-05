@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Sky peer HUD notes (no local flash steal) · Orbit miss/align notes  
-- [x] Music playlist + now-playing juice · rematch sync across Soft/HB/WV  
-- [x] Mid-match presence on Sky / Orbit  
+- [x] Home presence + mood toasts · Lobby cancel reason toast  
+- [x] Truth Or Spark peer filter-change toast  
+- [x] Sky peer HUD notes · Music playlist juice  
 
 ## Catalog
 
