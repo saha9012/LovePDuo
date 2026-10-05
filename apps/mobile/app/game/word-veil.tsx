@@ -2,6 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { LpdButton } from '../../src/components/LpdButton';
@@ -40,6 +47,9 @@ export default function WordVeilScreen() {
   const [locked, setLocked] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);
+  const veil = useSharedValue(1);
+  const revealY = useSharedValue(24);
+  const revealOp = useSharedValue(0);
 
   useEffect(() => {
     if (!pair || !user) return;
@@ -79,9 +89,9 @@ export default function WordVeilScreen() {
   const lock = () => {
     if (!mine.trim() || locked) return;
     setLocked(true);
+    veil.value = withTiming(0.35, { duration: 400 });
     pairRealtime.sendGame('word-veil', { word: mine.trim() });
     void juice.card();
-    // solo demo partner
     const demo =
       partnerWord ||
       (params.solo === '1' || !pair
@@ -94,6 +104,11 @@ export default function WordVeilScreen() {
       setMyScore(pts);
       setTheirScore(partnerWord ? scoreWords(peer, mine) : Math.max(0, pts - 1));
       setPhase('reveal');
+      revealY.value = 28;
+      revealOp.value = 0;
+      revealY.value = withSpring(0, { damping: 14, stiffness: 160 });
+      revealOp.value = withTiming(1, { duration: 280 });
+      veil.value = withDelay(80, withTiming(1, { duration: 320 }));
       void juice.sync();
     }, 900);
   };
@@ -115,6 +130,14 @@ export default function WordVeilScreen() {
     return 'Разные грани одной ночи';
   }, [myScore]);
 
+  const veilStyle = useAnimatedStyle(() => ({
+    opacity: veil.value,
+  }));
+  const revealStyle = useAnimatedStyle(() => ({
+    opacity: revealOp.value,
+    transform: [{ translateY: revealY.value }],
+  }));
+
   if (phase === 'finished') {
     return (
       <LpdBackground mood="warm">
@@ -130,6 +153,7 @@ export default function WordVeilScreen() {
               setLocked(false);
               setMyScore(0);
               setTheirScore(0);
+              veil.value = 1;
               setPhase('playing');
             }}
             onHome={() => router.replace('/(tabs)/play')}
@@ -153,23 +177,23 @@ export default function WordVeilScreen() {
           </View>
         ) : (
           <>
-            <Text style={styles.prompt}>Слово: {prompt}</Text>
+            <Animated.Text style={[styles.prompt, veilStyle]}>Слово: {prompt}</Animated.Text>
             <TextInput
               value={mine}
               onChangeText={setMine}
               editable={!locked}
               placeholder="Твоя ассоциация"
               placeholderTextColor={colors.textMuted}
-              style={styles.input}
+              style={[styles.input, locked && styles.inputLocked]}
               autoCapitalize="none"
             />
             {phase === 'reveal' ? (
-              <View style={styles.reveal}>
+              <Animated.View style={[styles.reveal, revealStyle]}>
                 <Text style={styles.revealLine}>Ты: {mine}</Text>
                 <Text style={styles.revealLine}>Партнёр: {partnerWord || '…'}</Text>
                 <Text style={styles.score}>Связь {myScore}/5</Text>
                 <LpdButton label="Закрыть раунд" onPress={finish} />
-              </View>
+              </Animated.View>
             ) : (
               <Pressable
                 onPress={lock}
@@ -207,6 +231,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     fontSize: 18,
     backgroundColor: 'rgba(36,28,49,0.65)',
+  },
+  inputLocked: {
+    borderColor: 'rgba(226,176,122,0.35)',
+    opacity: 0.85,
   },
   lockBtn: {
     marginTop: spacing.md,
