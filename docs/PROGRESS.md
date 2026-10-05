@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] ANDROID_QA гонка escalate · Soft rematch/arm dual · Draw гонка  
 - [x] Soft rematch local dual · Soft arm dual · Draw гонка  
 - [x] Soft local Жди/ЖМИ dual · Draw гонка · Sky гонка  
-- [x] Draw «Оба в гонке» · Sky/Orbit/HB гонка · Soft гонка  
 
 ## Catalog
 
@@ -16,7 +16,7 @@ Sky Claim · Heartbeat · Truth Or Spark · Signal Draw · Orbit Catch · Soft D
 
 ## Still open (Ideal Bar not closed)
 
-Code dual-feel is saturated through escalate layers (ритм/темп, мимо, здесь, в старте, в счёте, дома, полка). Remaining blockers need external input:
+Code dual-feel is saturated through escalate layers (ритм/темп, мимо, здесь, в старте, в счёте, дома, полка, в гонке, пишут, готовы). Remaining blockers need external input:
 
 1. Live device screenshot replace (`docs/STORE_SHOTS.md`) — placeholders refreshed  
 2. Physical Android Expo Go dual QA (`docs/ANDROID_QA.md`)  
