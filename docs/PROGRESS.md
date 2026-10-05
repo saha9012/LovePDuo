@@ -6,9 +6,9 @@
 
 ## Latest
 
+- [x] Play dual peek same game · Home dual mood · Sky/Orbit/HB local finish  
 - [x] Home dual mood «Оба: …» · Sky/Orbit/HB local оба финиш · Draw finish  
 - [x] Sky/Orbit/HB local «оба финиш» · Draw dual finish · Music shelf-add  
-- [x] Draw local «Оба финиш» · Music dual shelf-add · Soft «Оба ждут»  
 
 ## Catalog
 

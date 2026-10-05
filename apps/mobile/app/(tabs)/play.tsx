@@ -112,10 +112,15 @@ export default function PlayScreen() {
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const [peekToast, setPeekToast] = useState<string | null>(null);
   const filterRef = useRef<Filter>('all');
+  const lastGameRef = useRef<string | null>(null);
 
   useEffect(() => {
     filterRef.current = filter;
   }, [filter]);
+
+  useEffect(() => {
+    lastGameRef.current = lastGame;
+  }, [lastGame]);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -173,8 +178,13 @@ export default function PlayScreen() {
       }
       if (payload.game && payload.title) {
         setPeerLobby({ game: payload.game, title: payload.title });
-        setPeekToast(`Партнёр в лобби: ${payload.title}`);
-        void juice.hit();
+        const both = lastGameRef.current === payload.game;
+        setPeekToast(
+          both
+            ? `Оба в «${payload.title}»`
+            : `Партнёр в лобби: ${payload.title}`,
+        );
+        void (both ? juice.perfect() : juice.hit());
         setTimeout(() => setPeekToast(null), 1600);
       }
     });
