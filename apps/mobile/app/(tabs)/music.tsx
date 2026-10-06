@@ -1028,7 +1028,9 @@ export default function MusicScreen() {
         ) : null}
         {active && active.trackIds.length === 0 && tracks.length > 0 ? (
           <Text style={styles.playlistHint}>
-            «{active.name}» пуст — жми + у трека на полку. × удаляет трек (long-press — сразу).
+            «{active.name}» пуст — жми + у трека на полку
+            {peerInWsRoom ? ' (полка у обоих)' : ' (полка локально · sync ждёт WS 2/2)'}. ×
+            удаляет трек (long-press — сразу).
           </Text>
         ) : null}
         {nowPlayingId ? (

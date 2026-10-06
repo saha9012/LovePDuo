@@ -145,12 +145,13 @@ export default function SkyClaimScreen() {
         duoLive &&
         (peerNoteRef.current === 'offline' ||
           peerNoteRef.current === 'online' ||
+          peerNoteRef.current === 'в комнате' ||
           peerNoteRef.current === 'оба на связи');
       bumpPeerNote(
         racing
           ? 'оба на связи'
           : duoLive
-            ? 'online'
+            ? 'в комнате'
             : 'presence · ждём WS 2/2',
       );
       void juice.hit();

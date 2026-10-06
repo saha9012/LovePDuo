@@ -146,11 +146,12 @@ export default function HeartbeatScreen() {
         duoLive &&
         (peerNoteRef.current === 'offline' ||
           peerNoteRef.current === 'online' ||
+          peerNoteRef.current === 'в комнате' ||
           peerNoteRef.current === 'оба на связи');
       const note = racing
         ? 'оба на связи'
         : duoLive
-          ? 'online'
+          ? 'в комнате'
           : 'presence · ждём WS 2/2';
       setPeerNote(note);
       peerNoteRef.current = note;

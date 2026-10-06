@@ -174,12 +174,13 @@ export default function SignalDrawScreen() {
         duoLive &&
         (toastRef.current === 'Партнёр offline' ||
           toastRef.current === 'Партнёр снова online' ||
+          toastRef.current === 'Партнёр снова в комнате' ||
           toastRef.current === 'Оба на связи');
       showToast(
         racing
           ? 'Оба на связи'
           : duoLive
-            ? 'Партнёр снова online'
+            ? 'Партнёр снова в комнате'
             : 'Партнёр presence · ждём WS 2/2',
       );
       void juice.hit();

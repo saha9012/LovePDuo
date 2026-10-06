@@ -142,12 +142,13 @@ export default function TruthOrSparkScreen() {
         duoLive &&
         (turnToastRef.current === 'Партнёр offline' ||
           turnToastRef.current === 'Партнёр снова online' ||
+          turnToastRef.current === 'Партнёр снова в комнате' ||
           turnToastRef.current === 'Оба на связи');
       showTurnToast(
         racing
           ? 'Оба на связи'
           : duoLive
-            ? 'Партнёр снова online'
+            ? 'Партнёр снова в комнате'
             : 'Партнёр presence · ждём WS 2/2',
       );
       void juice.hit();

@@ -164,7 +164,7 @@ export default function HomeScreen() {
       if (prev === 'offline' && cur === 'online') {
         const duoLive = (pair?.roomSize ?? 0) >= 2;
         setRoomToast(
-          duoLive ? 'Партнёр online' : 'Партнёр presence · ждём WS 2/2',
+          duoLive ? 'Партнёр в комнате' : 'Партнёр presence · ждём WS 2/2',
         );
         void juice.sync();
         const t = setTimeout(() => setRoomToast(null), 1600);
@@ -222,12 +222,15 @@ export default function HomeScreen() {
       const afterLeave =
         roomToastRef.current === 'Партнёр вышел' ||
         roomToastRef.current === 'Партнёр вышел из комнаты' ||
+        roomToastRef.current === 'Оба снова в комнате' ||
         roomToastRef.current === 'Оба снова online';
       const racing =
         roomToastRef.current === 'Оба в паре' ||
         roomToastRef.current === 'Оба в комнате' ||
         roomToastRef.current === 'Оба online';
-      setRoomToast(afterLeave ? 'Оба снова online' : racing ? 'Оба online' : 'Оба в паре');
+      setRoomToast(
+        afterLeave ? 'Оба снова в комнате' : racing ? 'Оба в комнате' : 'Оба в паре',
+      );
       void juice.perfect();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
@@ -254,9 +257,10 @@ export default function HomeScreen() {
         const racing =
           roomToastRef.current === 'Партнёр вышел' ||
           roomToastRef.current === 'Партнёр вышел из комнаты' ||
+          roomToastRef.current === 'Оба снова в комнате' ||
           roomToastRef.current === 'Оба снова online' ||
           roomToastRef.current?.endsWith(' вошёл');
-        setRoomToast(racing ? 'Оба снова online' : `${name} вошёл`);
+        setRoomToast(racing ? 'Оба снова в комнате' : `${name} вошёл`);
         void juice.sync();
         setTimeout(() => setRoomToast(null), 1800);
         return;
