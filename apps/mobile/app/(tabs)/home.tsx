@@ -666,7 +666,11 @@ export default function HomeScreen() {
             <View style={styles.ctaGrow}>
               <LpdButton
                 label={
-                  peerLobby && (pair?.roomSize ?? 0) >= 2 ? `К партнёру` : 'Играть'
+                  peerLobby && (pair?.roomSize ?? 0) >= 2
+                    ? 'К партнёру'
+                    : (pair?.roomSize ?? 0) >= 2
+                      ? 'Играть'
+                      : 'Играть · Solo/Demo ок'
                 }
                 onPress={() =>
                   peerLobby && (pair?.roomSize ?? 0) >= 2

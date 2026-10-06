@@ -315,7 +315,11 @@ export default function PlayScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.kicker}>Play</Text>
-        <Text style={typography.headline}>Миниигры для двоих</Text>
+        <Text style={typography.headline}>
+          {typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+            ? 'Миниигры для двоих'
+            : 'Миниигры · Solo/Demo или dual'}
+        </Text>
         <Text style={[typography.body, styles.sub]}>
           {playStats.catalog} в каталоге · memory-игр {playStats.played} · стартов{' '}
           {startStats?.totalStarts ?? 0} · streak {startStats?.streakDays ?? 0}д

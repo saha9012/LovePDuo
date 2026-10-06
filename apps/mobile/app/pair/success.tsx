@@ -170,7 +170,11 @@ export default function PairSuccessScreen() {
             onPress={() => void shareCode()}
           />
           <LpdButton
-            label="В пару"
+            label={
+              typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                ? 'В пару · WS 2/2'
+                : 'В пару · ждём партнёра в WS'
+            }
             onPress={() => {
               void juice.warmth();
               router.replace('/(tabs)/home');

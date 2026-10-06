@@ -290,7 +290,15 @@ export default function WelcomeScreen() {
           />
           {pair ? (
             <>
-              <LpdButton label="Играть вдвоём" variant="ghost" onPress={() => void goPlay()} />
+              <LpdButton
+                label={
+                  typeof pair.roomSize === 'number' && pair.roomSize >= 2
+                    ? 'Играть вдвоём'
+                    : 'Играть · Solo/Demo, dual после WS 2/2'
+                }
+                variant="ghost"
+                onPress={() => void goPlay()}
+              />
               <LpdButton
                 label="Войти по другому коду"
                 variant="ghost"
