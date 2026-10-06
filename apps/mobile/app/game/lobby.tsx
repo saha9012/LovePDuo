@@ -535,7 +535,8 @@ export default function GameLobbyScreen() {
         <Text style={styles.kicker}>Lobby</Text>
         <Text style={typography.headline}>{gameTitle}</Text>
         <Text style={typography.body}>
-          Оба Ready → общий seed и countdown. Solo — если партнёр оффлайн.
+          Пара {pair?.code ?? '—'} · оба Ready → общий seed и countdown. Solo — если партнёра нет в
+          WS. Online ниже = сокеты комнаты, не код пары.
         </Text>
         <SectionRule label="Пара" right={pair?.code ?? '—'} />
         <View style={styles.metaStrip}>
@@ -546,7 +547,7 @@ export default function GameLobbyScreen() {
               ['g', String(pair?.gamesStarted ?? 0), 'всего'],
               ['w', wsOnline ? 'on' : '…', 'ws'],
               ['h', canStart ? 'start' : 'wait', 'роль'],
-              ['n', String(typeof pair?.roomSize === 'number' ? pair.roomSize : '—'), 'online'],
+              ['n', String(typeof pair?.roomSize === 'number' ? pair.roomSize : '—'), 'WS'],
               [
                 'pr',
                 pair?.partnerPresence === 'online' ? 'on' : 'off',
