@@ -376,6 +376,7 @@ export default function TogetherScreen() {
           title: payload.title,
           detail: payload.detail,
           at: payload.at ?? Date.now(),
+          fromId: payload.fromId,
         });
         showPeer(`Memory: ${payload.title}`);
         void juice.card();
@@ -523,6 +524,21 @@ export default function TogetherScreen() {
       if (!ok) return;
       removeNote(note.id);
       track('ugc_report', { kind: 'note', noteId: note.id });
+      showPeer('Скрыто локально · жалоба записана');
+      void juice.miss();
+    })();
+  };
+
+  const reportMemory = (memory: MemoryItem) => {
+    void (async () => {
+      const ok = await confirmDestructive(
+        'Пожаловаться на memory?',
+        'Скроем её у вас. Облачной модерации пока нет — жалоба только локальный лог.',
+        'Скрыть',
+      );
+      if (!ok) return;
+      removeMemory(memory.id);
+      track('ugc_report', { kind: 'memory', memoryId: memory.id });
       showPeer('Скрыто локально · жалоба записана');
       void juice.miss();
     })();
@@ -831,16 +847,28 @@ export default function TogetherScreen() {
                     {m.title} — {m.detail}
                     {m.pendingSync ? ' · ждёт' : ''}
                   </Text>
-                  <Pressable
-                    onPress={() => deleteMemory(m.id, m.title, m.detail)}
-                    onLongPress={() => performDeleteMemory(m.id, m.title)}
-                    delayLongPress={380}
-                    style={styles.noteDelete}
-                    accessibilityLabel="Удалить memory"
-                    hitSlop={12}
-                  >
-                    <Text style={styles.noteDeleteLabel}>×</Text>
-                  </Pressable>
+                  <View style={styles.noteActions}>
+                    {m.fromId && m.fromId !== user?.id ? (
+                      <Pressable
+                        onPress={() => reportMemory(m)}
+                        style={styles.noteDelete}
+                        accessibilityLabel="Пожаловаться на memory"
+                        hitSlop={12}
+                      >
+                        <Text style={styles.noteDeleteLabel}>!</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable
+                      onPress={() => deleteMemory(m.id, m.title, m.detail)}
+                      onLongPress={() => performDeleteMemory(m.id, m.title)}
+                      delayLongPress={380}
+                      style={styles.noteDelete}
+                      accessibilityLabel="Удалить memory"
+                      hitSlop={12}
+                    >
+                      <Text style={styles.noteDeleteLabel}>×</Text>
+                    </Pressable>
+                  </View>
                 </View>
               ))}
               <LpdButton

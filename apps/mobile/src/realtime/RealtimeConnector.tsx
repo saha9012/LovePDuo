@@ -220,6 +220,7 @@ export function RealtimeConnector() {
             title: payload.title,
             detail: payload.detail ?? '',
             at: typeof payload.at === 'number' ? payload.at : Date.now(),
+            fromId: payload.fromId,
           });
         }
       }

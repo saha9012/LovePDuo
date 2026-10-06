@@ -14,6 +14,8 @@ export type MemoryItem = {
   title: string;
   detail: string;
   at: number;
+  /** Author user id when received over WS — for local UGC report. */
+  fromId?: string;
   /** True until partner receives / we flush on peer_joined */
   pendingSync?: boolean;
 };
@@ -96,6 +98,7 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
       title: item.title,
       detail: item.detail ?? '',
       at: typeof item.at === 'number' ? item.at : Date.now(),
+      ...(typeof item.fromId === 'string' ? { fromId: item.fromId } : {}),
     };
     setItems((prev) => {
       if (prev.some((m) => m.id === clean.id)) return prev;
