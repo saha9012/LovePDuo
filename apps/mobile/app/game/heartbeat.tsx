@@ -564,8 +564,11 @@ export default function HeartbeatScreen() {
         clearInterval(id);
         const total = scoreRef.current + syncRef.current;
         sendGameIfDuo(forceSoloRef.current, 'heartbeat', { phase: 'finished', total });
-        // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
-        if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
+        // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
+        if (
+          partnerScoreRef.current === 0 &&
+          (params.solo === '1' || forceSoloRef.current)
+        ) {
           const partner = Math.max(
             0,
             Math.round(total * (0.8 + Math.random() * 0.35)),

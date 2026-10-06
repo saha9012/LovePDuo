@@ -555,8 +555,11 @@ export default function SkyClaimScreen() {
         phase: 'finished',
         score: scoreRef.current,
       });
-      // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
-      if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
+      // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
+      if (
+        partnerScoreRef.current === 0 &&
+        (params.solo === '1' || forceSoloRef.current)
+      ) {
         const partner = Math.max(
           0,
           Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),

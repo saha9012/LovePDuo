@@ -521,8 +521,11 @@ export default function SoftDuelScreen() {
         setSyncFinish(true);
         void juice.perfect();
       }
-      // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
-      if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
+      // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
+      if (
+        partnerScoreRef.current === 0 &&
+        (params.solo === '1' || forceSoloRef.current)
+      ) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
       }
       return;
