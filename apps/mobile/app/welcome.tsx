@@ -270,8 +270,8 @@ export default function WelcomeScreen() {
           ) : null}
           {pair && resumeMatch ? (
             <Text style={styles.resumeLine}>
-              Сессия · {GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId} · seed{' '}
-              {resumeMatch.seed} ·{' '}
+              {(pair.roomSize ?? 0) >= 2 ? 'Сессия · WS 2/2' : 'Сессия · ждём WS 2/2'} ·{' '}
+              {GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId} · seed {resumeMatch.seed} ·{' '}
               {Math.max(0, Math.round((Date.now() - resumeMatch.startAtMs) / 1000))}с
             </Text>
           ) : null}

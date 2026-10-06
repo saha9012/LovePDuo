@@ -156,8 +156,9 @@ export default function MusicScreen() {
         const racing =
           noteRef.current === 'Партнёр ушёл с Music' ||
           noteRef.current === 'Партнёр снова на связи' ||
+          noteRef.current === 'Партнёр снова в комнате' ||
           noteRef.current === 'Оба снова на Music';
-        showNote(racing ? 'Оба снова на Music' : 'Партнёр снова на связи');
+        showNote(racing ? 'Оба снова на Music' : 'Партнёр снова в комнате');
         void juice.sync();
         if (user?.id) {
           lastHelloAt.current = Date.now();

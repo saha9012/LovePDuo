@@ -611,7 +611,9 @@ export default function HomeScreen() {
                 setTimeout(() => setRoomToast(null), 1600);
               }}
             >
-              <Text style={styles.resumeKicker}>Сессия пары</Text>
+              <Text style={styles.resumeKicker}>
+                {(pair?.roomSize ?? 0) >= 2 ? 'Сессия пары · WS 2/2' : 'Сессия · ждём WS 2/2'}
+              </Text>
               <Text style={styles.resumeTitle}>
                 {GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId}
               </Text>
@@ -619,9 +621,11 @@ export default function HomeScreen() {
                 seed {resumeMatch.seed} ·{' '}
                 {Math.max(0, Math.round((Date.now() - resumeMatch.startAtMs) / 1000))}с назад · тап
                 —{' '}
-                {Date.now() - resumeMatch.startAtMs > 8_000
-                  ? 'в матч'
-                  : 'в лобби'}
+                {(pair?.roomSize ?? 0) >= 2
+                  ? Date.now() - resumeMatch.startAtMs > 8_000
+                    ? 'в матч'
+                    : 'в лобби'
+                  : 'в лобби · Solo если партнёра нет'}
               </Text>
             </Pressable>
             <Pressable

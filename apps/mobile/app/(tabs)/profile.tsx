@@ -176,7 +176,30 @@ export default function ProfileScreen() {
             </Text>
             {wsToast ? <Text style={styles.wsToast}>{wsToast}</Text> : null}
           </View>
+          {pair ? (
+            <PairAvatar
+              name={pair.partnerName ?? 'Партнёр'}
+              presence={
+                typeof pair.roomSize === 'number' && pair.roomSize >= 2
+                  ? pair.partnerPresence ?? 'offline'
+                  : pair.partnerPresence === 'online'
+                    ? 'away'
+                    : pair.partnerPresence ?? 'offline'
+              }
+              size={64}
+            />
+          ) : null}
         </View>
+        {pair ? (
+          <Text style={typography.caption}>
+            Партнёр: {pair.partnerName ?? '—'} ·{' '}
+            {typeof pair.roomSize === 'number' && pair.roomSize >= 2
+              ? 'в комнате'
+              : pair.partnerPresence === 'online'
+                ? 'presence ≠ room'
+                : 'offline'}
+          </Text>
+        ) : null}
 
         <View style={styles.wsBox}>
           <Text style={styles.wsLabel}>Имя в паре</Text>
