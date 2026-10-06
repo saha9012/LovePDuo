@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Outbox flush only when WS room has a peer (no solo fake-sync)  
 - [x] Unlink drops undelivered notes/memories (no fake synced)  
 - [x] Home WS sockets label · scrapbook Free/Plus memory cap  
 - [x] Pair success: pair code ≠ WS room  

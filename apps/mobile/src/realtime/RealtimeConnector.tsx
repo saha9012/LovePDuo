@@ -4,7 +4,7 @@ import { useMemories, MemoryItem } from '../store/MemoriesStore';
 import { usePremium } from '../store/PremiumStore';
 import { pairRealtime } from './PairRealtime';
 import { setMatchSession } from './matchSession';
-import { setLastRoomSize } from './pairPresence';
+import { setLastRoomSize, getLastRoomSize } from './pairPresence';
 import { flushWarmthOutbox } from './warmthOutbox';
 import { flushMusicOutbox } from './musicOutbox';
 import { flushMemoryMutationOutbox } from './memoryMutationOutbox';
@@ -98,6 +98,8 @@ export function RealtimeConnector() {
     const flushAll = () => {
       announceHost();
       announcePlus();
+      // Don't mark notes/memories synced into an empty WS room (solo joined).
+      if (!(pairRealtime.connected && getLastRoomSize() >= 2)) return;
       flushNoteOutbox(pendingNotes, markNoteSynced);
       flushMemoryOutbox(pendingMemories, markMemorySynced, {
         displayName: user.displayName,
