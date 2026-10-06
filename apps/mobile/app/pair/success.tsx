@@ -68,15 +68,14 @@ export default function PairSuccessScreen() {
 
   useEffect(() => {
     const size = pair?.roomSize ?? 0;
-    const online = pair?.partnerPresence === 'online';
-    if ((size >= 2 || online) && !seenPeer.current) {
+    if (size >= 2 && !seenPeer.current) {
       seenPeer.current = true;
-      setPeerToast(`${pair?.partnerName ?? 'Партнёр'} в паре`);
+      setPeerToast(`${pair?.partnerName ?? 'Партнёр'} в WS`);
       void juice.sync();
       const t = setTimeout(() => setPeerToast(null), 2000);
       return () => clearTimeout(t);
     }
-  }, [pair?.roomSize, pair?.partnerPresence, pair?.partnerName]);
+  }, [pair?.roomSize, pair?.partnerName]);
 
   const style = useAnimatedStyle(() => ({
     opacity: opacity.value,

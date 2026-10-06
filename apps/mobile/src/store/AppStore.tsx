@@ -321,18 +321,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       name: 'Связанная пара',
       hostUserId: '',
       partnerName: 'Партнёр',
-      partnerPresence: 'online',
+      partnerPresence: 'offline',
       mood: 'warm',
       pairedAt: Date.now(),
       gamesStarted: 0,
       lastActiveAt: Date.now(),
     });
     setPair((prev) => {
-      // Re-join same invite → keep local nickname / history, same pair id
+      // Re-join same invite → keep local nickname / history, same pair id.
+      // Presence comes only from WS (RealtimeConnector) — code join ≠ peer live.
       if (prev?.code === clean) {
         next = normalizePair({
           ...prev,
-          partnerPresence: 'online',
           lastActiveAt: Date.now(),
         });
         return next;
