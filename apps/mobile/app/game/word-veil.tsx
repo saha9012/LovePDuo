@@ -143,8 +143,10 @@ export default function WordVeilScreen() {
 
   const doReveal = (peer: string) => {
     const pts = scoreWords(mineRef.current, peer);
+    // Same association score for both — no artificial −1 on partner
     setMyScore(pts);
-    setTheirScore(Math.max(0, pts - (peer === mineRef.current ? 0 : 1)));
+    setTheirScore(pts);
+    setPartnerWord(peer);
     setWaitingPeer(false);
     setPeerTyping(false);
     setPhase('reveal');
@@ -549,8 +551,19 @@ export default function WordVeilScreen() {
             {phase === 'reveal' ? (
               <Animated.View style={[styles.reveal, revealStyle]}>
                 <Text style={styles.revealLine}>Ты: {mine}</Text>
+                <Text style={styles.revealMeta}>
+                  {mine.trim().length} букв · prompt «{prompt}»
+                </Text>
                 <Text style={styles.revealLine}>Партнёр: {partnerWord || '…'}</Text>
-                <Text style={styles.score}>Связь {myScore}/5</Text>
+                <Text style={styles.revealMeta}>
+                  {(partnerWord || '').trim().length} букв · оба {myScore}/5
+                </Text>
+                <View style={styles.scoreRow}>
+                  <Text style={styles.score}>Связь {myScore}/5</Text>
+                  <Text style={styles.scorePct}>
+                    {myScore >= 5 ? '100%' : myScore >= 3 ? '60%' : myScore >= 1 ? '30%' : '0%'}
+                  </Text>
+                </View>
                 <LpdButton label="Закрыть раунд" onPress={finish} />
               </Animated.View>
             ) : (
@@ -638,5 +651,18 @@ const styles = StyleSheet.create({
   },
   reveal: { gap: spacing.sm, marginTop: spacing.md },
   revealLine: { fontFamily: fonts.uiMedium, color: colors.textPrimary, fontSize: 18 },
-  score: { fontFamily: fonts.mono, color: colors.accentRose, fontSize: 20, marginVertical: spacing.sm },
+  revealMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textMuted,
+    marginTop: -4,
+  },
+  scoreRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginVertical: spacing.sm,
+  },
+  score: { fontFamily: fonts.mono, color: colors.accentRose, fontSize: 20 },
+  scorePct: { fontFamily: fonts.mono, color: colors.accentAmber, fontSize: 16 },
 });

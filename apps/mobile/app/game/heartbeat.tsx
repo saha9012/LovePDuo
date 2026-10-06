@@ -432,11 +432,15 @@ export default function HeartbeatScreen() {
     const id = setInterval(() => {
       const t = Date.now() - startAt.current;
       setElapsed(t);
+      let skipped = 0;
       while (
         cursor.current < chart.length &&
         chart[cursor.current].atMs < t - heartbeatConfig.windowGreatMs
       ) {
         cursor.current += 1;
+        skipped += 1;
+      }
+      if (skipped > 0) {
         setLast('miss');
       }
       if (t >= heartbeatConfig.durationMs) {

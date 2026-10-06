@@ -25,6 +25,7 @@ import {
   peekPairMatchSession,
   type MatchSession,
 } from '../../src/realtime/matchSession';
+import { SectionRule } from '../../src/components/SectionRule';
 
 const GAME_TITLES: Record<string, string> = {
   'sky-claim': 'Sky Claim',
@@ -494,6 +495,8 @@ export default function HomeScreen() {
             {typeof pair?.roomSize === 'number' ? ` · комната ${pair.roomSize}` : ''}
           </Text>
         </View>
+
+        <SectionRule label="Пара" right={pair?.code ?? '—'} />
 
         <View style={styles.statGrid}>
           {(

@@ -12,6 +12,7 @@ import Animated, {
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { EmptyState } from '../../src/components/EmptyState';
+import { SectionRule } from '../../src/components/SectionRule';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { sparksRu } from '../../src/content/sparks';
@@ -429,6 +430,21 @@ export default function TogetherScreen() {
 
   const mins = candleLeft != null ? Math.floor(candleLeft / 60) : 0;
   const secs = candleLeft != null ? candleLeft % 60 : 0;
+  const candlePct =
+    candleLeft == null ? 0 : Math.max(0, Math.min(100, (candleLeft / CANDLE_SEC) * 100));
+
+  const memByKind = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const m of memories) {
+      map[m.kind] = (map[m.kind] ?? 0) + 1;
+    }
+    return map;
+  }, [memories]);
+
+  const noteChars = useMemo(
+    () => notes.reduce((n, x) => n + x.text.trim().length, 0),
+    [notes],
+  );
 
   return (
     <LpdBackground mood="warm">
@@ -448,6 +464,7 @@ export default function TogetherScreen() {
           {(
             [
               ['n', String(notes.length), 'notes'],
+              ['ch', String(noteChars), 'букв'],
               ['m', String(memories.length), 'memory'],
               ['s', String(idx + 1), 'искра'],
               ['c', lit ? `${mins}:${secs.toString().padStart(2, '0')}` : 'off', 'свеча'],
@@ -461,11 +478,15 @@ export default function TogetherScreen() {
           ))}
         </View>
 
+        <SectionRule label="Искра" right={`${idx + 1}/${soft.length || 1}`} />
+
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
           <Text style={styles.text}>{card.text}</Text>
           {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
         </View>
+
+        <SectionRule label="Свеча" right={lit ? `${Math.round(candlePct)}%` : 'готово'} />
 
         <View style={styles.candleBlock}>
           <Text style={styles.candleTitle}>Candle Timer</Text>
@@ -476,12 +497,17 @@ export default function TogetherScreen() {
                 ? 'погасла · тепло осталось'
                 : `${mins}:${secs.toString().padStart(2, '0')}`}
           </Text>
+          <View style={styles.candleTrack}>
+            <View style={[styles.candleFill, { width: `${candleLeft == null ? 100 : candlePct}%` }]} />
+          </View>
           <View style={styles.flame}>
             <Animated.View
               style={[styles.flameCore, lit && styles.flameLit, flameStyle]}
             />
           </View>
         </View>
+
+        <SectionRule label="Записки" right={`${notes.length} · ${noteChars} букв`} />
 
         <View style={styles.noteBlock}>
           <Text style={styles.candleTitle}>Tiny Notes</Text>
@@ -493,14 +519,16 @@ export default function TogetherScreen() {
             style={styles.noteInput}
             maxLength={180}
           />
+          <Text style={styles.draftMeta}>{draft.trim().length}/180</Text>
           <LpdButton label="Отправить заметку" onPress={sendNote} />
           {notes.length === 0 ? (
             <EmptyState
               title="Пока тихо"
               body="Первая записка уйдёт партнёру по WS — и останется в ленте у обоих."
+              meta="0 notes · 0 букв"
             />
           ) : (
-            notes.slice(0, 6).map((n) => (
+            notes.slice(0, 10).map((n) => (
               <View key={n.id} style={styles.noteRow}>
                 <Text style={styles.noteItem}>
                   {n.from}: {n.text}
@@ -544,17 +572,42 @@ export default function TogetherScreen() {
           />
         </View>
 
+        <SectionRule label="Скрапбук" right={`${memories.length}`} />
+
         <View style={styles.memories}>
           <Text style={styles.memTitle}>Memories</Text>
+          {memories.length > 0 ? (
+            <View style={styles.memKinds}>
+              {(
+                [
+                  ['sky', 'Sky'],
+                  ['heartbeat', 'Beat'],
+                  ['spark', 'ToS'],
+                  ['candle', 'Свеча'],
+                  ['draw', 'Draw'],
+                  ['orbit', 'Orbit'],
+                  ['duel', 'Duel'],
+                  ['veil', 'Veil'],
+                ] as const
+              ).map(([kind, label]) => (
+                <View key={kind} style={styles.memKindPill}>
+                  <Text style={styles.memKindNum}>{memByKind[kind] ?? 0}</Text>
+                  <Text style={styles.memKindLabel}>{label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
           {memories.length === 0 ? (
             <EmptyState
               title="Скрапбук пуст"
               body="Финиш игры или догоревшая свеча появятся здесь у обоих."
+              meta="0 memory · сыграйте раунд"
             />
           ) : (
             <>
-              {memories.slice(0, 5).map((m) => (
+              {memories.slice(0, 12).map((m) => (
                 <View key={m.id} style={styles.memRow}>
+                  <Text style={styles.memKindTag}>{m.kind}</Text>
                   <Text style={styles.memItem}>
                     {m.title} — {m.detail}
                   </Text>
@@ -678,6 +731,56 @@ const styles = StyleSheet.create({
     fontFamily: fonts.mono,
     fontSize: 28,
     color: colors.textPrimary,
+  },
+  candleTrack: {
+    alignSelf: 'stretch',
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    overflow: 'hidden',
+  },
+  candleFill: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.accentAmber,
+  },
+  draftMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textMuted,
+    alignSelf: 'flex-end',
+  },
+  memKinds: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  memKindPill: {
+    minWidth: 40,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  memKindNum: {
+    fontFamily: fonts.mono,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  memKindLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
+  },
+  memKindTag: {
+    fontFamily: fonts.mono,
+    fontSize: 10,
+    color: colors.accentMist,
+    marginTop: 2,
+    width: 52,
   },
   flame: {
     height: 36,

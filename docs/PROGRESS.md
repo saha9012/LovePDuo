@@ -6,9 +6,9 @@
 
 ## Latest
 
-- [x] Duo Plus scaffold (trial 7д, shelf/memory caps, spicy lock) · play streak stats  
-- [x] Soft Duel round timers cleared on rematch/unmount  
-- [x] ToS: partner-idle escape · Home resume session · Google auth scaffold  
+- [x] Word Veil fair dual score + reveal letter counts · Heartbeat miss batch  
+- [x] Together denser scrapbook kinds/candle bar · SectionRule ornaments  
+- [x] Duo Plus scaffold · play streaks · Soft Duel timer cleanup  
 - [x] Pair identity = invite code (`pairIdFromCode`); warmth + gamesStarted persist  
 - [x] Match session AsyncStorage + backend `pair_sync` / lastMatch handoff  
 - [x] Home density: scroll + pair stats grid + feed + quick chips (numbers first)  
