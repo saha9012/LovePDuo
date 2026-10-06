@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -12,12 +13,15 @@ import { track } from '../../src/analytics/track';
 import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
 import { getWsUrl } from '../../src/realtime/wsConfig';
 
+const AGE_OK_KEY = 'lovepduo.age_ok_16';
+
 export default function DeepJoinScreen() {
   const { code } = useLocalSearchParams<{ code?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { hydrated, user, pair, signIn, joinPair } = useApp();
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  const [ageOk, setAgeOk] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('Проверь имя и войди');
@@ -30,6 +34,9 @@ export default function DeepJoinScreen() {
 
   useEffect(() => {
     void loadPlayStats().then(setPlayStats);
+    void AsyncStorage.getItem(AGE_OK_KEY).then((v) => {
+      if (v === '1') setAgeOk(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -53,7 +60,22 @@ export default function DeepJoinScreen() {
     }
   }, [hydrated, clean, pair?.code, router]);
 
+  const toggleAgeOk = () => {
+    setAgeOk((prev) => {
+      const next = !prev;
+      void AsyncStorage.setItem(AGE_OK_KEY, next ? '1' : '');
+      if (next) void juice.hit();
+      return next;
+    });
+  };
+
   const go = async () => {
+    if (!ageOk) {
+      setError('Нужно подтвердить 16+');
+      setStatus('Подтверди возраст');
+      void juice.miss();
+      return;
+    }
     if (clean.length !== 6) {
       setError('В ссылке нет кода из 6 символов');
       return;
@@ -121,9 +143,20 @@ export default function DeepJoinScreen() {
           style={styles.input}
           editable={!loading}
         />
+        <Pressable
+          onPress={toggleAgeOk}
+          style={styles.ageRow}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: ageOk }}
+        >
+          <View style={[styles.ageBox, ageOk && styles.ageBoxOn]}>
+            {ageOk ? <Text style={styles.ageCheck}>✓</Text> : null}
+          </View>
+          <Text style={styles.ageLabel}>Мне есть 16+</Text>
+        </Pressable>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Text style={styles.foot}>
-          Не входим молча как «Партнёр» — имя нужно до join. Пара = код, не ephemeral room.
+          Не входим молча как «Партнёр» — имя и 16+ нужны до join. Пара = код, не ephemeral room.
         </Text>
         <View style={styles.actions}>
           <LpdButton
@@ -199,6 +232,36 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: fonts.ui,
     fontSize: 16,
+  },
+  ageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  ageBox: {
+    width: 22,
+    height: 22,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ageBoxOn: {
+    borderColor: colors.accentAmber,
+    backgroundColor: 'rgba(232,196,122,0.18)',
+  },
+  ageCheck: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  ageLabel: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   error: {
     fontFamily: fonts.ui,

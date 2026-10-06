@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -13,18 +14,25 @@ import { juice } from '../../src/audio/juice';
 import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
 import { getWsUrl } from '../../src/realtime/wsConfig';
 
+const AGE_OK_KEY = 'lovepduo.age_ok_16';
+
 export default function CreatePairScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { createPair, signIn, user, pair } = useApp();
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
+  const [ageOk, setAgeOk] = useState(false);
+  const [ageError, setAgeError] = useState('');
   const [loading, setLoading] = useState(false);
   const [playStats, setPlayStats] = useState<PlayStats | null>(null);
   const wsHint = getWsUrl().replace(/^wss?:\/\//, '').slice(0, 28);
 
   useEffect(() => {
     void loadPlayStats().then(setPlayStats);
+    void AsyncStorage.getItem(AGE_OK_KEY).then((v) => {
+      if (v === '1') setAgeOk(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -34,8 +42,26 @@ export default function CreatePairScreen() {
     }
   }, [pair?.code, router]);
 
+  const toggleAgeOk = () => {
+    setAgeOk((prev) => {
+      const next = !prev;
+      void AsyncStorage.setItem(AGE_OK_KEY, next ? '1' : '');
+      if (next) {
+        setAgeError('');
+        void juice.hit();
+      }
+      return next;
+    });
+  };
+
   const onCreate = async () => {
+    if (!ageOk) {
+      setAgeError('Нужно подтвердить 16+');
+      void juice.miss();
+      return;
+    }
     setLoading(true);
+    setAgeError('');
     try {
       const profile = await signIn(displayName || 'Ты');
       await createPair(name, profile.id);
@@ -103,9 +129,21 @@ export default function CreatePairScreen() {
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
+          <Pressable
+            onPress={toggleAgeOk}
+            style={styles.ageRow}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: ageOk }}
+          >
+            <View style={[styles.ageBox, ageOk && styles.ageBoxOn]}>
+              {ageOk ? <Text style={styles.ageCheck}>✓</Text> : null}
+            </View>
+            <Text style={styles.ageLabel}>Мне есть 16+</Text>
+          </Pressable>
+          {ageError ? <Text style={styles.ageError}>{ageError}</Text> : null}
           <Text style={styles.foot}>
-            После создания — код из 6 символов и deep link для партнёра. Auth пока локальный
-            (Google — опционально на Welcome).
+            После создания — код из 6 символов и deep link для партнёра. 16+ нужен до create. Auth
+            пока локальный (Google — опционально на Welcome).
           </Text>
         </View>
         <View style={styles.actions}>
@@ -190,6 +228,41 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: fonts.ui,
     fontSize: 16,
+  },
+  ageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  ageBox: {
+    width: 22,
+    height: 22,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ageBoxOn: {
+    borderColor: colors.accentAmber,
+    backgroundColor: 'rgba(232,196,122,0.18)',
+  },
+  ageCheck: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  ageLabel: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  ageError: {
+    fontFamily: fonts.ui,
+    color: colors.danger,
+    fontSize: 14,
   },
   foot: {
     fontFamily: fonts.ui,
