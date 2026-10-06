@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Together shows warmth/mutation outbox pending  
 - [x] Music tab shows pending music outbox  
 - [x] Mount hello skipped while forceSolo  
 - [x] Home shows outbox pending (music/warmth/meta)  

@@ -18,8 +18,12 @@ import { typography } from '../../src/theme/typography';
 import { sparksRu, type SparkFilter } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
-import { sendNoteMutationOrQueue } from '../../src/realtime/noteMutationOutbox';
+import { sendWarmthOrQueue, pendingWarmthCount } from '../../src/realtime/warmthOutbox';
+import {
+  sendNoteMutationOrQueue,
+  pendingNoteMutationCount,
+} from '../../src/realtime/noteMutationOutbox';
+import { pendingMemoryMutationCount } from '../../src/realtime/memoryMutationOutbox';
 import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { TinyNote, useApp } from '../../src/store/AppStore';
@@ -55,6 +59,7 @@ export default function TogetherScreen() {
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
   const [peerToast, setPeerToast] = useState<string | null>(null);
+  const [outboxTick, setOutboxTick] = useState(0);
   const deck = useMemo(
     () => sparksRu.filter((s) => s.filter === sparkFilter),
     [sparkFilter],
@@ -86,6 +91,12 @@ export default function TogetherScreen() {
       setIdx(0);
     }
   }, [spicyUnlocked, sparkFilter]);
+
+  useEffect(() => {
+    if (!pair) return;
+    const id = setInterval(() => setOutboxTick((n) => n + 1), 2000);
+    return () => clearInterval(id);
+  }, [pair?.code]);
 
   const showPeer = (text: string) => {
     peerToastRef.current = text;
@@ -566,6 +577,17 @@ export default function TogetherScreen() {
           {pair
             ? ` · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'}`
             : ' · нет пары'}
+          {isPlus ? ' · Plus' : ' · Free'}
+          {(() => {
+            void outboxTick;
+            const pending =
+              pendingWarmthCount() +
+              pendingNoteMutationCount() +
+              pendingMemoryMutationCount() +
+              notes.filter((n) => n.pendingSync).length +
+              memories.filter((m) => m.pendingSync).length;
+            return pending > 0 ? ` · sync ${pending}` : '';
+          })()}
         </Text>
         <View style={styles.statStrip}>
           {(
