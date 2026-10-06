@@ -416,7 +416,11 @@ export default function SoftDuelScreen() {
         title: 'Soft Duel',
         detail: partnerFinishedRef.current
           ? `Оба финиш · ты ${myScoreRef.current}`
-          : `Ты ${myScoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+          : params.solo === '1' || forceSolo
+            ? `Solo demo · ты ${myScoreRef.current}`
+            : partnerLiveRef.current
+              ? `Ты ${myScoreRef.current} · партнёр live`
+              : `Ты ${myScoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       if (partnerFinishedRef.current) {
@@ -428,7 +432,8 @@ export default function SoftDuelScreen() {
         setSyncFinish(true);
         void juice.perfect();
       }
-      if (!partnerLiveRef.current) {
+      // Demo partner score only in solo — never invent while waiting on a live pair.
+      if (!partnerLiveRef.current && (params.solo === '1' || forceSolo)) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
       }
       return;
@@ -682,20 +687,34 @@ export default function SoftDuelScreen() {
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
           <Text style={styles.title}>Soft Duel</Text>
           <Text style={styles.meta}>
-            Ты {myScore} · Партнёр {partnerScore}
-            {partnerLive ? ' · live' : ' · demo'}
+            Ты {myScore}
+            {params.solo === '1' || forceSolo
+              ? ` · Партнёр ${partnerScore} · demo`
+              : partnerLive
+                ? ` · Партнёр ${partnerScore} · live`
+                : partnerScore > 0
+                  ? ` · Партнёр ${partnerScore}`
+                  : ' · ждём партнёра'}
           </Text>
           <Text style={styles.meta}>
             ты P{perfects}/G{goods}/Ok{oks}/E{earlies}
             {lastMs != null ? ` · ${lastMs}ms` : ''}
           </Text>
-          <Text style={styles.meta}>
-            партнёр P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E{partnerEarlies}
-            {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
-            {partnerLive ? ' · live' : ' · demo'}
-          </Text>
+          {partnerLive || partnerScore > 0 ? (
+            <Text style={styles.meta}>
+              партнёр P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E{partnerEarlies}
+              {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
+              {partnerLive ? ' · live' : ' · demo'}
+            </Text>
+          ) : null}
           <PostMatchCard
-            title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
+            title={
+              !partnerLive && partnerScore === 0 && params.solo !== '1' && !forceSolo
+                ? 'Ждём счёт партнёра'
+                : myScore >= partnerScore
+                  ? 'Реакция твоя'
+                  : 'Партнёр быстрее'
+            }
             gameId="soft-duel"
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}

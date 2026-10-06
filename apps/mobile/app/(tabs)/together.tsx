@@ -459,6 +459,9 @@ export default function TogetherScreen() {
         <Text style={typography.body}>
           {notes.length} заметок · {memories.length} memory · искра {idx + 1}/{soft.length || 1}
           {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
+          {pair
+            ? ` · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'}`
+            : ' · нет пары'}
         </Text>
         <View style={styles.statStrip}>
           {(
@@ -469,6 +472,12 @@ export default function TogetherScreen() {
               ['s', String(idx + 1), 'искра'],
               ['c', lit ? `${mins}:${secs.toString().padStart(2, '0')}` : 'off', 'свеча'],
               ['w', String(warmthPulse), 'тепло'],
+              [
+                'o',
+                typeof pair?.roomSize === 'number' ? String(pair.roomSize) : '—',
+                'online',
+              ],
+              ['p', pair?.partnerPresence === 'online' ? 'on' : 'off', 'партнёр'],
             ] as const
           ).map(([k, n, l]) => (
             <View key={k} style={styles.statPill}>
@@ -477,6 +486,12 @@ export default function TogetherScreen() {
             </View>
           ))}
         </View>
+        {pair && pair.partnerPresence !== 'online' ? (
+          <Text style={styles.offlineBanner}>
+            Партнёр offline — записки и тепло уйдут по WS, когда он будет online. Пара{' '}
+            {pair.code} сохранена.
+          </Text>
+        ) : null}
 
         <SectionRule label="Искра" right={`${idx + 1}/${soft.length || 1}`} />
 
@@ -520,12 +535,25 @@ export default function TogetherScreen() {
             maxLength={180}
           />
           <Text style={styles.draftMeta}>{draft.trim().length}/180</Text>
-          <LpdButton label="Отправить заметку" onPress={sendNote} />
+          <LpdButton
+            label={
+              pair?.partnerPresence === 'online'
+                ? 'Отправить заметку'
+                : 'Отправить (дождётся online)'
+            }
+            onPress={sendNote}
+          />
           {notes.length === 0 ? (
             <EmptyState
               title="Пока тихо"
-              body="Первая записка уйдёт партнёру по WS — и останется в ленте у обоих."
-              meta="0 notes · 0 букв"
+              body={
+                pair?.partnerPresence === 'online'
+                  ? 'Первая записка уйдёт партнёру по WS — и останется в ленте у обоих.'
+                  : 'Записка сохранится локально и уйдёт по WS, когда партнёр будет online.'
+              }
+              meta={`0 notes · 0 букв · ${
+                pair?.partnerPresence === 'online' ? 'WS ready' : 'партнёр offline'
+              }`}
             />
           ) : (
             notes.slice(0, 10).map((n) => (
@@ -682,6 +710,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     fontSize: 9,
     color: colors.textMuted,
+  },
+  offlineBanner: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.accentRose,
   },
   card: {
     marginTop: spacing.sm,
