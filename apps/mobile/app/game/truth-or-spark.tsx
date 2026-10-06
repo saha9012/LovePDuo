@@ -23,6 +23,7 @@ import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { usePremium } from '../../src/store/PremiumStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 const SKIP_LIMIT = 3;
 const EVENING_CARDS = 8;
@@ -654,7 +655,7 @@ export default function TruthOrSparkScreen() {
         <Text style={styles.syncMeta}>
           seed {matchSeed} ·{' '}
           {!sessionStarted
-            ? 'общий старт…'
+            ? syncedStartCountdownLabel(params.startAt, turnToast)
             : live
               ? `live с ${peerName ?? 'партнёром'}`
               : params.solo === '1'
@@ -663,9 +664,11 @@ export default function TruthOrSparkScreen() {
           {isHost ? ' · host' : ''} · ход:{' '}
           {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
-        {turnToast ? <Text style={styles.turnToast}>{turnToast}</Text> : null}
+        {turnToast && sessionStarted ? <Text style={styles.turnToast}>{turnToast}</Text> : null}
         {!sessionStarted ? (
-          <Text style={styles.waitStart}>Ждём общий countdown из лобби — карточки откроются вместе.</Text>
+          <Text style={styles.waitStart}>
+            Синхронный старт с лобби — карточки откроются вместе.
+          </Text>
         ) : null}
         {sessionStarted && live && !turnMine && !forceSolo && params.solo !== '1' ? (
           <Text style={styles.idleHint}>
@@ -713,7 +716,7 @@ export default function TruthOrSparkScreen() {
           <Text style={styles.meta}>
             {sessionStarted
               ? `Карточка ${(index % deck.length) + 1}/${deck.length} · skip осталось ${skips}`
-              : 'Старт через мгновение'}
+              : syncedStartCountdownLabel(params.startAt, turnToast)}
           </Text>
         </Animated.View>
 

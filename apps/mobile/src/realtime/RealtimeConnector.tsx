@@ -9,6 +9,7 @@ import { flushWarmthOutbox } from './warmthOutbox';
 import { flushMusicOutbox } from './musicOutbox';
 import { flushMemoryMutationOutbox } from './memoryMutationOutbox';
 import { flushNoteMutationOutbox } from './noteMutationOutbox';
+import { flushPairMetaOutbox } from './pairMetaOutbox';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -106,6 +107,7 @@ export function RealtimeConnector() {
       flushMusicOutbox();
       flushMemoryMutationOutbox();
       flushNoteMutationOutbox();
+      flushPairMetaOutbox();
     };
 
     pairRealtime.connect(pair.code, user.id, user.displayName);

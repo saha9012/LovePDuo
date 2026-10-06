@@ -11,6 +11,7 @@ import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
 import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime/wsConfig';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
@@ -200,15 +201,17 @@ export default function ProfileScreen() {
                   wsToastRef.current === 'Оба в одной паре');
               setPairName(next);
               setRoomSaved(true);
+              const result = sendPairMetaOrQueue('room-name', { name: next });
               const toast = racing
                 ? 'Оба в одной паре'
                 : both
                   ? 'Оба назвали пару'
-                  : 'Имя пары сохранено';
+                  : result === 'sent'
+                    ? 'Имя пары сохранено'
+                    : 'Имя пары · sync ждёт online';
               wsToastRef.current = toast;
               setWsToast(toast);
               setTimeout(() => setWsToast(null), 1600);
-              pairRealtime.sendGame('room-name', { name: next });
               void (both ? juice.perfect() : juice.card());
             }}
           />
