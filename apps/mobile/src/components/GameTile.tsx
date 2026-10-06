@@ -10,6 +10,8 @@ type Props = {
   cover?: 'sky' | 'heartbeat' | 'spark' | 'draw' | 'orbit' | 'duel' | 'veil';
   onPress?: () => void;
   badge?: string;
+  /** Lifetime starts on this device */
+  plays?: number;
 };
 
 const accents = {
@@ -25,6 +27,7 @@ export function GameTile({
   cover,
   onPress,
   badge,
+  plays,
 }: Props) {
   return (
     <Pressable
@@ -40,7 +43,12 @@ export function GameTile({
       <View style={styles.body}>
         <View style={styles.row}>
           <Text style={styles.title}>{title}</Text>
-          {badge ? <Text style={styles.badge}>{badge}</Text> : null}
+          <View style={styles.badges}>
+            {typeof plays === 'number' ? (
+              <Text style={styles.plays}>{plays}×</Text>
+            ) : null}
+            {badge ? <Text style={styles.badge}>{badge}</Text> : null}
+          </View>
         </View>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
@@ -82,16 +90,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     fontFamily: fonts.uiSemi,
     fontSize: 18,
     color: colors.textPrimary,
+    flexShrink: 1,
   },
   subtitle: {
     fontFamily: fonts.ui,
     fontSize: 14,
     lineHeight: 20,
     color: colors.textSecondary,
+  },
+  plays: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    color: colors.accentMist,
   },
   badge: {
     fontFamily: fonts.uiMedium,

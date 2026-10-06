@@ -6,8 +6,8 @@
 
 ## Latest
 
-- [x] Word Veil fair dual score + reveal letter counts · Heartbeat miss batch  
-- [x] Together denser scrapbook kinds/candle bar · SectionRule ornaments  
+- [x] Sky Claim layout-safe hits + accuracy HUD · Lobby meta strip · GameTile plays  
+- [x] Word Veil fair scores · Together scrapbook density · Heartbeat miss batch  
 - [x] Duo Plus scaffold · play streaks · Soft Duel timer cleanup  
 - [x] Pair identity = invite code (`pairIdFromCode`); warmth + gamesStarted persist  
 - [x] Match session AsyncStorage + backend `pair_sync` / lastMatch handoff  

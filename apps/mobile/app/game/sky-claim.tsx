@@ -56,8 +56,10 @@ export default function SkyClaimScreen() {
   const [objects, setObjects] = useState<SkyObject[]>([]);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);
-  const [partnerScore, setPartnerScore] = useState(0);
+  const [hits, setHits] = useState(0);
+  const [misses, setMisses] = useState(0);
+  const [layoutReady, setLayoutReady] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);  const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const [partnerFlash, setPartnerFlash] = useState(false);
@@ -360,6 +362,8 @@ export default function SkyClaimScreen() {
     setObjects([]);
     setScore(0);
     setCombo(0);
+    setHits(0);
+    setMisses(0);
     comboRef.current = 0;
     scoreRef.current = 0;
     partnerFinishedRef.current = false;
@@ -521,17 +525,20 @@ export default function SkyClaimScreen() {
   }, [phase, spawner, addMemory, user]);
 
   const onLayout = (e: LayoutChangeEvent) => {
-    size.current = {
-      w: e.nativeEvent.layout.width,
-      h: e.nativeEvent.layout.height,
-    };
+    const w = Math.max(1, e.nativeEvent.layout.width);
+    const h = Math.max(1, e.nativeEvent.layout.height);
+    size.current = { w, h };
+    setLayoutReady(w > 8 && h > 8);
   };
 
   const onTap = useCallback(
     (x: number, y: number) => {
       if (phase !== 'playing') return;
-      const nx = x / size.current.w;
-      const ny = y / size.current.h;
+      const { w, h } = size.current;
+      // Ignore taps until field has real layout (avoids nx/ny ≈ garbage on 1×1)
+      if (w < 8 || h < 8) return;
+      const nx = Math.max(0, Math.min(1, x / w));
+      const ny = Math.max(0, Math.min(1, y / h));
       setObjects((prev) => {
         let hit: SkyObject | null = null;
         const rest: SkyObject[] = [];
@@ -551,6 +558,7 @@ export default function SkyClaimScreen() {
         if (!hit) {
           comboRef.current = 0;
           setCombo(0);
+          setMisses((m) => m + 1);
           setFlash('miss');
           void juice.miss();
           pairRealtime.sendGame('sky-claim', { miss: true, score: scoreRef.current });
@@ -561,6 +569,8 @@ export default function SkyClaimScreen() {
         scoreRef.current += result.scoreDelta;
         setCombo(result.combo);
         setScore(scoreRef.current);
+        if (hit.type !== 'decoy') setHits((n) => n + 1);
+        else setMisses((m) => m + 1);
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
         if (hit.type === 'decoy') {
           void juice.decoy();
@@ -663,6 +673,12 @@ export default function SkyClaimScreen() {
         <View style={styles.stats}>
           <Text style={styles.stat}>Очки {score}</Text>
           <Text style={[styles.stat, combo >= 5 && styles.comboHot]}>Комбо ×{combo}</Text>
+          <Text style={styles.stat}>
+            {hits}✓/{misses}✗
+            {hits + misses > 0
+              ? ` · ${Math.round((hits / (hits + misses)) * 100)}%`
+              : ''}
+          </Text>
           <Animated.Text
             style={[
               styles.stat,
@@ -676,6 +692,9 @@ export default function SkyClaimScreen() {
             {peerNote ? ` · ${peerNote}` : ''}
           </Animated.Text>
         </View>
+        {!layoutReady && phase === 'playing' ? (
+          <Text style={styles.layoutWait}>Калибровка поля…</Text>
+        ) : null}
 
         {phase === 'ready' ? (
           <View style={styles.ready}>
@@ -773,12 +792,19 @@ const styles = StyleSheet.create({
   },
   stats: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    gap: 8,
+  },
+  layoutWait: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textMuted,
   },
   stat: {
     fontFamily: fonts.uiMedium,
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
   },
   comboHot: {
     color: colors.accentAmber,

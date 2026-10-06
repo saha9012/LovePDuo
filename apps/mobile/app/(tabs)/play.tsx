@@ -386,6 +386,7 @@ export default function PlayScreen() {
                 accent={g.accent}
                 cover={g.cover}
                 badge={g.badge}
+                plays={startStats?.byGame[g.game] ?? 0}
                 onPress={() => openGame(g.game)}
               />
             ))

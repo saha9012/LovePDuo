@@ -19,7 +19,8 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
-import { recordGameStart } from '../../src/stats/playStats';
+import { loadPlayStats, recordGameStart } from '../../src/stats/playStats';
+import { SectionRule } from '../../src/components/SectionRule';
 
 const routes = {
   'sky-claim': '/game/sky-claim',
@@ -44,6 +45,7 @@ export default function GameLobbyScreen() {
   const [startAtMs, setStartAtMs] = useState<number | null>(null);
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const [cancelToast, setCancelToast] = useState<string | null>(null);
+  const [playsHere, setPlaysHere] = useState(0);
   const startSent = useRef(false);
   const bothReadyNoted = useRef(false);
   const countdownRef = useRef<number | null>(null);
@@ -77,6 +79,10 @@ export default function GameLobbyScreen() {
   useEffect(() => {
     readyMeRef.current = readyMe;
   }, [readyMe]);
+
+  useEffect(() => {
+    void loadPlayStats().then((s) => setPlaysHere(s.byGame[gameId] ?? 0));
+  }, [gameId]);
 
   useEffect(() => {
     return pairRealtime.onStatus((online) => {
@@ -380,6 +386,9 @@ export default function GameLobbyScreen() {
 
   const solo = () => {
     const seed = Math.floor(Math.random() * 100000);
+    bumpGamesStarted();
+    void recordGameStart(gameId);
+    setPlaysHere((n) => n + 1);
     track('game_started', { game: gameId, solo: true });
     router.replace({
       pathname: routes[gameId],
@@ -413,19 +422,52 @@ export default function GameLobbyScreen() {
     leave();
   };
 
+  const gameTitle =
+    (
+      {
+        'sky-claim': 'Sky Claim',
+        heartbeat: 'Heartbeat Tap',
+        'truth-or-spark': 'Truth Or Spark',
+        'soft-duel': 'Soft Duel',
+        'word-veil': 'Word Veil',
+        'signal-draw': 'Signal Draw',
+        'orbit-catch': 'Orbit Catch',
+      } as Record<string, string>
+    )[gameId] ?? gameId;
+  const readyCount = (readyMe ? 1 : 0) + (readyPeer ? 1 : 0);
+
   return (
     <LpdBackground mood="warm">
       <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
         <Text style={styles.kicker}>Lobby</Text>
-        <Text style={typography.headline}>Готовы жечь?</Text>
+        <Text style={typography.headline}>{gameTitle}</Text>
         <Text style={typography.body}>
-          Оба жмут Ready — общий seed и countdown. Solo — если партнёр оффлайн. Код пары: {pair?.code}
+          Оба Ready → общий seed и countdown. Solo — если партнёр оффлайн.
         </Text>
+        <SectionRule label="Пара" right={pair?.code ?? '—'} />
+        <View style={styles.metaStrip}>
+          {(
+            [
+              ['r', `${readyCount}/2`, 'ready'],
+              ['p', String(playsHere), 'стартов'],
+              ['g', String(pair?.gamesStarted ?? 0), 'всего'],
+              ['w', wsOnline ? 'on' : '…', 'ws'],
+              ['h', isHost ? 'host' : 'guest', 'роль'],
+              ['n', String(typeof pair?.roomSize === 'number' ? pair.roomSize : '—'), 'online'],
+            ] as const
+          ).map(([k, n, l]) => (
+            <View key={k} style={styles.metaPill}>
+              <Text style={styles.metaNum}>{n}</Text>
+              <Text style={styles.metaLabel}>{l}</Text>
+            </View>
+          ))}
+        </View>
         <Text style={styles.hostHint}>
           {isHost ? 'Ты host — стартуешь раунд для обоих.' : 'Жди host (кто создал пару).'}
-          {' · '}WS {wsOnline ? 'online' : 'переподключение…'}
-          {typeof pair?.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''}
+          {matchSeed != null ? ` · seed ${matchSeed}` : ''}
         </Text>
+
+        <SectionRule label="Готовность" right={`${readyCount}/2`} />
 
         <View style={styles.status}>
           <Text style={[styles.pill, readyMe && styles.pillReady]}>
@@ -446,7 +488,7 @@ export default function GameLobbyScreen() {
 
         <View style={styles.actions}>
           {!readyMe ? (
-            <LpdButton label="Ready" onPress={onReady} disabled={countdown != null} />
+            <LpdButton label={`Ready · ${readyCount}/2`} onPress={onReady} disabled={countdown != null} />
           ) : (
             <LpdButton
               label={countdown != null ? 'Отменить старт' : 'Снять Ready'}
@@ -480,8 +522,33 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.accentRose,
   },
+  metaStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  metaPill: {
+    minWidth: 48,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,214,186,0.14)',
+    backgroundColor: 'rgba(255,214,186,0.04)',
+    alignItems: 'center',
+  },
+  metaNum: {
+    fontFamily: fonts.mono,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  metaLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 9,
+    color: colors.textMuted,
+  },
   status: {
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
     gap: spacing.sm,
   },
   pill: {
