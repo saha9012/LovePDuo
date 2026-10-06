@@ -380,6 +380,12 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        if (params.solo === '1') {
+          setPresenceHint('Партнёр: ещё раунд · соло');
+          void juice.sync();
+          setTimeout(() => setPresenceHint(null), 1600);
+          return;
+        }
         peerLeftMatchRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;

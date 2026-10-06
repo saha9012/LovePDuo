@@ -254,6 +254,11 @@ export default function OrbitCatchScreen() {
           }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
+          if (params.solo === '1') {
+            bumpPeerNote('ещё раунд · соло');
+            void juice.sync();
+            return;
+          }
           peerLeftMatchRef.current = false;
           setPeerSeen(true);
           setForceSolo(false);

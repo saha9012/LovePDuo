@@ -357,6 +357,11 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.rematch && typeof payload.seed === 'number') {
+        if (params.solo === '1') {
+          showTurnToast('Партнёр: новая колода · соло');
+          void juice.sync();
+          return;
+        }
         peerLeftMatchRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;

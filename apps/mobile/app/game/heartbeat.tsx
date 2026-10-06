@@ -291,6 +291,11 @@ export default function HeartbeatScreen() {
         }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        if (params.solo === '1') {
+          bumpPeerNote('ещё раунд · соло', 1200);
+          void juice.sync();
+          return;
+        }
         peerLeftMatchRef.current = false;
         setPartnerLive(true);
         partnerLiveRef.current = true;

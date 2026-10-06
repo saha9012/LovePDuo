@@ -303,6 +303,11 @@ export default function SignalDrawScreen() {
         }
       }
       if (payload.rematch) {
+        if (params.solo === '1') {
+          showToast('Партнёр: ещё раунд · соло');
+          void juice.sync();
+          return;
+        }
         peerLeftMatchRef.current = false;
         setPeerSeen(true);
         setForceSolo(false);

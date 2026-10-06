@@ -300,6 +300,11 @@ export default function SoftDuelScreen() {
         }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        if (params.solo === '1') {
+          setFlash('Партнёр: ещё раунд · соло');
+          void juice.sync();
+          return;
+        }
         peerLeftMatchRef.current = false;
         setPartnerLive(true);
         partnerLiveRef.current = true;
