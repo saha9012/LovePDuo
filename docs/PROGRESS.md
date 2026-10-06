@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Mutation outbox flush keeps undelivered items  
 - [x] peer_joined hello skipped after leaveMatch until rematch  
 - [x] Catalog rematch ·соло hints after leaveMatch  
 - [x] Word Veil rematch hint ·соло after leaveMatch  

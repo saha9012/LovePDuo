@@ -19,12 +19,20 @@ export function sendWarmthOrQueue(): 'sent' | 'queued' {
 }
 
 export function flushWarmthOutbox(): number {
+  if (!(pairRealtime.connected && getLastRoomSize() >= 2)) return 0;
   const n = pending;
   pending = 0;
+  let sent = 0;
   for (let i = 0; i < n; i += 1) {
-    pairRealtime.sendWarmth();
+    if (pairRealtime.connected && getLastRoomSize() >= 2) {
+      pairRealtime.sendWarmth();
+      sent += 1;
+    } else {
+      pending += n - i;
+      break;
+    }
   }
-  return n;
+  return sent;
 }
 
 export function clearWarmthOutbox() {

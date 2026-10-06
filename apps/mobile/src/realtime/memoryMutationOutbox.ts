@@ -1,5 +1,4 @@
-import { pairRealtime } from './PairRealtime';
-import { getLastRoomSize } from './pairPresence';
+import { sendGameIfPeerLive } from './sendGameIfPeerLive';
 
 type MemoryMutation = {
   gameId: string;
@@ -14,10 +13,7 @@ export function sendMemoryMutationOrQueue(
   gameId: string,
   payload: Record<string, unknown>,
 ): 'sent' | 'queued' {
-  if (pairRealtime.connected && getLastRoomSize() >= 2) {
-    pairRealtime.sendGame(gameId, payload);
-    return 'sent';
-  }
+  if (sendGameIfPeerLive(gameId, payload)) return 'sent';
   queue.push({ gameId, payload });
   if (queue.length > MAX) queue = queue.slice(-MAX);
   return 'queued';
@@ -26,10 +22,16 @@ export function sendMemoryMutationOrQueue(
 export function flushMemoryMutationOutbox(): number {
   const items = queue;
   queue = [];
+  let sent = 0;
   for (const m of items) {
-    pairRealtime.sendGame(m.gameId, m.payload);
+    if (sendGameIfPeerLive(m.gameId, m.payload)) {
+      sent += 1;
+    } else {
+      queue.push(m);
+    }
   }
-  return items.length;
+  if (queue.length > MAX) queue = queue.slice(-MAX);
+  return sent;
 }
 
 export function clearMemoryMutationOutbox() {
