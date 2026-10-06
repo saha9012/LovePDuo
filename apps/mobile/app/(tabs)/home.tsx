@@ -26,6 +26,7 @@ import {
   type MatchSession,
 } from '../../src/realtime/matchSession';
 import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { SectionRule } from '../../src/components/SectionRule';
 
 const GAME_TITLES: Record<string, string> = {
@@ -429,7 +430,8 @@ export default function HomeScreen() {
     const again =
       same && lastMoodMatch.current === m && Date.now() - lastMoodMatchAt.current < 3200;
     setMood(m);
-    pairRealtime.sendGame('mood', { mood: m });
+    // Ephemeral room vibe — never spray mood into an empty WS room.
+    sendGameIfPeerLive('mood', { mood: m });
     if (same) {
       lastMoodMatchAt.current = Date.now();
       lastMoodMatch.current = m;

@@ -223,27 +223,29 @@ export default function WordVeilScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         void juice.miss();
+        setForceSolo(true);
         const stuckWaiting =
           waitingPeerRef.current ||
           (lockedRef.current &&
             !partnerWordRef.current &&
             phaseRef.current === 'playing');
         if (stuckWaiting) {
-          setForceSolo(true);
           setWaitingPeer(false);
           const demo = SEEDS[(seedRef.current + 3) % SEEDS.length];
           setPartnerWord(demo);
           doRevealRef.current(demo);
           setPresenceHint('Партнёр вышел · соло');
         } else {
-          setPresenceHint('Партнёр вышел');
+          setPresenceHint('Партнёр вышел · соло');
         }
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
       if (msg.type === 'peer_joined') {
+        setForceSolo(false);
         setPresenceHint(
           hintRef.current === 'Партнёр вышел' ||
+            hintRef.current === 'Партнёр вышел · соло' ||
             hintRef.current === 'Партнёр вернулся' ||
             hintRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'
@@ -251,7 +253,7 @@ export default function WordVeilScreen() {
         );
         void juice.sync();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+        sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }
@@ -309,6 +311,7 @@ export default function WordVeilScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
+        setForceSolo(false);
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
@@ -456,6 +459,11 @@ export default function WordVeilScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    const soloAgain =
+      params.solo === '1' ||
+      pair?.partnerPresence !== 'online' ||
+      (pair?.roomSize ?? 0) < 2;
+    setForceSolo(soloAgain);
     lastRematchAt.current = Date.now();
     sendGameIfPeerLive('word-veil', { rematch: true, seed: next, hello: true });
     resetRound();

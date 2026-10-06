@@ -6,6 +6,8 @@
 
 ## Latest
 
+- [x] ToS rematch live-only · Word Veil/ToS peer_left → forceSolo · Home mood live-only  
+- [x] Rematch announce live-only (Soft/HB/Sky/Orbit/Draw/Veil)  
 - [x] Rematch resets forceSolo from live peer (Soft/HB/Sky/Orbit/Draw)  
 - [x] Soft forceSoloRef · synced-start 800ms grace · sendGameIfPeerLive hellos  
 - [x] Gate mount hellos (games + Music/Together) via sendGameIfPeerLive  

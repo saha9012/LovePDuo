@@ -205,14 +205,23 @@ export default function TruthOrSparkScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         setLive(false);
-        showTurnToast('Партнёр вышел');
+        if (params.solo !== '1') {
+          setForceSolo(true);
+          idleForced.current = true;
+        }
+        showTurnToast('Партнёр вышел · соло');
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setLive(true);
+        if (params.solo !== '1') {
+          setForceSolo(false);
+          idleForced.current = false;
+        }
         showTurnToast(
           turnToastRef.current === 'Партнёр вышел' ||
+            turnToastRef.current === 'Партнёр вышел · соло' ||
             turnToastRef.current === 'Партнёр вернулся' ||
             turnToastRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'
@@ -220,7 +229,7 @@ export default function TruthOrSparkScreen() {
         );
         void juice.sync();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame(GAME_ID, {
+        sendGameIfPeerLive(GAME_ID, {
           hello: true,
           fromName: user.displayName,
           fromId: user.id,
@@ -297,6 +306,9 @@ export default function TruthOrSparkScreen() {
         setCardsDone(0);
         setSkipsUsed(0);
         finishLogged.current = false;
+        setForceSolo(false);
+        idleForced.current = false;
+        setLive(true);
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
@@ -405,7 +417,7 @@ export default function TruthOrSparkScreen() {
     return () => {
       off();
     };
-  }, [pair?.code, user?.id, spicyUnlocked]);
+  }, [pair?.code, user?.id, spicyUnlocked, params.solo]);
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
@@ -587,8 +599,11 @@ export default function TruthOrSparkScreen() {
     setCardsDone(0);
     setSkipsUsed(0);
     finishLogged.current = false;
+    const soloAgain = params.solo === '1' || !live;
+    setForceSolo(soloAgain);
+    idleForced.current = soloAgain;
     lastRematchAt.current = Date.now();
-    pairRealtime.sendGame(GAME_ID, {
+    sendGameIfPeerLive(GAME_ID, {
       rematch: true,
       seed: nextSeed,
       index: 0,
