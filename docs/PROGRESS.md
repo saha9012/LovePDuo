@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Auth honesty: local ≠ cloud · pair = code+WS (Welcome/Profile)  
 - [x] Entering a match consumes session (Home resume disappears)  
 - [x] Late match resume enters game · Soft/Orbit/Draw/Veil consumeMatchSession  
 - [x] Lobby ready/start live-only · memory broadcast skips empty room · Together hello gated  

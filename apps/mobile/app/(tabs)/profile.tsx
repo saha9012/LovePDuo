@@ -93,10 +93,14 @@ export default function ProfileScreen() {
         <Text style={styles.kicker}>Profile</Text>
         <Text style={typography.headline}>Пара и настройки</Text>
         <Text style={typography.body}>
-          Auth:{' '}
-          {user?.authProvider === 'google' ? 'Google' : 'локальный'}
-          {user?.email ? ` · ${user.email}` : ''}
+          {user?.authProvider === 'google'
+            ? `Google${user.email ? ` · ${user.email}` : ''}`
+            : 'Локальный профиль · только на этом устройстве'}
           {pair?.code ? ` · код ${pair.code}` : ' · нет пары'}
+        </Text>
+        <Text style={typography.caption}>
+          Пара живёт по коду и WS-комнате. Локальный вход — не облачный аккаунт; Duo Plus
+          entitlement синкается по WS, не через магазин (пока).
         </Text>
         <View style={styles.statStrip}>
           {(

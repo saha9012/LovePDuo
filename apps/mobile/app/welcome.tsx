@@ -261,12 +261,14 @@ export default function WelcomeScreen() {
           {roomToast ? <Text style={styles.authToast}>{roomToast}</Text> : null}
           <Text style={styles.foot}>
             {pair
-              ? `Код пары ${pair.code} сохранён${
-                  typeof pair.roomSize === 'number' ? ` · online ${pair.roomSize}` : ''
-                } · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'} · Auth: ${
-                  user?.authProvider === 'google' ? 'Google' : 'локальный'
+              ? `Код пары ${pair.code} сохранён на устройстве${
+                  typeof pair.roomSize === 'number' ? ` · WS online ${pair.roomSize}` : ''
+                } · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'} · ${
+                  user?.authProvider === 'google'
+                    ? `Google${user.email ? ` · ${user.email}` : ''}`
+                    : 'локальный профиль (не облако)'
                 }.`
-              : 'Создай пару или войди по коду — два телефона, одна пара. Google — опционально.'}
+              : 'Пара = код на двух телефонах, не аккаунт. Локальное имя хранится здесь; Google — опционально, когда .env готов.'}
           </Text>
         </Animated.View>
       </View>
