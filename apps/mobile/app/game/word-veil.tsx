@@ -563,6 +563,7 @@ export default function WordVeilScreen() {
   if (phase === 'finished') {
     const pct =
       myScore >= 5 ? '100%' : myScore >= 3 ? '60%' : myScore >= 1 ? '30%' : '0%';
+    const demo = params.solo === '1' || forceSolo;
     return (
       <LpdBackground mood="warm">
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
@@ -572,10 +573,11 @@ export default function WordVeilScreen() {
           </Text>
           <Text style={styles.revealLine}>
             Партнёр: «{(partnerWord || '').trim() || '—'}» · {(partnerWord || '').trim().length}{' '}
-            букв
+            букв{demo ? ' · demo' : ''}
           </Text>
           <Text style={styles.revealMeta}>
-            prompt «{prompt}» · связь {myScore}/5 · {pct} · seed {matchSeed}
+            prompt «{prompt}» · связь {myScore}/5{demo ? ' · solo demo' : ''} · {pct} · seed{' '}
+            {matchSeed}
           </Text>
           <PostMatchCard
             title={matchLabel}
@@ -675,9 +677,15 @@ export default function WordVeilScreen() {
                 <Text style={styles.revealMeta}>
                   {mine.trim().length} букв · prompt «{prompt}»
                 </Text>
-                <Text style={styles.revealLine}>Партнёр: {partnerWord || '…'}</Text>
+                <Text style={styles.revealLine}>
+                  Партнёр: {partnerWord || '…'}
+                  {params.solo === '1' || forceSolo ? ' · demo' : ''}
+                </Text>
                 <Text style={styles.revealMeta}>
-                  {(partnerWord || '').trim().length} букв · оба {myScore}/5
+                  {(partnerWord || '').trim().length} букв
+                  {params.solo === '1' || forceSolo
+                    ? ' · solo demo'
+                    : ` · оба ${myScore}/5`}
                 </Text>
                 <View style={styles.scoreRow}>
                   <Text style={styles.score}>Связь {myScore}/5</Text>
