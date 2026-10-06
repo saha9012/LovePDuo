@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home partner avatar gates green on WS ≥2  
 - [x] Together partner pill matches WS ≥2 header  
 - [x] ToS memory marks Solo demo evenings  
 - [x] Word Veil memory marks Solo demo associations  

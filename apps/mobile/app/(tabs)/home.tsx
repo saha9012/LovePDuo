@@ -528,7 +528,13 @@ export default function HomeScreen() {
             <View style={styles.person}>
               <PairAvatar
                 name={pair?.partnerName ?? 'Партнёр'}
-                presence={pair?.partnerPresence ?? 'offline'}
+                presence={
+                  typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                    ? (pair?.partnerPresence ?? 'offline')
+                    : pair?.partnerPresence === 'online'
+                      ? 'away'
+                      : (pair?.partnerPresence ?? 'offline')
+                }
               />
               <Text style={styles.personName}>{pair?.partnerName ?? 'Партнёр'}</Text>
             </View>
