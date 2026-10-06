@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Lobby host copy dual only when WS ≥2  
 - [x] Lobby/success partner pill gates on WS ≥2  
 - [x] Home partner avatar gates green on WS ≥2  
 - [x] Together partner pill matches WS ≥2 header  

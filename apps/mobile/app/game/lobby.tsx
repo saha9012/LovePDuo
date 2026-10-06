@@ -559,7 +559,9 @@ export default function GameLobbyScreen() {
         <Text style={styles.hostHint}>
           {canStart
             ? isHost
-              ? 'Ты host — стартуешь раунд для обоих.'
+              ? (pair?.roomSize ?? 0) >= 2
+                ? 'Ты host — стартуешь раунд для обоих.'
+                : 'Ты host — dual после WS 2/2, или Solo / Demo.'
               : hostStale
                 ? 'Ты стартуешь (host offline — lex).'
                 : 'Ты стартуешь (lex host — host не записан).'
