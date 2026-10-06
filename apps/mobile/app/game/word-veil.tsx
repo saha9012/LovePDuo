@@ -678,7 +678,7 @@ export default function WordVeilScreen() {
               </Text>
             ) : (
               <LpdButton
-                label="Старт"
+                label={params.solo === '1' || forceSolo ? 'Старт · Solo demo' : 'Старт'}
                 onPress={() => {
                   setPhase('playing');
                   if (pair && user && params.solo !== '1') {

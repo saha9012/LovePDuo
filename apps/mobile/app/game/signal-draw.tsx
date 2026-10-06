@@ -890,7 +890,10 @@ export default function SignalDrawScreen() {
                 {syncedStartCountdownLabel(params.startAt, toast)}
               </Text>
             ) : (
-              <LpdButton label="Старт" onPress={start} />
+              <LpdButton
+                label={params.solo === '1' || forceSolo ? 'Старт · Solo demo' : 'Старт'}
+                onPress={start}
+              />
             )}
           </View>
         ) : (

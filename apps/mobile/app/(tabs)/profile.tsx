@@ -478,7 +478,11 @@ export default function ProfileScreen() {
           ))}
           {!premium.isPlus ? (
             <LpdButton
-              label="Trial Duo Plus · 7 дней"
+              label={
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'Trial Duo Plus · 7 дней'
+                  : 'Trial Duo Plus · 7д (sync ждёт WS 2/2)'
+              }
               onPress={() => {
                 const ends = premium.startTrial();
                 if (ends) {
@@ -518,7 +522,11 @@ export default function ProfileScreen() {
           )}
           {!premium.isPlus ? (
             <LpdButton
-              label="Unlock Plus (dev / без IAP)"
+              label={
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'Unlock Plus (dev / без IAP)'
+                  : 'Unlock Plus (dev · sync ждёт WS 2/2)'
+              }
               variant="ghost"
               onPress={() => {
                 premium.unlockDevPlus();

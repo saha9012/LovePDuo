@@ -386,16 +386,18 @@ export default function PlayScreen() {
               key={id}
               onPress={() => {
                 setFilter(id);
-                setPeekToast(
-                  id === 'all' ? 'Все игры' : id === 'mvp' ? 'Фильтр: MVP' : 'Фильтр: New',
-                );
-                void juice.hit();
-                setTimeout(() => setPeekToast(null), 1200);
-                sendGameIfPeerLive('play-filter', {
+                const label =
+                  id === 'all' ? 'Все игры' : id === 'mvp' ? 'Фильтр: MVP' : 'Фильтр: New';
+                const synced = sendGameIfPeerLive('play-filter', {
                   filter: id,
                   fromId: user?.id,
                   from: user?.displayName,
                 });
+                setPeekToast(
+                  synced ? label : `${label} · локально · sync ждёт WS 2/2`,
+                );
+                void juice.hit();
+                setTimeout(() => setPeekToast(null), 1400);
               }}
               style={[styles.chip, filter === id && styles.chipOn]}
             >

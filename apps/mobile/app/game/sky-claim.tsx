@@ -885,7 +885,9 @@ export default function SkyClaimScreen() {
               </Text>
             ) : (
               <Pressable onPress={start} style={styles.startBtn}>
-                <Text style={styles.startLabel}>Старт</Text>
+                <Text style={styles.startLabel}>
+                  {params.solo === '1' || forceSolo ? 'Старт · Solo demo' : 'Старт'}
+                </Text>
               </Pressable>
             )}
           </View>

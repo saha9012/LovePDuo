@@ -841,7 +841,9 @@ export default function HeartbeatScreen() {
               </Text>
             ) : (
               <Pressable onPress={start} style={styles.btn}>
-                <Text style={styles.btnLabel}>Старт</Text>
+                <Text style={styles.btnLabel}>
+                  {params.solo === '1' || forceSolo ? 'Старт · Solo demo' : 'Старт'}
+                </Text>
               </Pressable>
             )}
           </View>
