@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Word Veil rematch hint ·соло after leaveMatch  
 - [x] ToS rematch toast ·соло when partner leftMatch  
 - [x] Soft rematch flash says ·соло when partner leftMatch  
 - [x] Solo rematch does not spray rematch into WS room  

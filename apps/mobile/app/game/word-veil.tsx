@@ -538,6 +538,8 @@ export default function WordVeilScreen() {
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     sendGameIfDuo(forceSoloRef.current, 'word-veil', { rematch: true, seed: next, hello: true });
+    setPresenceHint(soloAgain ? 'Ещё раунд · соло' : 'Ещё раунд');
+    setTimeout(() => setPresenceHint(null), 1600);
     resetRound();
   };
 
