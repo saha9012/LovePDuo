@@ -183,6 +183,9 @@ export default function OrbitCatchScreen() {
           setPeerSeen(false);
           bumpPeerNote('матч·соло');
           void juice.miss();
+          if (phaseRef.current === 'ready') {
+            setTimeout(() => startRef.current(), 0);
+          }
           return;
         }
         if (payload?.hello || payload?.phase === 'start') {

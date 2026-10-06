@@ -187,6 +187,9 @@ export default function SoftDuelScreen() {
         forceSoloRef.current = true;
         setFlash('Партнёр вышел из матча · соло');
         void juice.miss();
+        if (phaseRef.current === 'ready') {
+          setTimeout(() => startRef.current(), 0);
+        }
         return;
       }
       if (payload?.hello) {

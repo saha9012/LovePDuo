@@ -211,6 +211,9 @@ export default function HeartbeatScreen() {
         forceSoloRef.current = true;
         bumpPeerNote('матч·соло');
         void juice.miss();
+        if (phaseRef.current === 'ready') {
+          setTimeout(() => startRef.current(), 0);
+        }
         return;
       }
       if (payload?.hello) {
