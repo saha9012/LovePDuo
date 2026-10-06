@@ -17,6 +17,7 @@ import { SparkFilter, sparksRu } from '../../src/content/sparks';
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -409,7 +410,7 @@ export default function TruthOrSparkScreen() {
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
     lastHelloAt.current = Date.now();
-    pairRealtime.sendGame(GAME_ID, {
+    sendGameIfPeerLive(GAME_ID, {
       hello: true,
       fromName: user.displayName,
       fromId: user.id,

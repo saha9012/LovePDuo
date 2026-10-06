@@ -16,6 +16,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
@@ -370,7 +371,7 @@ export default function WordVeilScreen() {
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
     lastHelloAt.current = Date.now();
-    pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+    sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 
   useEffect(() => {

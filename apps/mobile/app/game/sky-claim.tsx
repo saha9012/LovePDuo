@@ -28,6 +28,7 @@ import {
 import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -372,7 +373,7 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;
     lastHelloAt.current = Date.now();
-    pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
+    sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
   }, [pair?.code, user?.id, params.solo]);
 
   const start = () => {
