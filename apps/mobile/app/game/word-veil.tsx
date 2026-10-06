@@ -525,7 +525,10 @@ export default function WordVeilScreen() {
             gameId="word-veil"
             winnerLabel="Word Veil"
             onRematch={rematch}
-            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'word-veil' } })}
+            onHome={() => {
+              announceLeaveMatch('word-veil', user);
+              router.replace({ pathname: '/game/lobby', params: { game: 'word-veil' } });
+            }}
           />
         </View>
       </LpdBackground>

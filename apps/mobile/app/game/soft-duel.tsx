@@ -755,7 +755,10 @@ export default function SoftDuelScreen() {
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } })}
+            onHome={() => {
+              announceLeaveMatch('soft-duel', user);
+              router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } });
+            }}
           />
         </View>
       </LpdBackground>

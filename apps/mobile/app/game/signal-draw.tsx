@@ -732,7 +732,10 @@ export default function SignalDrawScreen() {
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } })}
+            onHome={() => {
+              announceLeaveMatch('signal-draw', user);
+              router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } });
+            }}
           />
         </View>
       </LpdBackground>

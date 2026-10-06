@@ -682,7 +682,10 @@ export default function HeartbeatScreen() {
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } })}
+            onHome={() => {
+              announceLeaveMatch('heartbeat', user);
+              router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } });
+            }}
           />
         </View>
       </LpdBackground>

@@ -567,7 +567,10 @@ export default function OrbitCatchScreen() {
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}
             onRematch={rematch}
-            onHome={() => router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } })}
+            onHome={() => {
+              announceLeaveMatch('orbit-catch', user);
+              router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } });
+            }}
           />
         </View>
       </LpdBackground>

@@ -656,9 +656,10 @@ export default function TruthOrSparkScreen() {
             winnerLabel={syncFinish ? 'Оба финиш' : filter === 'spicy' ? 'Spicy night' : 'Soft night'}
             line={line.text}
             onRematch={reshuffle}
-            onHome={() =>
-              router.replace({ pathname: '/game/lobby', params: { game: GAME_ID } })
-            }
+            onHome={() => {
+              announceLeaveMatch(GAME_ID, user);
+              router.replace({ pathname: '/game/lobby', params: { game: GAME_ID } });
+            }}
           />
         </View>
       </LpdBackground>
