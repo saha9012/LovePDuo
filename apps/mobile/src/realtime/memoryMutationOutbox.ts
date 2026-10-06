@@ -32,6 +32,10 @@ export function flushMemoryMutationOutbox(): number {
   return items.length;
 }
 
+export function clearMemoryMutationOutbox() {
+  queue = [];
+}
+
 export function pendingMemoryMutationCount() {
   return queue.length;
 }

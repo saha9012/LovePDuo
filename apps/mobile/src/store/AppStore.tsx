@@ -277,7 +277,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [signIn]);
 
   const signOut = useCallback(async () => {
-    pairRealtime.disconnect();
+    const { clearMatchSession } = await import('../realtime/matchSession');
+    const { clearAllSyncOutboxes } = await import('../realtime/clearSyncOutboxes');
+    clearMatchSession();
+    clearAllSyncOutboxes();
     setUser(null);
     setPair(null);
     setTracks([]);
@@ -339,7 +342,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const unlinkPair = useCallback(async () => {
     const { clearMatchSession } = await import('../realtime/matchSession');
+    const { clearAllSyncOutboxes } = await import('../realtime/clearSyncOutboxes');
     clearMatchSession();
+    clearAllSyncOutboxes();
     setPair(null);
   }, []);
 

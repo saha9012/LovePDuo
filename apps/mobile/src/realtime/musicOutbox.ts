@@ -32,6 +32,10 @@ export function flushMusicOutbox(): number {
   return items.length;
 }
 
+export function clearMusicOutbox() {
+  queue = [];
+}
+
 export function pendingMusicCount() {
   return queue.length;
 }

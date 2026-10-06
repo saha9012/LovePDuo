@@ -31,3 +31,7 @@ export function flushNoteMutationOutbox(): number {
   }
   return items.length;
 }
+
+export function clearNoteMutationOutbox() {
+  queue = [];
+}

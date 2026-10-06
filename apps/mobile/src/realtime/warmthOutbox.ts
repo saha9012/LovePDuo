@@ -26,3 +26,7 @@ export function flushWarmthOutbox(): number {
   }
   return n;
 }
+
+export function clearWarmthOutbox() {
+  pending = 0;
+}

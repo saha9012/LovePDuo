@@ -31,3 +31,7 @@ export function flushPairMetaOutbox(): number {
   }
   return items.length;
 }
+
+export function clearPairMetaOutbox() {
+  queue = [];
+}
