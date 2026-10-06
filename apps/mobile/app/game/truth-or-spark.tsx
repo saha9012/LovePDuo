@@ -145,14 +145,20 @@ export default function TruthOrSparkScreen() {
           : 'Партнёр снова online',
       );
       void juice.hit();
-      // Partner presence back — clear idle soloEscape only, not intentional leaveMatch.
-      if (forceSolo && params.solo !== '1' && !peerLeftMatchRef.current) {
+      // Partner presence back — clear idle soloEscape only when WS room is live,
+      // and not after intentional leaveMatch.
+      if (
+        forceSolo &&
+        params.solo !== '1' &&
+        !peerLeftMatchRef.current &&
+        (pair?.roomSize ?? 0) >= 2
+      ) {
         setForceSolo(false);
         idleForced.current = false;
       }
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, forceSolo, params.solo]);
+  }, [pair?.partnerPresence, pair?.roomSize, forceSolo, params.solo]);
 
   // Soft-lock escape: partner's turn + no advance → countdown → соло
   useEffect(() => {
