@@ -6,12 +6,13 @@
 
 ## Latest
 
+- [x] Lobby start claims stale/empty host · host re-elect via outbox · peek/filter live-only  
 - [x] Clear sync outboxes + drop pending note/memory on unlink/sign-out  
 - [x] Music upload/stub/react outbox · Now Playing live-only · Lobby leave notify  
 - [x] Together candle/spark outbox · Duo Plus/pair-meta queue when alone  
 - [x] Live synced-start countdown tick · display-name outbox · play-peek only when live  
 - [x] ToS synced-start countdown · Word Veil/Soft synced-start · mid-match forceSolo  
-- [x] Host claim on peer_left · stale host re-elect · Soft/Orbit rematch seed settle  
+- [x] Host claim on peer_left · Soft/Orbit rematch seed settle  
 - [x] Memory/note remove outbox · scrapbook pending UI  
 - [x] Music mutation outbox · ToS soloEscape unlock · Soft synced-start gate  
 - [x] Duo Plus pair WS sync · warmth outbox · Word Veil no self-match finish  
