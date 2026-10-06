@@ -835,8 +835,20 @@ export default function TogetherScreen() {
           {memories.length === 0 ? (
             <EmptyState
               title="Скрапбук пуст"
-              body="Финиш игры или догоревшая свеча появятся здесь у обоих."
-              meta={`0/${maxMemories} memory · ${isPlus ? 'Plus' : 'Free'} · сыграйте раунд`}
+              body={
+                peerInWsRoom
+                  ? 'Финиш игры или догоревшая свеча появятся здесь у обоих.'
+                  : 'Финиш и свеча пишутся локально; memory уйдёт партнёру, когда комната станет 2/2.'
+              }
+              meta={`0/${maxMemories} memory · ${isPlus ? 'Plus' : 'Free'} · ${
+                peerInWsRoom
+                  ? 'WS 2/2'
+                  : pair?.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : pair
+                      ? 'партнёр offline'
+                      : 'нет пары'
+              }`}
             />
           ) : (
             <>

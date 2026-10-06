@@ -891,6 +891,10 @@ export default function MusicScreen() {
     );
   };
 
+  /** Same rule as sendGameIfPeerLive — presence alone can lie when room is 1. */
+  const peerInWsRoom =
+    Boolean(pair) && typeof pair?.roomSize === 'number' && pair.roomSize >= 2;
+
   return (
     <LpdBackground mood={active?.mood === 'pulse' ? 'warm' : active?.mood ?? 'warm'}>
       <ScrollView
@@ -1134,8 +1138,22 @@ export default function MusicScreen() {
           {tracks.length === 0 ? (
             <EmptyState
               title="Пока тихо"
-              body="Загрузите первый трек — он останется у пары после перезахода. Удалить — × у карточки."
-              meta={`0 треков · полок ${playlists.length}/${maxShelves}${isPlus ? ' · Plus' : ' · Free'}`}
+              body={
+                peerInWsRoom
+                  ? 'Загрузите первый трек — файл локально у тебя, карточка уйдёт партнёру по WS. Удалить — × у карточки.'
+                  : 'Загрузите первый трек — файл и карточка локально; мета уйдёт по WS, когда комната станет 2/2. Удалить — ×.'
+              }
+              meta={`0 треков · полок ${playlists.length}/${maxShelves}${
+                isPlus ? ' · Plus' : ' · Free'
+              } · ${
+                peerInWsRoom
+                  ? 'WS 2/2'
+                  : pair?.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : pair
+                      ? 'партнёр offline'
+                      : 'нет пары'
+              }`}
             />
           ) : (
             visibleTracks.map((t) => {
