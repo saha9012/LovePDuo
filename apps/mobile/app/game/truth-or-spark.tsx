@@ -18,6 +18,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -253,9 +254,19 @@ export default function TruthOrSparkScreen() {
         phase?: string;
         cards?: number;
         skipsUsed?: number;
+        leaveMatch?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
+      if (payload.leaveMatch && payload.fromId !== user.id) {
+        setLive(false);
+        setForceSolo(true);
+        idleForced.current = true;
+        setTurnMine(true);
+        showTurnToast('Партнёр вышел · соло');
+        void juice.miss();
+        return;
+      }
       if (payload.phase === 'finished' && payload.fromId !== user.id) {
         finishLogged.current = true;
         setSyncFinish(true);
@@ -661,7 +672,11 @@ export default function TruthOrSparkScreen() {
           <Pressable
             onPress={() => {
               void confirmLeaveMatch(sessionStarted && index > 0).then((ok) => {
-                if (ok) router.back();
+                if (!ok) return;
+                if (sessionStarted) {
+                  announceLeaveMatch(GAME_ID, user);
+                }
+                router.back();
               });
             }}
           >

@@ -23,6 +23,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -198,7 +199,18 @@ export default function HeartbeatScreen() {
         judgement?: BeatJudgement;
         hello?: boolean;
         sync?: boolean;
+        leaveMatch?: boolean;
+        fromId?: string;
       } | undefined;
+      if (payload?.leaveMatch && payload.fromId !== user.id) {
+        setPartnerLive(false);
+        partnerLiveRef.current = false;
+        setForceSolo(true);
+        forceSoloRef.current = true;
+        bumpPeerNote('соло');
+        void juice.miss();
+        return;
+      }
       if (payload?.hello) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
@@ -684,7 +696,11 @@ export default function HeartbeatScreen() {
           <Pressable
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
-                if (ok) router.back();
+                if (!ok) return;
+                if (phase === 'playing') {
+                  announceLeaveMatch('heartbeat', user);
+                }
+                router.back();
               });
             }}
           >

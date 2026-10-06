@@ -18,6 +18,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -214,8 +215,18 @@ export default function SignalDrawScreen() {
         brush?: 'fine' | 'bold';
         phase?: string;
         hello?: boolean;
+        leaveMatch?: boolean;
+        fromId?: string;
       } | undefined;
       if (!payload) return;
+      if (payload.leaveMatch && payload.fromId !== user.id) {
+        setForceSolo(true);
+        forceSoloRef.current = true;
+        setPeerSeen(false);
+        showToast('Партнёр вышел · соло');
+        void juice.miss();
+        return;
+      }
       if (payload.hello || payload.phase === 'start') {
         setPeerSeen(true);
         if (payload.hello) {
@@ -735,7 +746,11 @@ export default function SignalDrawScreen() {
           <Pressable
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
-                if (ok) router.back();
+                if (!ok) return;
+                if (phase === 'playing') {
+                  announceLeaveMatch('signal-draw', user);
+                }
+                router.back();
               });
             }}
           >

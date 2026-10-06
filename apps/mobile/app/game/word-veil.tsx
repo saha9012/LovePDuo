@@ -17,6 +17,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
@@ -273,7 +274,16 @@ export default function WordVeilScreen() {
         typing?: boolean;
         hello?: boolean;
         phase?: string;
+        leaveMatch?: boolean;
+        fromId?: string;
       } | undefined;
+      if (payload?.leaveMatch && payload.fromId !== user.id) {
+        setForceSolo(true);
+        setPresenceHint('Партнёр вышел · соло');
+        setTimeout(() => setPresenceHint(null), 1600);
+        void juice.miss();
+        return;
+      }
       if (payload?.hello) {
         const both = Date.now() - lastHelloAt.current < 2500;
         const late = Date.now() - lateStartAt.current < 2500;
@@ -531,7 +541,11 @@ export default function WordVeilScreen() {
               void confirmLeaveMatch(
                 phase === 'playing' || phase === 'reveal',
               ).then((ok) => {
-                if (ok) router.back();
+                if (!ok) return;
+                if (phase === 'playing' || phase === 'reveal') {
+                  announceLeaveMatch('word-veil', user);
+                }
+                router.back();
               });
             }}
           >
