@@ -307,6 +307,16 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.filterChange && (payload.filter === 'soft' || payload.filter === 'spicy')) {
+        if (payload.filter === 'spicy' && !spicyUnlocked) {
+          if (typeof payload.index === 'number') setIndex(payload.index);
+          if (typeof payload.skips === 'number') setSkips(payload.skips);
+          if (payload.fromName) setPeerName(payload.fromName);
+          setFilter('soft');
+          setTurnMine(true);
+          showTurnToast('Spicy · Duo Plus — партнёр в spicy, ты soft');
+          void juice.miss();
+          return;
+        }
         setFilter(payload.filter);
         if (typeof payload.index === 'number') setIndex(payload.index);
         if (typeof payload.skips === 'number') setSkips(payload.skips);
@@ -339,7 +349,10 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (typeof payload.index === 'number') setIndex(payload.index);
-      if (payload.filter === 'soft' || payload.filter === 'spicy') setFilter(payload.filter);
+      if (payload.filter === 'soft' || payload.filter === 'spicy') {
+        if (payload.filter === 'spicy' && !spicyUnlocked) setFilter('soft');
+        else setFilter(payload.filter);
+      }
       if (typeof payload.skips === 'number') setSkips(payload.skips);
       if (payload.fromName) setPeerName(payload.fromName);
       if (payload.fromId && payload.fromId !== user.id) {
@@ -386,7 +399,7 @@ export default function TruthOrSparkScreen() {
     return () => {
       off();
     };
-  }, [pair?.code, user?.id]);
+  }, [pair?.code, user?.id, spicyUnlocked]);
 
   useEffect(() => {
     if (!pair || !user || params.solo === '1') return;

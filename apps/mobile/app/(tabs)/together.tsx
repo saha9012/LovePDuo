@@ -32,7 +32,17 @@ const CANDLE_SEC = 120;
 
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
-  const { user, pair, notes, addNote, removeNote, receiveNote, warmthPulse } = useApp();
+  const {
+    user,
+    pair,
+    notes,
+    addNote,
+    removeNote,
+    receiveNote,
+    markNoteSynced,
+    pendingNotes,
+    warmthPulse,
+  } = useApp();
   const { items: memories, clearMemories, removeMemory, addMemory, receiveMemory } = useMemories();
   const [idx, setIdx] = useState(0);
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
@@ -159,6 +169,19 @@ export default function TogetherScreen() {
           from: user.displayName,
           fromId: user.id,
         });
+        const outbox = pendingNotes();
+        if (outbox.length > 0) {
+          for (const n of outbox) {
+            const { pendingSync: _p, ...payload } = n;
+            pairRealtime.sendGame('tiny-note', payload);
+            markNoteSynced(n.id);
+          }
+          showPeer(
+            outbox.length === 1
+              ? 'Записка ушла партнёру'
+              : `${outbox.length} записки ушли партнёру`,
+          );
+        }
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'together-hello') {
@@ -327,6 +350,9 @@ export default function TogetherScreen() {
     receiveMemory,
     removeMemory,
     clearMemories,
+    pendingNotes,
+    markNoteSynced,
+    user,
   ]);
 
   useEffect(() => {
@@ -375,7 +401,16 @@ export default function TogetherScreen() {
     if (!note) return;
     lastNoteSentAt.current = Date.now();
     lastNoteLen.current = note.text.trim().length;
-    pairRealtime.sendGame('tiny-note', note);
+    const peerLive =
+      pair?.partnerPresence === 'online' || (pair?.roomSize ?? 0) >= 2;
+    if (peerLive) {
+      const { pendingSync: _p, ...payload } = note;
+      pairRealtime.sendGame('tiny-note', payload);
+      markNoteSynced(note.id);
+      showPeer('Записка ушла');
+    } else {
+      showPeer('Записка ждёт online');
+    }
     setDraft('');
     void juice.card();
     track('note_sent');
@@ -522,7 +557,12 @@ export default function TogetherScreen() {
           </View>
         </View>
 
-        <SectionRule label="Записки" right={`${notes.length} · ${noteChars} букв`} />
+        <SectionRule
+          label="Записки"
+          right={`${notes.length} · ${noteChars} букв${
+            notes.some((n) => n.pendingSync) ? ` · ${notes.filter((n) => n.pendingSync).length} ждут` : ''
+          }`}
+        />
 
         <View style={styles.noteBlock}>
           <Text style={styles.candleTitle}>Tiny Notes</Text>
@@ -560,6 +600,7 @@ export default function TogetherScreen() {
               <View key={n.id} style={styles.noteRow}>
                 <Text style={styles.noteItem}>
                   {n.from}: {n.text}
+                  {n.pendingSync ? ' · ждёт' : ''}
                 </Text>
                 <Pressable
                   onPress={() => deleteNote(n)}

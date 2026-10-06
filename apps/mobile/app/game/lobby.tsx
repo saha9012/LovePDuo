@@ -46,6 +46,7 @@ export default function GameLobbyScreen() {
   const [wsOnline, setWsOnline] = useState(pairRealtime.connected);
   const [cancelToast, setCancelToast] = useState<string | null>(null);
   const [playsHere, setPlaysHere] = useState(0);
+  const [peerUserId, setPeerUserId] = useState<string | null>(null);
   const startSent = useRef(false);
   const bothReadyNoted = useRef(false);
   const countdownRef = useRef<number | null>(null);
@@ -57,6 +58,12 @@ export default function GameLobbyScreen() {
 
   const isHost = Boolean(
     user?.id && pair?.hostUserId && pair.hostUserId === user.id,
+  );
+  /** Stable host, or lex-smaller userId when host was never recorded (legacy joins). */
+  const canStart = Boolean(
+    user?.id &&
+      (isHost ||
+        (!pair?.hostUserId && peerUserId && user.id < peerUserId)),
   );
 
   const peerReadyScale = useSharedValue(1);
@@ -193,6 +200,9 @@ export default function GameLobbyScreen() {
           return;
         }
         if (typeof payload?.ready === 'boolean' && payload.userId !== user.id) {
+          if (typeof payload.userId === 'string' && payload.userId) {
+            setPeerUserId(payload.userId);
+          }
           setReadyPeer(payload.ready);
           if (payload.ready) {
             const both = readyMeRef.current;
@@ -316,7 +326,7 @@ export default function GameLobbyScreen() {
       if (!readyMe || !readyPeer) bothReadyNoted.current = false;
       return;
     }
-    if (!isHost) {
+    if (!canStart) {
       if (!bothReadyNoted.current) {
         bothReadyNoted.current = true;
         showCancelToast('Оба READY — ждём старт');
@@ -347,7 +357,17 @@ export default function GameLobbyScreen() {
     showCancelToast('Старт для обоих');
     void juice.perfect();
     track('game_started', { game: gameId });
-  }, [readyMe, readyPeer, countdown, gameId, isHost, pair?.code, pair?.id, bumpGamesStarted, touchPairActive]);
+  }, [
+    readyMe,
+    readyPeer,
+    countdown,
+    gameId,
+    canStart,
+    pair?.code,
+    pair?.id,
+    bumpGamesStarted,
+    touchPairActive,
+  ]);
 
   const countStyle = useAnimatedStyle(() => ({
     transform: [{ scale: countScale.value }],
@@ -452,8 +472,13 @@ export default function GameLobbyScreen() {
               ['p', String(playsHere), 'стартов'],
               ['g', String(pair?.gamesStarted ?? 0), 'всего'],
               ['w', wsOnline ? 'on' : '…', 'ws'],
-              ['h', isHost ? 'host' : 'guest', 'роль'],
+              ['h', canStart ? 'start' : 'wait', 'роль'],
               ['n', String(typeof pair?.roomSize === 'number' ? pair.roomSize : '—'), 'online'],
+              [
+                'pr',
+                pair?.partnerPresence === 'online' ? 'on' : 'off',
+                'партнёр',
+              ],
             ] as const
           ).map(([k, n, l]) => (
             <View key={k} style={styles.metaPill}>
@@ -463,9 +488,20 @@ export default function GameLobbyScreen() {
           ))}
         </View>
         <Text style={styles.hostHint}>
-          {isHost ? 'Ты host — стартуешь раунд для обоих.' : 'Жди host (кто создал пару).'}
+          {canStart
+            ? isHost
+              ? 'Ты host — стартуешь раунд для обоих.'
+              : 'Ты стартуешь (lex host — host не записан).'
+            : pair?.hostUserId
+              ? 'Жди host (кто создал пару).'
+              : 'Ждём партнёра READY — стартует один из двоих.'}
           {matchSeed != null ? ` · seed ${matchSeed}` : ''}
         </Text>
+        {pair?.partnerPresence !== 'online' && (pair?.roomSize ?? 0) < 2 ? (
+          <Text style={styles.hostHint}>
+            Партнёр не в realtime — Solo / Demo, или жди online.
+          </Text>
+        ) : null}
 
         <SectionRule label="Готовность" right={`${readyCount}/2`} />
 

@@ -81,6 +81,8 @@ export type TinyNote = {
   text: string;
   from: string;
   at: number;
+  /** True until partner ACKs / we flush on peer_joined */
+  pendingSync?: boolean;
 };
 
 export type PlaylistMood = 'night' | 'warm' | 'rain' | 'pulse';
@@ -134,6 +136,8 @@ type AppState = {
   addNote: (text: string) => TinyNote | null;
   removeNote: (id: string) => void;
   receiveNote: (note: TinyNote) => void;
+  markNoteSynced: (id: string) => void;
+  pendingNotes: () => TinyNote[];
   setActivePlaylist: (id: string | null) => void;
   renamePlaylist: (id: string, name: string) => boolean;
   createPlaylist: (name: string, mood?: PlaylistMood) => Playlist | null;
@@ -201,9 +205,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setUser(parsed.user ?? null);
           if (parsed.pair) {
             const p = { ...parsed.pair } as PairState;
-            if (!p.hostUserId && parsed.user?.id) {
-              p.hostUserId = parsed.user.id;
-            }
+            // Never backfill hostUserId to the local user — joiners used to
+            // become "host" after relaunch and double-start lobbies.
             if (!p.pairedAt) {
               p.pairedAt = Date.now();
             }
@@ -470,6 +473,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         text: clean.slice(0, 180),
         from: user?.displayName ?? 'Ты',
         at: Date.now(),
+        pendingSync: true,
       };
       setNotes((prev) => [note, ...prev].slice(0, 50));
       return note;
@@ -482,11 +486,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const receiveNote = useCallback((note: TinyNote) => {
+    if (!note?.id || !note.text) return;
+    const clean: TinyNote = {
+      id: note.id,
+      text: String(note.text).slice(0, 180),
+      from: note.from || 'Партнёр',
+      at: typeof note.at === 'number' ? note.at : Date.now(),
+    };
     setNotes((prev) => {
-      if (prev.some((n) => n.id === note.id)) return prev;
-      return [note, ...prev].slice(0, 50);
+      if (prev.some((n) => n.id === clean.id)) return prev;
+      return [clean, ...prev].slice(0, 50);
     });
   }, []);
+
+  const markNoteSynced = useCallback((id: string) => {
+    setNotes((prev) =>
+      prev.map((n) => (n.id === id && n.pendingSync ? { ...n, pendingSync: false } : n)),
+    );
+  }, []);
+
+  const pendingNotes = useCallback(
+    () => notes.filter((n) => n.pendingSync),
+    [notes],
+  );
 
   const setActivePlaylist = useCallback((id: string | null) => {
     setActivePlaylistId(id);
@@ -615,6 +637,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addNote,
       removeNote,
       receiveNote,
+      markNoteSynced,
+      pendingNotes,
       setActivePlaylist,
       renamePlaylist,
       createPlaylist,
@@ -657,6 +681,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addNote,
       removeNote,
       receiveNote,
+      markNoteSynced,
+      pendingNotes,
       setActivePlaylist,
       renamePlaylist,
       createPlaylist,
