@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
+import { EmptyState } from '../../src/components/EmptyState';
 import { PairAvatar } from '../../src/components/PairAvatar';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
@@ -402,31 +403,47 @@ export default function ProfileScreen() {
               : ''}
           </Text>
           {playStats ? (
-            <>
-              <View style={styles.statStrip}>
-                {(
-                  [
-                    ['sky-claim', 'Sky'],
-                    ['heartbeat', 'Beat'],
-                    ['truth-or-spark', 'ToS'],
-                    ['signal-draw', 'Draw'],
-                    ['orbit-catch', 'Orbit'],
-                    ['soft-duel', 'Duel'],
-                    ['word-veil', 'Veil'],
-                  ] as const
-                ).map(([id, label]) => (
-                  <View key={id} style={styles.statPill}>
-                    <Text style={styles.statPillNum}>{playStats.byGame[id] ?? 0}</Text>
-                    <Text style={styles.statPillLabel}>{label}</Text>
-                  </View>
-                ))}
-              </View>
-              <Text style={typography.caption}>
-                {premium.isPlus ? 'Plus · ' : 'Free · '}
-                старты по играм · streak {playStats.streakDays}д · last{' '}
-                {playStats.lastPlayDay ?? '—'}
-              </Text>
-            </>
+            playStats.totalStarts === 0 ? (
+              <EmptyState
+                title="Статистика пуста"
+                body="Сыграйте раунд из Play — старты пишутся локально на этом устройстве, не в облаке."
+                meta={`0 стартов · streak 0 · ${
+                  typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                    ? 'WS 2/2'
+                    : pair?.partnerPresence === 'online'
+                      ? 'presence ≠ room'
+                      : pair
+                        ? 'партнёр offline'
+                        : 'нет пары'
+                }`}
+              />
+            ) : (
+              <>
+                <View style={styles.statStrip}>
+                  {(
+                    [
+                      ['sky-claim', 'Sky'],
+                      ['heartbeat', 'Beat'],
+                      ['truth-or-spark', 'ToS'],
+                      ['signal-draw', 'Draw'],
+                      ['orbit-catch', 'Orbit'],
+                      ['soft-duel', 'Duel'],
+                      ['word-veil', 'Veil'],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <View key={id} style={styles.statPill}>
+                      <Text style={styles.statPillNum}>{playStats.byGame[id] ?? 0}</Text>
+                      <Text style={styles.statPillLabel}>{label}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Text style={typography.caption}>
+                  {premium.isPlus ? 'Plus · ' : 'Free · '}
+                  старты локально · streak {playStats.streakDays}д · last{' '}
+                  {playStats.lastPlayDay ?? '—'}
+                </Text>
+              </>
+            )
           ) : null}
           {premium.features.map((f) => (
             <View key={f.id} style={styles.plusRow}>
