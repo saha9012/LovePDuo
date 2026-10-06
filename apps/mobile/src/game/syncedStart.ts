@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 
-/** Duo match arrived with lobby startAt — block manual «Старт» (auto-arm handles it). */
+/**
+ * Lobby countdown still running (or just armed) — block manual «Старт».
+ * Window includes ~800ms after startAt so Start doesn't flash before auto-arm.
+ * Rematch keeps old startAt in URL; once past the window, Start is available again.
+ */
 export function isWaitingSyncedStart(solo: string | undefined, startAt: string | undefined) {
   if (solo === '1') return false;
   const at = Number(startAt);
-  return Number.isFinite(at);
+  return Number.isFinite(at) && at > Date.now() - 800;
 }
 
 export function syncedStartCountdownLabel(startAt: string | undefined, flash?: string | null) {
