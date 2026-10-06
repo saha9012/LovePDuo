@@ -679,7 +679,10 @@ export default function TogetherScreen() {
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
           <Text style={styles.text}>{card.text}</Text>
-          <Text style={styles.draftMeta}>Одна на день · завтра другая</Text>
+          <Text style={styles.draftMeta}>
+            Одна на день · hash от кода пары
+            {peerInWsRoom ? ' · у обоих сегодня' : ' · локально · sync фильтра ждёт WS 2/2'}
+          </Text>
           {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
         </View>
 

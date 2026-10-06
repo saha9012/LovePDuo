@@ -156,7 +156,8 @@ export default function DeepJoinScreen() {
         </Pressable>
         {error ? <Text style={styles.error}>{error}</Text> : null}
         <Text style={styles.foot}>
-          Не входим молча как «Партнёр» — имя и 16+ нужны до join. Пара = код, не ephemeral room.
+          Не входим молча как «Партнёр» — имя и 16+ нужны до join. Пара = код; live dual — когда WS
+          комната станет 2/2, не от одного deep link.
         </Text>
         <View style={styles.actions}>
           <LpdButton
