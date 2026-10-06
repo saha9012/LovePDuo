@@ -322,6 +322,12 @@ export default function PlayScreen() {
               }`
             : ' · нет пары'}
         </Text>
+        {pair && !(typeof pair.roomSize === 'number' && pair.roomSize >= 2) ? (
+          <Text style={styles.offlineBanner}>
+            В WS нет партнёра ({typeof pair.roomSize === 'number' ? `${pair.roomSize}/2` : '—'}) —
+            dual после 2/2; Solo / Demo — без живого партнёра.
+          </Text>
+        ) : null}
         <View style={styles.statStrip}>
           {(
             [
@@ -451,6 +457,12 @@ const styles = StyleSheet.create({
   },
   sub: {
     marginBottom: spacing.xs,
+  },
+  offlineBanner: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.accentRose,
   },
   statStrip: {
     flexDirection: 'row',

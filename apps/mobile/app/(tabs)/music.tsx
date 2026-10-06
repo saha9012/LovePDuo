@@ -941,6 +941,12 @@ export default function MusicScreen() {
             return pending > 0 ? ` · sync ${pending}` : '';
           })()}
         </Text>
+        {pair && !peerInWsRoom ? (
+          <Text style={styles.offlineBanner}>
+            В WS нет партнёра ({typeof pair.roomSize === 'number' ? `${pair.roomSize}/2` : '—'}) —
+            карточки и Now Playing уйдут, когда комната станет 2/2. Файл трека всегда локально.
+          </Text>
+        ) : null}
         <View style={styles.statStrip}>
           {(
             [
@@ -1301,6 +1307,12 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.accentAmber,
     fontSize: 12,
+  },
+  offlineBanner: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.accentRose,
   },
   statStrip: {
     flexDirection: 'row',
