@@ -6,6 +6,8 @@
 
 ## Latest
 
+- [x] Live synced-start countdown tick · display-name outbox  
+- [x] ToS synced-start countdown labels · pair room-name outbox  
 - [x] Host claim on peer_left · lobby stale-host copy · mid-match forceSolo (HB/Orbit/Sky/Draw)  
 - [x] Word Veil synced-start gate · Soft shared helper · memory/note remove outbox  
 - [x] Synced-start on HB/Orbit/Sky/Draw · stale host re-elect · music rename/create outbox  

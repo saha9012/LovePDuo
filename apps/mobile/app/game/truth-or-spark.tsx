@@ -23,7 +23,7 @@ import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { usePremium } from '../../src/store/PremiumStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { syncedStartCountdownLabel, useSyncedStartWaiting } from '../../src/game/syncedStart';
 
 const SKIP_LIMIT = 3;
 const EVENING_CARDS = 8;
@@ -56,6 +56,7 @@ export default function TruthOrSparkScreen() {
   const { spicyUnlocked, isPlus } = usePremium();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; solo?: string; startAt?: string }>();
+  useSyncedStartWaiting(params.solo, params.startAt);
 
   const [matchSeed, setMatchSeed] = useState(() => {
     const fromParam = Number(params.seed);

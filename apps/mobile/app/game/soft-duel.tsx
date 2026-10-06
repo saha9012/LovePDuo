@@ -19,7 +19,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { useSyncedStartWaiting, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 const ROUNDS = 8;
 const PROMPTS = ['Жар', 'Тише', 'Ближе', 'Смелей', 'Стоп', 'Ещё', 'Сейчас', 'Вдвоём'];
@@ -548,7 +548,7 @@ export default function SoftDuelScreen() {
     start();
   };
 
-  const waitingSyncedStart = isWaitingSyncedStart(params.solo, params.startAt);
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
 
   useEffect(() => {
     if (params.solo === '1') return;

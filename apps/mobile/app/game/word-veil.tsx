@@ -20,7 +20,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { useSyncedStartWaiting, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 const SEEDS = [
   'ночь',
@@ -41,6 +41,7 @@ export default function WordVeilScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(Number(params.seed) || 7);
   const prompt = SEEDS[matchSeed % SEEDS.length];
 
@@ -526,13 +527,13 @@ export default function WordVeilScreen() {
             <Text style={styles.hero}>Ассоциация вдвоём</Text>
             <Text style={styles.body}>
               Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.
-              {isWaitingSyncedStart(params.solo, params.startAt)
+              {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' && !presenceHint && pair?.partnerPresence !== 'online'
                   ? ' Ждём партнёра за вуалью…'
                   : ''}
             </Text>
-            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+            {waitingSyncedStart ? (
               <Text style={styles.meta}>
                 {syncedStartCountdownLabel(params.startAt, presenceHint)}
               </Text>

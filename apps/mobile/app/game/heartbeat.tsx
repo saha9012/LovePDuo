@@ -27,7 +27,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { useSyncedStartWaiting, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -37,6 +37,7 @@ export default function HeartbeatScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
 
   const initialSeed = useMemo(() => {
     const fromParam = Number(params.seed);
@@ -689,13 +690,13 @@ export default function HeartbeatScreen() {
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
             <Text style={styles.body}>
               Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.
-              {isWaitingSyncedStart(params.solo, params.startAt)
+              {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' && !partnerLive
                   ? ' Ждём партнёра на бите…'
                   : ''}
             </Text>
-            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+            {waitingSyncedStart ? (
               <Text style={styles.meta}>
                 {syncedStartCountdownLabel(params.startAt, peerNote)}
               </Text>

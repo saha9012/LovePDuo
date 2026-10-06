@@ -21,7 +21,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { useSyncedStartWaiting, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Pt = { x: number; y: number };
 type Stroke = { id: string; color: string; points: Pt[]; by: 'me' | 'peer'; width: number };
@@ -66,6 +66,7 @@ export default function SignalDrawScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(
     () => Number(params.seed) || Date.now() % 100000,
   );
@@ -735,13 +736,13 @@ export default function SignalDrawScreen() {
             <Text style={styles.hero}>Рисуйте сигнал</Text>
             <Text style={styles.body}>
               Общий холст (Svg). Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
-              {isWaitingSyncedStart(params.solo, params.startAt)
+              {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' && !peerSeen
                   ? ' Ждём партнёра на холсте…'
                   : ''}
             </Text>
-            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+            {waitingSyncedStart ? (
               <Text style={styles.meta}>
                 {syncedStartCountdownLabel(params.startAt, toast)}
               </Text>

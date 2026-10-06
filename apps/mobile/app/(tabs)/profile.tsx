@@ -171,10 +171,15 @@ export default function ProfileScreen() {
                   status: 'online',
                   name: next.displayName,
                 });
-                pairRealtime.sendGame('display-name', {
+                const result = sendPairMetaOrQueue('display-name', {
                   name: next.displayName,
                   fromId: next.id,
                 });
+                if (result === 'queued') {
+                  wsToastRef.current = 'Имя · sync ждёт online';
+                  setWsToast('Имя · sync ждёт online');
+                  setTimeout(() => setWsToast(null), 1600);
+                }
               }
             }}
           />

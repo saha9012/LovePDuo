@@ -19,7 +19,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
-import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
+import { useSyncedStartWaiting, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -34,6 +34,7 @@ export default function OrbitCatchScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const seed = Number(params.seed) || 11;
 
   const [phase, setPhase] = useState<Phase>('ready');
@@ -569,13 +570,13 @@ export default function OrbitCatchScreen() {
             <Text style={styles.hero}>Ловите орбиту</Text>
             <Text style={styles.body}>
               Жми, когда янтарный маркер совпадает с розовым орбом. Очки пары складываются.
-              {isWaitingSyncedStart(params.solo, params.startAt)
+              {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' && !peerSeen
                   ? ' Ждём партнёра на орбите…'
                   : ''}
             </Text>
-            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+            {waitingSyncedStart ? (
               <Text style={styles.meta}>
                 {syncedStartCountdownLabel(params.startAt, peerNote)}
               </Text>
