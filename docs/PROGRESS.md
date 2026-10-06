@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Orbit/Draw accuracy HUDs · Music now-playing index/%/−time  
 - [x] Sky Claim layout-safe hits + accuracy HUD · Lobby meta strip · GameTile plays  
 - [x] Word Veil fair scores · Together scrapbook density · Heartbeat miss batch  
 - [x] Duo Plus scaffold · play streaks · Soft Duel timer cleanup  
