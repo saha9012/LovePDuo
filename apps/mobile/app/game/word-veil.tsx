@@ -285,14 +285,19 @@ export default function WordVeilScreen() {
         setTheirScore(peerPts);
         setPresenceHint('Партнёр закрыл раунд');
         setTimeout(() => setPresenceHint(null), 1600);
-        // Don't skip reveal — show comparison if we still have a local word
-        if (
-          phaseRef.current === 'playing' &&
-          (lockedRef.current || mineRef.current.trim().length > 0)
-        ) {
-          const peer = partnerWordRef.current || mineRef.current;
-          doRevealRef.current(peer);
-        } else if (phaseRef.current !== 'reveal' && phaseRef.current !== 'finished') {
+        // Never fall back to mineRef — that faked a perfect self-match.
+        const peerWord = partnerWordRef.current.trim();
+        if (phaseRef.current === 'playing' && peerWord) {
+          doRevealRef.current(peerWord);
+        } else if (phaseRef.current === 'playing' || phaseRef.current === 'reveal') {
+          setWaitingPeer(false);
+          setForceSolo(true);
+          if (!peerWord) {
+            setPartnerWord('');
+            setPhase('finished');
+            void juice.postMatch();
+          }
+        } else if (phaseRef.current !== 'finished') {
           setPhase('finished');
           void juice.postMatch();
         }

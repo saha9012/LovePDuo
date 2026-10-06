@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { useApp, TinyNote } from '../store/AppStore';
 import { useMemories, MemoryItem } from '../store/MemoriesStore';
+import { usePremium } from '../store/PremiumStore';
 import { pairRealtime } from './PairRealtime';
 import { setMatchSession } from './matchSession';
 import { setLastRoomSize } from './pairPresence';
+import { flushWarmthOutbox } from './warmthOutbox';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -61,6 +63,7 @@ export function RealtimeConnector() {
     pendingMemories,
     markMemorySynced,
   } = useMemories();
+  const { isPlus, trialEndsAt, applyPeerEntitlement } = usePremium();
 
   useEffect(() => {
     void juice.hydrateMuted();
@@ -79,8 +82,29 @@ export function RealtimeConnector() {
       }
     };
 
+    const announcePlus = () => {
+      if (!isPlus) return;
+      pairRealtime.sendGame('duo-plus', {
+        tier: trialEndsAt && trialEndsAt > Date.now() ? 'free' : 'duo_plus',
+        trialEndsAt: trialEndsAt && trialEndsAt > Date.now() ? trialEndsAt : null,
+        fromId: user.id,
+      });
+    };
+
+    const flushAll = () => {
+      announceHost();
+      announcePlus();
+      flushNoteOutbox(pendingNotes, markNoteSynced);
+      flushMemoryOutbox(pendingMemories, markMemorySynced, {
+        displayName: user.displayName,
+        id: user.id,
+      });
+      flushWarmthOutbox();
+    };
+
     pairRealtime.connect(pair.code, user.id, user.displayName);
     announceHost();
+    announcePlus();
 
     const off = pairRealtime.onMessage((msg) => {
       if (typeof msg.size === 'number') {
@@ -99,6 +123,21 @@ export function RealtimeConnector() {
               : pair.partnerName || 'Партнёр';
           setPartnerInfo(name, status);
         }
+      }
+      if (msg.type === 'game' && msg.gameId === 'duo-plus') {
+        const payload = msg.payload as {
+          tier?: 'free' | 'duo_plus';
+          trialEndsAt?: number | null;
+          cleared?: boolean;
+          fromId?: string;
+        } | undefined;
+        if (payload?.fromId === user.id) return;
+        applyPeerEntitlement({
+          tier: payload?.tier,
+          trialEndsAt: payload?.trialEndsAt,
+          cleared: payload?.cleared,
+        });
+        void juice.card();
       }
       if (msg.type === 'game' && msg.gameId === 'pair-meta') {
         const payload = msg.payload as {
@@ -183,12 +222,7 @@ export function RealtimeConnector() {
         if (peer?.name) {
           setPartnerInfo(peer.name, 'online');
         }
-        announceHost();
-        flushNoteOutbox(pendingNotes, markNoteSynced);
-        flushMemoryOutbox(pendingMemories, markMemorySynced, {
-          displayName: user.displayName,
-          id: user.id,
-        });
+        flushAll();
       }
       if (msg.type === 'pair_sync') {
         const payload = msg as {
@@ -226,12 +260,7 @@ export function RealtimeConnector() {
         if (typeof msg.name === 'string' && msg.name) {
           setPartnerInfo(msg.name, 'online');
         }
-        announceHost();
-        flushNoteOutbox(pendingNotes, markNoteSynced);
-        flushMemoryOutbox(pendingMemories, markMemorySynced, {
-          displayName: user.displayName,
-          id: user.id,
-        });
+        flushAll();
       }
       if (msg.type === 'peer_left') {
         setPartnerInfo(pair.partnerName || 'Партнёр', 'away');
@@ -278,6 +307,9 @@ export function RealtimeConnector() {
     markNoteSynced,
     pendingMemories,
     markMemorySynced,
+    isPlus,
+    trialEndsAt,
+    applyPeerEntitlement,
   ]);
 
   return null;

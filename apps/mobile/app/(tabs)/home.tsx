@@ -25,6 +25,7 @@ import {
   peekPairMatchSession,
   type MatchSession,
 } from '../../src/realtime/matchSession';
+import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
 import { SectionRule } from '../../src/components/SectionRule';
 
 const GAME_TITLES: Record<string, string> = {
@@ -601,8 +602,8 @@ export default function HomeScreen() {
                 variant="ghost"
                 onPress={() => {
                   warmthSentAt.current = Date.now();
-                  pairRealtime.sendWarmth();
-                  setWarmthToast('Тепло ушло');
+                  const result = sendWarmthOrQueue();
+                  setWarmthToast(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт online');
                   void juice.warmth();
                   setTimeout(() => setWarmthToast(null), 1400);
                 }}

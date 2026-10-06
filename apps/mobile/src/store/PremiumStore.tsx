@@ -50,6 +50,12 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
   },
 ];
 
+export type PeerEntitlement = {
+  tier?: PremiumTier;
+  trialEndsAt?: number | null;
+  cleared?: boolean;
+};
+
 type PremiumApi = {
   hydrated: boolean;
   tier: PremiumTier;
@@ -61,9 +67,12 @@ type PremiumApi = {
   maxMemories: number;
   spicyUnlocked: boolean;
   bindPair: (code: string | null) => void;
-  startTrial: () => boolean;
+  /** Returns trial end ms, or false if already used / Plus. */
+  startTrial: () => number | false;
   unlockDevPlus: () => void;
   clearPlus: () => void;
+  /** Merge Duo Plus / trial from partner WS (no rebroadcast). */
+  applyPeerEntitlement: (payload: PeerEntitlement) => void;
   features: PremiumFeature[];
 };
 
@@ -130,11 +139,11 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const startTrial = useCallback(() => {
-    if (trialUsed || tier === 'duo_plus') return false;
+    if (trialUsed || tier === 'duo_plus') return false as const;
     const ends = Date.now() + TRIAL_MS;
     setTrialEndsAt(ends);
     setTrialUsed(true);
-    return true;
+    return ends;
   }, [trialUsed, tier]);
 
   const unlockDevPlus = useCallback(() => {
@@ -145,6 +154,25 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   const clearPlus = useCallback(() => {
     setTier('free');
     setTrialEndsAt(null);
+  }, []);
+
+  const applyPeerEntitlement = useCallback((payload: PeerEntitlement) => {
+    if (payload.cleared) {
+      setTier('free');
+      setTrialEndsAt(null);
+      return;
+    }
+    if (payload.tier === 'duo_plus') {
+      setTier('duo_plus');
+      setTrialEndsAt(null);
+      return;
+    }
+    if (typeof payload.trialEndsAt === 'number' && payload.trialEndsAt > Date.now()) {
+      setTrialEndsAt((cur) =>
+        cur && cur > payload.trialEndsAt! ? cur : payload.trialEndsAt!,
+      );
+      setTrialUsed(true);
+    }
   }, []);
 
   const value = useMemo<PremiumApi>(
@@ -163,6 +191,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
       startTrial,
       unlockDevPlus,
       clearPlus,
+      applyPeerEntitlement,
       features: PREMIUM_FEATURES,
     }),
     [
@@ -175,6 +204,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
       startTrial,
       unlockDevPlus,
       clearPlus,
+      applyPeerEntitlement,
     ],
   );
 

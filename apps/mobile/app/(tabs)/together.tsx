@@ -18,6 +18,8 @@ import { typography } from '../../src/theme/typography';
 import { sparksRu, type SparkFilter } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { getLastRoomSize } from '../../src/realtime/pairPresence';
+import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -445,8 +447,7 @@ export default function TogetherScreen() {
     if (!note) return;
     lastNoteSentAt.current = Date.now();
     lastNoteLen.current = note.text.trim().length;
-    const peerLive =
-      pair?.partnerPresence === 'online' || (pair?.roomSize ?? 0) >= 2;
+    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
     if (peerLive) {
       const { pendingSync: _p, ...payload } = note;
       pairRealtime.sendGame('tiny-note', payload);
@@ -699,8 +700,8 @@ export default function TogetherScreen() {
             variant="ghost"
             onPress={() => {
               warmthSentAt.current = Date.now();
-              pairRealtime.sendWarmth();
-              showPeer('Тепло ушло');
+              const result = sendWarmthOrQueue();
+              showPeer(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт online');
               void juice.warmth();
               track('warmth_sent');
             }}

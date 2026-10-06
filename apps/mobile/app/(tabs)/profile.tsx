@@ -390,10 +390,16 @@ export default function ProfileScreen() {
             <LpdButton
               label="Trial Duo Plus · 7 дней"
               onPress={() => {
-                const ok = premium.startTrial();
-                setWsToast(ok ? 'Duo Plus trial 7д' : 'Trial уже был');
+                const ends = premium.startTrial();
+                if (ends) {
+                  pairRealtime.sendGame('duo-plus', {
+                    trialEndsAt: ends,
+                    fromId: user?.id,
+                  });
+                }
+                setWsToast(ends ? 'Duo Plus trial 7д · для пары' : 'Trial уже был');
                 setTimeout(() => setWsToast(null), 1800);
-                void (ok ? juice.perfect() : juice.miss());
+                void (ends ? juice.perfect() : juice.miss());
               }}
             />
           ) : (
@@ -402,7 +408,11 @@ export default function ProfileScreen() {
               variant="ghost"
               onPress={() => {
                 premium.clearPlus();
-                setWsToast('Снова Free');
+                pairRealtime.sendGame('duo-plus', {
+                  cleared: true,
+                  fromId: user?.id,
+                });
+                setWsToast('Снова Free · у обоих');
                 setTimeout(() => setWsToast(null), 1600);
                 void juice.miss();
               }}
@@ -414,14 +424,19 @@ export default function ProfileScreen() {
               variant="ghost"
               onPress={() => {
                 premium.unlockDevPlus();
-                setWsToast('Duo Plus unlocked');
+                pairRealtime.sendGame('duo-plus', {
+                  tier: 'duo_plus',
+                  trialEndsAt: null,
+                  fromId: user?.id,
+                });
+                setWsToast('Duo Plus unlocked · для пары');
                 setTimeout(() => setWsToast(null), 1600);
                 void juice.perfect();
               }}
             />
           ) : null}
           <Text style={typography.caption}>
-            IAP/Google Play Billing позже. Сейчас entitlement локальный на устройстве, привязка к коду
+            IAP/Google Play Billing позже. Entitlement синкается на пару по WS; привязка к коду
             пары {pair?.code ?? '—'}.
           </Text>
         </View>
