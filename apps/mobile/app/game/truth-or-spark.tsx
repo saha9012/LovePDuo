@@ -771,7 +771,9 @@ export default function TruthOrSparkScreen() {
           <Text style={styles.title}>Truth Or Spark</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(sessionStarted && index > 0).then((ok) => {
+              void confirmLeaveMatch(sessionStarted && index > 0, {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch(GAME_ID, user, seedRef.current);
                 router.back();

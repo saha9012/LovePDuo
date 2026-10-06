@@ -641,9 +641,9 @@ export default function WordVeilScreen() {
           <Text style={styles.title}>Word Veil</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(
-                phase === 'playing' || phase === 'reveal',
-              ).then((ok) => {
+              void confirmLeaveMatch(phase === 'playing' || phase === 'reveal', {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch('word-veil', user, seedRef.current);
                 router.back();

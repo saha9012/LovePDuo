@@ -817,7 +817,9 @@ export default function SkyClaimScreen() {
           <Text style={styles.hud}>Sky Claim</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+              void confirmLeaveMatch(phase === 'playing', {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch('sky-claim', user, seedRef.current);
                 router.back();

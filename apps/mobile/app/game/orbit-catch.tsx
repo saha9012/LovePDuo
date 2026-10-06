@@ -678,7 +678,9 @@ export default function OrbitCatchScreen() {
           <Text style={styles.title}>Orbit Catch · co-op</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+              void confirmLeaveMatch(phase === 'playing', {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch('orbit-catch', user, seedRef.current);
                 router.back();

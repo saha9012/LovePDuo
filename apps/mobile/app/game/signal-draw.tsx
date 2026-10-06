@@ -859,7 +859,9 @@ export default function SignalDrawScreen() {
           <Text style={styles.title}>Signal Draw</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+              void confirmLeaveMatch(phase === 'playing', {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch('signal-draw', user, seedRef.current);
                 router.back();

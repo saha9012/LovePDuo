@@ -878,7 +878,9 @@ export default function SoftDuelScreen() {
           <Text style={styles.title}>Soft Duel</Text>
           <Pressable
             onPress={() => {
-              void confirmLeaveMatch(phase === 'playing').then((ok) => {
+              void confirmLeaveMatch(phase === 'playing', {
+                soloDemo: params.solo === '1' || forceSolo,
+              }).then((ok) => {
                 if (!ok) return;
                 announceLeaveMatch('soft-duel', user, seedRef.current);
                 router.back();
