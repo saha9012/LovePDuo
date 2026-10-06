@@ -751,9 +751,7 @@ export default function SignalDrawScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing') {
-                  announceLeaveMatch('signal-draw', user);
-                }
+                announceLeaveMatch('signal-draw', user);
                 router.back();
               });
             }}

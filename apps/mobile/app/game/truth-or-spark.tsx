@@ -675,9 +675,7 @@ export default function TruthOrSparkScreen() {
             onPress={() => {
               void confirmLeaveMatch(sessionStarted && index > 0).then((ok) => {
                 if (!ok) return;
-                if (sessionStarted) {
-                  announceLeaveMatch(GAME_ID, user);
-                }
+                announceLeaveMatch(GAME_ID, user);
                 router.back();
               });
             }}

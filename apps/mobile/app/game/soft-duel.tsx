@@ -774,9 +774,7 @@ export default function SoftDuelScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing') {
-                  announceLeaveMatch('soft-duel', user);
-                }
+                announceLeaveMatch('soft-duel', user);
                 router.back();
               });
             }}

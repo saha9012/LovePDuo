@@ -722,9 +722,7 @@ export default function SkyClaimScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing') {
-                  announceLeaveMatch('sky-claim', user);
-                }
+                announceLeaveMatch('sky-claim', user);
                 router.back();
               });
             }}

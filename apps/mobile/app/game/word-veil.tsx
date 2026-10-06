@@ -546,9 +546,7 @@ export default function WordVeilScreen() {
                 phase === 'playing' || phase === 'reveal',
               ).then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing' || phase === 'reveal') {
-                  announceLeaveMatch('word-veil', user);
-                }
+                announceLeaveMatch('word-veil', user);
                 router.back();
               });
             }}

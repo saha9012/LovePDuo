@@ -586,9 +586,7 @@ export default function OrbitCatchScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing') {
-                  announceLeaveMatch('orbit-catch', user);
-                }
+                announceLeaveMatch('orbit-catch', user);
                 router.back();
               });
             }}

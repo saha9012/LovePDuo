@@ -701,9 +701,7 @@ export default function HeartbeatScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                if (phase === 'playing') {
-                  announceLeaveMatch('heartbeat', user);
-                }
+                announceLeaveMatch('heartbeat', user);
                 router.back();
               });
             }}
