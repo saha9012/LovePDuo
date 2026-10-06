@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS Дальше (обоим) only when peer live  
 - [x] Sky Claim ready gates соло demo  
 - [x] Soft/Veil/Orbit/Draw ready gates соло demo  
 - [x] Heartbeat Solo demo ready + Sync ·demo label  
