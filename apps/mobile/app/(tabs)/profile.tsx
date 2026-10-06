@@ -94,7 +94,8 @@ export default function ProfileScreen() {
         <Text style={typography.body}>
           Auth:{' '}
           {user?.authProvider === 'google' ? 'Google' : 'локальный'}
-          {user?.email ? ` · ${user.email}` : ''} · pair {pair?.id ?? '—'}
+          {user?.email ? ` · ${user.email}` : ''}
+          {pair?.code ? ` · код ${pair.code}` : ' · нет пары'}
         </Text>
         <View style={styles.statStrip}>
           {(
@@ -109,7 +110,7 @@ export default function ProfileScreen() {
               ['g', String(pair?.gamesStarted ?? 0), 'стартов'],
               ['t', String(tracks.length), 'треков'],
               ['n', String(notes.length), 'заметок'],
-              ['m', String(memories.length), 'memory'],
+              ['m', String(memories.length), 'память'],
               ['w', String(warmthPulse), 'тепла'],
               ['r', pair?.code ?? '—', 'код'],
             ] as const

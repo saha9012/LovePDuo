@@ -547,6 +547,12 @@ export default function SoftDuelScreen() {
     start();
   };
 
+  const syncedStartAt = Number(params.startAt);
+  const waitingSyncedStart =
+    params.solo !== '1' &&
+    Number.isFinite(syncedStartAt) &&
+    syncedStartAt > Date.now() + 200;
+
   useEffect(() => {
     if (params.solo === '1') return;
     const at = Number(params.startAt);
@@ -746,15 +752,23 @@ export default function SoftDuelScreen() {
             <Text style={styles.hero}>Реакция на двоих</Text>
             <Text style={styles.body}>
               Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. {ROUNDS} раундов.
-              {params.solo !== '1' && !forceSolo && !partnerLive
-                ? ' Ждём, пока партнёр зайдёт в Soft Duel…'
-                : forceSolo && params.solo !== '1'
-                  ? ' Партнёр вышел — играешь соло.'
-                  : ''}
+              {waitingSyncedStart
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !forceSolo && !partnerLive
+                  ? ' Ждём, пока партнёр зайдёт в Soft Duel…'
+                  : forceSolo && params.solo !== '1'
+                    ? ' Партнёр вышел — играешь соло.'
+                    : ''}
             </Text>
-            <Pressable onPress={start} style={styles.btn}>
-              <Text style={styles.btnLabel}>Старт</Text>
-            </Pressable>
+            {waitingSyncedStart ? (
+              <Text style={styles.meta}>
+                {flash || `Старт через ${Math.max(1, Math.ceil((syncedStartAt - Date.now()) / 1000))}с`}
+              </Text>
+            ) : (
+              <Pressable onPress={start} style={styles.btn}>
+                <Text style={styles.btnLabel}>Старт</Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <>

@@ -259,6 +259,9 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.soloEscape && payload.fromId !== user.id) {
+        setForceSolo(true);
+        idleForced.current = true;
+        setTurnMine(true);
         showTurnToast(
           turnToastRef.current === 'Партнёр ушёл в соло' ||
             turnToastRef.current === 'Оба в соло'

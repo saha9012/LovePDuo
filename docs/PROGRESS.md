@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Music mutation outbox · ToS soloEscape unlock · Soft synced-start gate  
 - [x] Duo Plus pair WS sync · warmth outbox · Word Veil no self-match finish  
 - [x] Global note/memory outbox · Music shelf auto-add · pair-meta host sync  
 - [x] Lobby host double-start fix · note outbox · ToS spicy Free gate  

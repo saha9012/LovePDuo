@@ -272,6 +272,11 @@ export default function PlayScreen() {
   }, [filter, q]);
 
   const openGame = (game: string) => {
+    if (!pair) {
+      void juice.miss();
+      router.push('/pair/create');
+      return;
+    }
     setLastGame(game);
     void AsyncStorage.setItem(LAST_GAME_KEY, game);
     void juice.hit();

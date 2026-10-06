@@ -16,6 +16,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { sendMusicOrQueue } from '../../src/realtime/musicOutbox';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
 import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
@@ -561,11 +562,15 @@ export default function MusicScreen() {
           title: null,
           from: user?.displayName,
         });
-        pairRealtime.sendGame('track-clear', {
+        const clearResult = sendMusicOrQueue('track-clear', {
           from: user?.displayName,
           fromId: user?.id,
         });
-        showNote('Библиотека очищена.');
+        showNote(
+          clearResult === 'sent'
+            ? 'Библиотека очищена.'
+            : 'Библиотека очищена · sync ждёт online',
+        );
         void juice.miss();
         trackEvent('track_removed', { source: 'clear_all' });
       })();
@@ -590,13 +595,17 @@ export default function MusicScreen() {
       });
     }
     removeTrack(track.id);
-    pairRealtime.sendGame('track-remove', {
+    const result = sendMusicOrQueue('track-remove', {
       title: track.title,
       artist: track.artist,
       from: user?.displayName,
       fromId: user?.id,
     });
-    showNote(`Удалили «${track.title}»`);
+    showNote(
+      result === 'sent'
+        ? `Удалили «${track.title}»`
+        : `Удалили «${track.title}» · sync ждёт online`,
+    );
     void juice.miss();
     trackEvent('track_removed', { source: track.sourceType });
   };
@@ -616,14 +625,18 @@ export default function MusicScreen() {
   const shelfRemove = (track: TrackItem) => {
     if (!active || !active.trackIds.includes(track.id)) return;
     removeTrackFromPlaylist(active.id, track.id);
-    pairRealtime.sendGame('playlist-remove', {
+    const result = sendMusicOrQueue('playlist-remove', {
       playlistId: active.id,
       title: track.title,
       artist: track.artist,
       from: user?.displayName,
       fromId: user?.id,
     });
-    showNote(`Убрали из «${active.name}»`);
+    showNote(
+      result === 'sent'
+        ? `Убрали из «${active.name}»`
+        : `Убрали из «${active.name}» · sync ждёт online`,
+    );
     void juice.hit();
   };
 
@@ -804,12 +817,16 @@ export default function MusicScreen() {
           showNote('Базовые полки нельзя удалить.');
           return;
         }
-        pairRealtime.sendGame('playlist-delete', {
+        const result = sendMusicOrQueue('playlist-delete', {
           playlistId: id,
           from: user?.displayName,
           fromId: user?.id,
         });
-        showNote(`Полку «${name}» убрали`);
+        showNote(
+          result === 'sent'
+            ? `Полку «${name}» убрали`
+            : `Полку «${name}» убрали · sync ждёт online`,
+        );
         void juice.miss();
       },
     );
@@ -1080,14 +1097,14 @@ export default function MusicScreen() {
                         return;
                       }
                       addTrackToPlaylist(active.id, t.id);
-                      pairRealtime.sendGame('track-meta', {
+                      sendMusicOrQueue('track-meta', {
                         title: t.title,
                         artist: t.artist,
                         sourceType: t.sourceType,
                         from: user?.displayName,
                         fromId: user?.id,
                       });
-                      pairRealtime.sendGame('playlist-add', {
+                      const shelfResult = sendMusicOrQueue('playlist-add', {
                         playlistId: active.id,
                         title: t.title,
                         artist: t.artist,
@@ -1095,7 +1112,11 @@ export default function MusicScreen() {
                         from: user?.displayName,
                         fromId: user?.id,
                       });
-                      showNote(`В «${active.name}» — полка у обоих.`);
+                      showNote(
+                        shelfResult === 'sent'
+                          ? `В «${active.name}» — полка у обоих.`
+                          : `В «${active.name}» · sync ждёт online`,
+                      );
                       void juice.hit();
                     }}
                     onLongPress={() => {

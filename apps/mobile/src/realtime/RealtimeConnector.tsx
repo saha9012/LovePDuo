@@ -6,6 +6,7 @@ import { pairRealtime } from './PairRealtime';
 import { setMatchSession } from './matchSession';
 import { setLastRoomSize } from './pairPresence';
 import { flushWarmthOutbox } from './warmthOutbox';
+import { flushMusicOutbox } from './musicOutbox';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -100,6 +101,7 @@ export function RealtimeConnector() {
         id: user.id,
       });
       flushWarmthOutbox();
+      flushMusicOutbox();
     };
 
     pairRealtime.connect(pair.code, user.id, user.displayName);
