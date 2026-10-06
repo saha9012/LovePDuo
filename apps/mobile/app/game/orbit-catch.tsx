@@ -350,7 +350,7 @@ export default function OrbitCatchScreen() {
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
-    pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next, hello: true });
+    sendGameIfPeerLive('orbit-catch', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

@@ -457,7 +457,7 @@ export default function WordVeilScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     lastRematchAt.current = Date.now();
-    pairRealtime.sendGame('word-veil', { rematch: true, seed: next, hello: true });
+    sendGameIfPeerLive('word-veil', { rematch: true, seed: next, hello: true });
     resetRound();
   };
 
