@@ -175,7 +175,9 @@ export default function OrbitCatchScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
+        }
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'orbit-catch') {

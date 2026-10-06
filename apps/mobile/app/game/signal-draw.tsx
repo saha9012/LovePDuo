@@ -220,7 +220,9 @@ export default function SignalDrawScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('signal-draw', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('signal-draw', { hello: true, fromId: user.id });
+        }
         return;
       }
       if (msg.type !== 'game' || msg.gameId !== 'signal-draw') return;

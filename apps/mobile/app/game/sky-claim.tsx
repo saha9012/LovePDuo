@@ -193,7 +193,9 @@ export default function SkyClaimScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
+        }
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'sky-claim') {

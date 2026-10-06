@@ -248,11 +248,13 @@ export default function TruthOrSparkScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive(GAME_ID, {
-          hello: true,
-          fromName: user.displayName,
-          fromId: user.id,
-        });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive(GAME_ID, {
+            hello: true,
+            fromName: user.displayName,
+            fromId: user.id,
+          });
+        }
         return;
       }
       if (msg.type !== 'game' || msg.gameId !== GAME_ID) return;

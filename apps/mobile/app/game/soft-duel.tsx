@@ -177,7 +177,9 @@ export default function SoftDuelScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('soft-duel', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('soft-duel', { hello: true, fromId: user.id });
+        }
         return;
       }
       if (msg.type !== 'game' || msg.gameId !== 'soft-duel') return;

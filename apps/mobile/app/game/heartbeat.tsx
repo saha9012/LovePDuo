@@ -204,7 +204,9 @@ export default function HeartbeatScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('heartbeat', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('heartbeat', { hello: true, fromId: user.id });
+        }
         return;
       }
       if (msg.type !== 'game' || msg.gameId !== 'heartbeat') return;

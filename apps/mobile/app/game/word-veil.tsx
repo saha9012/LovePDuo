@@ -282,7 +282,9 @@ export default function WordVeilScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
+        if (!peerLeftMatchRef.current) {
+          sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
+        }
         setTimeout(() => setPresenceHint(null), 1600);
         return;
       }

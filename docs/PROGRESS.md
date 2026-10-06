@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] peer_joined hello skipped after leaveMatch until rematch  
 - [x] Catalog rematch ·соло hints after leaveMatch  
 - [x] Word Veil rematch hint ·соло after leaveMatch  
 - [x] ToS rematch toast ·соло when partner leftMatch  
