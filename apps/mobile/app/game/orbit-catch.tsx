@@ -68,6 +68,7 @@ export default function OrbitCatchScreen() {
   );
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
+  const partnerCaughtFromPeerRef = useRef(false);
   const partnerFinishedRef = useRef(false);
   const forceSoloRef = useRef(params.solo === '1');
   const phaseRef = useRef<Phase>('ready');
@@ -278,6 +279,7 @@ export default function OrbitCatchScreen() {
         if (payload?.phase === 'finished') {
           partnerFinishedRef.current = true;
           if (typeof payload.caught === 'number') {
+            partnerCaughtFromPeerRef.current = true;
             partnerRef.current = payload.caught;
             setPartnerCaught(payload.caught);
           }
@@ -329,6 +331,7 @@ export default function OrbitCatchScreen() {
           return;
         }
         if (typeof payload?.caught === 'number') {
+          partnerCaughtFromPeerRef.current = true;
           const grew = payload.caught > partnerRef.current;
           partnerRef.current = payload.caught;
           setPartnerCaught(payload.caught);
@@ -393,6 +396,7 @@ export default function OrbitCatchScreen() {
   const start = () => {
     caughtRef.current = 0;
     partnerRef.current = 0;
+    partnerCaughtFromPeerRef.current = false;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
     setFinishDualLabel(null);
@@ -497,24 +501,29 @@ export default function OrbitCatchScreen() {
         phase: 'finished',
         caught: caughtRef.current,
       });
-      // Demo scores only in solo / forceSolo — never invent partner catches while duo is live.
-      if (partnerRef.current === 0 && (params.solo === '1' || forceSoloRef.current)) {
+      // Demo invent only when no peer caught ever arrived.
+      if (
+        !partnerCaughtFromPeerRef.current &&
+        (params.solo === '1' || forceSoloRef.current)
+      ) {
         const demo = Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3));
         partnerRef.current = demo;
         setPartnerCaught(demo);
       }
       const coop = caughtRef.current + partnerRef.current;
+      const soloDemoPartner =
+        params.solo === '1' ||
+        (forceSoloRef.current && !partnerCaughtFromPeerRef.current);
       const mem = addMemory({
         kind: 'orbit',
         title: 'Orbit Catch',
-        detail:
-          params.solo === '1' || forceSoloRef.current
-            ? `Solo demo · co-op ${coop}`
-            : partnerFinishedRef.current
-              ? `Оба финиш · co-op ${coop}`
-              : partnerRef.current > 0
-                ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
-                : `Ты ${caughtRef.current} · ждём партнёра`,
+        detail: soloDemoPartner
+          ? `Solo demo · co-op ${coop}`
+          : partnerFinishedRef.current
+            ? `Оба финиш · co-op ${coop}`
+            : partnerCaughtFromPeerRef.current
+              ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
+              : `Ты ${caughtRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);
@@ -600,11 +609,13 @@ export default function OrbitCatchScreen() {
   };
 
   const team = caught + partnerCaught;
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && !partnerCaughtFromPeerRef.current);
   const line = pickPostMatchLine(
     caught,
     partnerCaught || 1,
     matchSeed,
-    params.solo === '1' || forceSolo,
+    soloDemoPartner,
   );
   const px = CX + Math.cos(angle) * R;
   const py = CY + Math.sin(angle) * R;
@@ -629,17 +640,17 @@ export default function OrbitCatchScreen() {
           <Text style={styles.title}>Orbit Catch</Text>
           <Text style={styles.meta}>
             Ты {caught} · Партнёр {partnerCaught}
-            {params.solo === '1' || forceSolo
+            {soloDemoPartner
               ? ' · demo'
-              : partnerCaught > 0
+              : partnerCaughtFromPeerRef.current || partnerCaught > 0
                 ? ` · вместе ${team}${peerSeen ? ' · live' : ''}`
                 : ' · ждём партнёра'}
           </Text>
           <PostMatchCard
-            title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Орбита закрыта'}
+            title={soloDemoPartner ? 'Solo demo' : 'Орбита закрыта'}
             gameId="orbit-catch"
             winnerLabel={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : syncFinish
                   ? finishDualLabel ?? 'Оба финиш'
@@ -713,7 +724,7 @@ export default function OrbitCatchScreen() {
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
-                {params.solo === '1' || forceSolo ? (
+                {soloDemoPartner ? (
                   <>
                     партнёр · demo
                     {peerNote ? ` · ${peerNote}` : ''}
