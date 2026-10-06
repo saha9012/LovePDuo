@@ -1,5 +1,3 @@
-import { pairRealtime } from '../realtime/PairRealtime';
-import { getLastRoomSize } from '../realtime/pairPresence';
 import { sendGameIfPeerLive } from '../realtime/sendGameIfPeerLive';
 import { sendMemoryMutationOrQueue } from '../realtime/memoryMutationOutbox';
 import { markMemorySyncedExternal, type MemoryItem } from '../store/MemoriesStore';
