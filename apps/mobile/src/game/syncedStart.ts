@@ -5,8 +5,12 @@ import { useEffect, useState } from 'react';
  * Window includes ~800ms after startAt so Start doesn't flash before auto-arm.
  * Rematch keeps old startAt in URL; once past the window, Start is available again.
  */
-export function isWaitingSyncedStart(solo: string | undefined, startAt: string | undefined) {
-  if (solo === '1') return false;
+export function isWaitingSyncedStart(
+  solo: string | undefined,
+  startAt: string | undefined,
+  forceSolo?: boolean,
+) {
+  if (solo === '1' || forceSolo) return false;
   const at = Number(startAt);
   return Number.isFinite(at) && at > Date.now() - 800;
 }
@@ -22,13 +26,17 @@ export function syncedStartCountdownLabel(startAt: string | undefined, flash?: s
 }
 
 /** Re-render while lobby countdown is live so «Старт через Ns» ticks down. */
-export function useSyncedStartWaiting(solo: string | undefined, startAt: string | undefined) {
-  const waiting = isWaitingSyncedStart(solo, startAt);
+export function useSyncedStartWaiting(
+  solo: string | undefined,
+  startAt: string | undefined,
+  forceSolo?: boolean,
+) {
+  const waiting = isWaitingSyncedStart(solo, startAt, forceSolo);
   const [, setTick] = useState(0);
   useEffect(() => {
     if (!waiting) return;
     const id = setInterval(() => setTick((n) => n + 1), 250);
     return () => clearInterval(id);
-  }, [waiting, solo, startAt]);
-  return isWaitingSyncedStart(solo, startAt);
+  }, [waiting, solo, startAt, forceSolo]);
+  return isWaitingSyncedStart(solo, startAt, forceSolo);
 }

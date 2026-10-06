@@ -58,7 +58,6 @@ export default function TruthOrSparkScreen() {
   const { spicyUnlocked, isPlus } = usePremium();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; solo?: string; startAt?: string }>();
-  useSyncedStartWaiting(params.solo, params.startAt);
 
   const [matchSeed, setMatchSeed] = useState(() => {
     const session = consumeMatchSession(GAME_ID);
@@ -82,6 +81,10 @@ export default function TruthOrSparkScreen() {
   const [live, setLive] = useState(false);
   const [turnMine, setTurnMine] = useState(true);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  useSyncedStartWaiting(params.solo, params.startAt, forceSolo);
+  useEffect(() => {
+    if (forceSolo) setSessionStarted(true);
+  }, [forceSolo]);
   const [peerIdleSec, setPeerIdleSec] = useState(0);
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);

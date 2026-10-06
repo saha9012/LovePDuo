@@ -44,7 +44,7 @@ export default function WordVeilScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
+  const syncedStartGate = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(() => {
     const session = consumeMatchSession('word-veil');
     const fromParam = Number(params.seed);
@@ -60,6 +60,7 @@ export default function WordVeilScreen() {
   const [locked, setLocked] = useState(false);
   const [waitingPeer, setWaitingPeer] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const waitingSyncedStart = syncedStartGate && !forceSolo;
   const [peerTyping, setPeerTyping] = useState(false);
   const [myScore, setMyScore] = useState(0);
   const [theirScore, setTheirScore] = useState(0);

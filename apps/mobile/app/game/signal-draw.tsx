@@ -69,7 +69,7 @@ export default function SignalDrawScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
+  const syncedStartGate = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(() => {
     const session = consumeMatchSession('signal-draw');
     const fromParam = Number(params.seed);
@@ -88,6 +88,7 @@ export default function SignalDrawScreen() {
   const [toast, setToast] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const waitingSyncedStart = syncedStartGate && !forceSolo;
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,

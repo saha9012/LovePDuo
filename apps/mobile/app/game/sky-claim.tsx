@@ -45,7 +45,7 @@ export default function SkyClaimScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
+  const syncedStartGate = useSyncedStartWaiting(params.solo, params.startAt);
   const initialSeed = useMemo(() => {
     const session = consumeMatchSession('sky-claim');
     const fromParam = Number(params.seed);
@@ -67,6 +67,7 @@ export default function SkyClaimScreen() {
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const waitingSyncedStart = syncedStartGate && !forceSolo;
   const [flash, setFlash] = useState<string | null>(null);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);

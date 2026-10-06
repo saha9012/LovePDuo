@@ -581,7 +581,7 @@ export default function SoftDuelScreen() {
     setTimeout(() => startRef.current(), 0);
   };
 
-  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
+  const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt, forceSolo);
 
   useEffect(() => {
     if (params.solo === '1') return;
