@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Sky/Draw: no fake partner scores in live duo · Home pair≠room copy  
 - [x] Orbit: no fake partner score in live duo · playlist cap Free 6 / Plus 8 wired  
 - [x] Pair create/join/deep-link densify + deep link asks name (no silent «Партнёр»)  
 - [x] Soft/Heartbeat reaction HUDs · Welcome pair stats + session strip  
