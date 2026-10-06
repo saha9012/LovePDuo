@@ -18,7 +18,6 @@ import { typography } from '../../src/theme/typography';
 import { sparksRu, type SparkFilter } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
 import { sendNoteMutationOrQueue } from '../../src/realtime/noteMutationOutbox';
 import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
