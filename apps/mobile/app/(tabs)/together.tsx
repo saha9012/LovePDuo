@@ -50,7 +50,7 @@ export default function TogetherScreen() {
     warmthPulse,
   } = useApp();
   const { items: memories, clearMemories, removeMemory, addMemory, receiveMemory } = useMemories();
-  const { spicyUnlocked } = usePremium();
+  const { spicyUnlocked, maxMemories, isPlus } = usePremium();
   const [idx, setIdx] = useState(0);
   const [sparkFilter, setSparkFilter] = useState<SparkFilter>('soft');
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
@@ -728,7 +728,7 @@ export default function TogetherScreen() {
 
         <SectionRule
           label="Скрапбук"
-          right={`${memories.length}${
+          right={`${memories.length}/${maxMemories}${isPlus ? ' · Plus' : ' · Free'}${
             memories.some((m) => m.pendingSync)
               ? ` · ${memories.filter((m) => m.pendingSync).length} ждут`
               : ''

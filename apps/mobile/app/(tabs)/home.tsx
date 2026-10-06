@@ -502,8 +502,8 @@ export default function HomeScreen() {
               : 'Ждём пульс партнёра. Можно греть пару заранее.'}
           </Text>
           <Text style={styles.meta}>
-            Код {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
-            {typeof pair?.roomSize === 'number' ? ` · online ${pair.roomSize}` : ''}
+            Пара {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
+            {typeof pair?.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''}
           </Text>
         </View>
 
