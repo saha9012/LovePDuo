@@ -11,6 +11,8 @@ import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
+import { usePremium } from '../../src/store/PremiumStore';
+import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
 
 type GameTag = 'mvp' | 'new';
 type Filter = 'all' | GameTag;
@@ -108,6 +110,8 @@ export default function PlayScreen() {
   const router = useRouter();
   const { pair, user } = useApp();
   const { items: memories } = useMemories();
+  const premium = usePremium();
+  const [startStats, setStartStats] = useState<PlayStats | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [lastGame, setLastGame] = useState<string | null>(null);
@@ -135,6 +139,14 @@ export default function PlayScreen() {
       setPeekToast(null);
     }, ms);
   };
+
+  useEffect(() => {
+    void loadPlayStats().then(setStartStats);
+    const t = setInterval(() => {
+      void loadPlayStats().then(setStartStats);
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     void AsyncStorage.getItem(FILTER_KEY).then((raw) => {
@@ -284,23 +296,26 @@ export default function PlayScreen() {
         <Text style={styles.kicker}>Play</Text>
         <Text style={typography.headline}>Миниигры для двоих</Text>
         <Text style={[typography.body, styles.sub]}>
-          {playStats.catalog} в каталоге · сыграно {playStats.played} · MVP {playStats.mvp} · new{' '}
-          {playStats.neu}
+          {playStats.catalog} в каталоге · memory-игр {playStats.played} · стартов{' '}
+          {startStats?.totalStarts ?? 0} · streak {startStats?.streakDays ?? 0}д
+          {premium.isPlus ? ' · Plus' : ' · Free'}
         </Text>
         <View style={styles.statStrip}>
           {(
             [
-              ['sky', 'Sky'],
-              ['heartbeat', 'Beat'],
-              ['spark', 'ToS'],
-              ['draw', 'Draw'],
-              ['orbit', 'Orbit'],
-              ['duel', 'Duel'],
-              ['veil', 'Veil'],
+              ['sky-claim', 'sky', 'Sky'],
+              ['heartbeat', 'heartbeat', 'Beat'],
+              ['truth-or-spark', 'spark', 'ToS'],
+              ['signal-draw', 'draw', 'Draw'],
+              ['orbit-catch', 'orbit', 'Orbit'],
+              ['soft-duel', 'duel', 'Duel'],
+              ['word-veil', 'veil', 'Veil'],
             ] as const
-          ).map(([kind, label]) => (
+          ).map(([gameId, kind, label]) => (
             <View key={kind} style={styles.statPill}>
-              <Text style={styles.statPillNum}>{playStats.byKind[kind] ?? 0}</Text>
+              <Text style={styles.statPillNum}>
+                {startStats?.byGame[gameId] ?? playStats.byKind[kind] ?? 0}
+              </Text>
               <Text style={styles.statPillLabel}>{label}</Text>
             </View>
           ))}

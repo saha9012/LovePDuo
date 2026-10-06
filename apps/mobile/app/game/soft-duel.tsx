@@ -52,6 +52,8 @@ export default function SoftDuelScreen() {
   const myScoreRef = useRef(0);
   const partnerScoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
+  const nextRoundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const armTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flashRef = useRef('');
   const partnerFinishedRef = useRef(false);
   const roundRef = useRef(0);
@@ -433,7 +435,9 @@ export default function SoftDuelScreen() {
         : 'Жди…',
     );
     flashScale.value = withTiming(0.92, { duration: 120 });
-    setTimeout(() => {
+    if (armTimer.current) clearTimeout(armTimer.current);
+    armTimer.current = setTimeout(() => {
+      armTimer.current = null;
       const pressDual =
         flashRef.current === 'Партнёр ЖМИ' ||
         flashRef.current === 'Оба ЖМИ' ||
@@ -454,7 +458,19 @@ export default function SoftDuelScreen() {
     }, wait);
   };
 
+  const clearRoundTimers = () => {
+    if (armTimer.current) {
+      clearTimeout(armTimer.current);
+      armTimer.current = null;
+    }
+    if (nextRoundTimer.current) {
+      clearTimeout(nextRoundTimer.current);
+      nextRoundTimer.current = null;
+    }
+  };
+
   const start = () => {
+    clearRoundTimers();
     myScoreRef.current = 0;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
@@ -475,6 +491,7 @@ export default function SoftDuelScreen() {
   startRef.current = start;
 
   const rematch = () => {
+    clearRoundTimers();
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
@@ -605,8 +622,14 @@ export default function SoftDuelScreen() {
         void (racing ? juice.sync() : juice.hit());
       }, 320);
     }
-    setTimeout(() => nextRound(roundRef.current + 1), 420);
+    if (nextRoundTimer.current) clearTimeout(nextRoundTimer.current);
+    nextRoundTimer.current = setTimeout(() => {
+      nextRoundTimer.current = null;
+      nextRound(roundRef.current + 1);
+    }, 420);
   };
+
+  useEffect(() => () => clearRoundTimers(), []);
 
   const line = pickPostMatchLine(myScore, partnerScore, matchSeed);
   const padStyle = useAnimatedStyle(() => ({

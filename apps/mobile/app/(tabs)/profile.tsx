@@ -14,6 +14,8 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
+import { usePremium } from '../../src/store/PremiumStore';
+import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -21,6 +23,8 @@ export default function ProfileScreen() {
   const { user, pair, unlinkPair, signOut, updateDisplayName, setPairName, tracks, notes, warmthPulse } =
     useApp();
   const { clearMemories, items: memories } = useMemories();
+  const premium = usePremium();
+  const [playStats, setPlayStats] = useState<PlayStats | null>(null);
   const [sfxMuted, setSfxMuted] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
   const [roomDraft, setRoomDraft] = useState(pair?.name ?? '');
@@ -47,6 +51,7 @@ export default function ProfileScreen() {
   }, [pair?.name]);
 
   useEffect(() => {
+    void loadPlayStats().then(setPlayStats);
     void juice.hydrateMuted().then(setSfxMuted);
     hydrateWsUrl().then((url) => {
       setWsDraft(url);
@@ -333,6 +338,67 @@ export default function ProfileScreen() {
           <Text style={typography.caption}>Сейчас: {wsSaved}</Text>
         </View>
 
+        <View style={styles.plusBox}>
+          <Text style={styles.plusTitle}>Duo Plus</Text>
+          <Text style={styles.plusMeta}>
+            {premium.isPlus
+              ? premium.daysLeft >= 999
+                ? 'Активен · пара'
+                : `Trial · ${premium.daysLeft}д`
+              : 'Free · платный контент на паре'}
+            {' · '}полки {premium.maxShelves} · memory {premium.maxMemories}
+            {playStats
+              ? ` · стартов ${playStats.totalStarts} · streak ${playStats.streakDays}д`
+              : ''}
+          </Text>
+          {premium.features.map((f) => (
+            <View key={f.id} style={styles.plusRow}>
+              <Text style={styles.plusFeat}>{f.label}</Text>
+              <Text style={styles.plusVals}>
+                {f.freeValue} → {f.plusValue}
+              </Text>
+            </View>
+          ))}
+          {!premium.isPlus ? (
+            <LpdButton
+              label="Trial Duo Plus · 7 дней"
+              onPress={() => {
+                const ok = premium.startTrial();
+                setWsToast(ok ? 'Duo Plus trial 7д' : 'Trial уже был');
+                setTimeout(() => setWsToast(null), 1800);
+                void (ok ? juice.perfect() : juice.miss());
+              }}
+            />
+          ) : (
+            <LpdButton
+              label="Снять Plus (dev)"
+              variant="ghost"
+              onPress={() => {
+                premium.clearPlus();
+                setWsToast('Снова Free');
+                setTimeout(() => setWsToast(null), 1600);
+                void juice.miss();
+              }}
+            />
+          )}
+          {!premium.isPlus ? (
+            <LpdButton
+              label="Unlock Plus (dev / без IAP)"
+              variant="ghost"
+              onPress={() => {
+                premium.unlockDevPlus();
+                setWsToast('Duo Plus unlocked');
+                setTimeout(() => setWsToast(null), 1600);
+                void juice.perfect();
+              }}
+            />
+          ) : null}
+          <Text style={typography.caption}>
+            IAP/Google Play Billing позже. Сейчас entitlement локальный на устройстве, привязка к коду
+            пары {pair?.code ?? '—'}.
+          </Text>
+        </View>
+
         <View style={styles.actions}>
           <LpdButton
             label={sfxMuted ? 'SFX + haptics: выкл' : 'SFX + haptics: вкл'}
@@ -418,6 +484,41 @@ const styles = StyleSheet.create({
   statPillLabel: {
     fontFamily: fonts.ui,
     fontSize: 9,
+    color: colors.textMuted,
+  },
+  plusBox: {
+    gap: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.28)',
+    backgroundColor: 'rgba(142,59,74,0.14)',
+  },
+  plusTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 16,
+    color: colors.accentAmber,
+  },
+  plusMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textSecondary,
+    lineHeight: 16,
+  },
+  plusRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  plusFeat: {
+    fontFamily: fonts.ui,
+    fontSize: 13,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  plusVals: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
     color: colors.textMuted,
   },
   row: {

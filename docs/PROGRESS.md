@@ -6,8 +6,9 @@
 
 ## Latest
 
-- [x] ToS: partner-idle escape (18с manual / 35с auto соло) · Home resume session chip  
-- [x] Auth scaffold: `authProvider` + Google env gate (no fake login) · Welcome «пара»  
+- [x] Duo Plus scaffold (trial 7д, shelf/memory caps, spicy lock) · play streak stats  
+- [x] Soft Duel round timers cleared on rematch/unmount  
+- [x] ToS: partner-idle escape · Home resume session · Google auth scaffold  
 - [x] Pair identity = invite code (`pairIdFromCode`); warmth + gamesStarted persist  
 - [x] Match session AsyncStorage + backend `pair_sync` / lastMatch handoff  
 - [x] Home density: scroll + pair stats grid + feed + quick chips (numbers first)  

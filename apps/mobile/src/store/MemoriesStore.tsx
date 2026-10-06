@@ -27,6 +27,13 @@ type MemoriesApi = {
 const KEY = 'lovepduo.memories.v1';
 const Ctx = createContext<MemoriesApi | null>(null);
 
+let memoryCap = 40;
+
+/** Called by PairPremiumBinder when Duo Plus changes the cap. */
+export function setMemoryCap(n: number) {
+  memoryCap = Math.max(20, Math.min(200, Math.floor(n)));
+}
+
 function makeId() {
   return `mem_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -41,7 +48,7 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
         const raw = await AsyncStorage.getItem(KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as MemoryItem[];
-          if (Array.isArray(parsed)) setItems(parsed.slice(0, 40));
+          if (Array.isArray(parsed)) setItems(parsed.slice(0, memoryCap));
         }
       } finally {
         setHydrated(true);
@@ -60,7 +67,7 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
       id: makeId(),
       at: Date.now(),
     };
-    setItems((prev) => [created, ...prev].slice(0, 40));
+    setItems((prev) => [created, ...prev].slice(0, memoryCap));
     return created;
   }, []);
 
@@ -68,7 +75,7 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
     if (!item?.id || !item.title) return;
     setItems((prev) => {
       if (prev.some((m) => m.id === item.id)) return prev;
-      return [item, ...prev].slice(0, 40);
+      return [item, ...prev].slice(0, memoryCap);
     });
   }, []);
 

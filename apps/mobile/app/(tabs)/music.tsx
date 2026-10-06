@@ -20,6 +20,7 @@ import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
 import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
+import { usePremium } from '../../src/store/PremiumStore';
 
 export default function MusicScreen() {
   const insets = useSafeAreaInsets();
@@ -48,6 +49,7 @@ export default function MusicScreen() {
     removeTrackFromPlaylist,
     setMood,
   } = useApp();
+  const { maxShelves, isPlus } = usePremium();
   const [note, setNote] = useState('');
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
@@ -777,8 +779,12 @@ export default function MusicScreen() {
   };
 
   const addShelf = () => {
-    if (playlists.length >= 8) {
-      showNote('Максимум 8 полок.');
+    if (playlists.length >= maxShelves) {
+      showNote(
+        isPlus
+          ? `Максимум ${maxShelves} полок.`
+          : `Free: ${maxShelves} полки. Duo Plus → 8. Profile → Plus.`,
+      );
       return;
     }
     const pl = createPlaylist('Наша полка', active?.mood ?? 'warm');
@@ -886,7 +892,7 @@ export default function MusicScreen() {
               </Pressable>
             ),
           )}
-          {playlists.length < 8 ? (
+          {playlists.length < maxShelves ? (
             <Pressable
               onPress={addShelf}
               style={[styles.moodChip, styles.addShelfChip]}

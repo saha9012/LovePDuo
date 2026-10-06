@@ -19,6 +19,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
+import { recordGameStart } from '../../src/stats/playStats';
 
 const routes = {
   'sky-claim': '/game/sky-claim',
@@ -336,6 +337,7 @@ export default function GameLobbyScreen() {
     setCountdown(3);
     bumpGamesStarted();
     touchPairActive();
+    void recordGameStart(gameId);
     showCancelToast('Старт для обоих');
     void juice.perfect();
     track('game_started', { game: gameId });

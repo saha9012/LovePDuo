@@ -17,6 +17,8 @@ import { IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AppProvider, useApp } from '../src/store/AppStore';
 import { MemoriesProvider } from '../src/store/MemoriesStore';
+import { PremiumProvider } from '../src/store/PremiumStore';
+import { PairPremiumBinder } from '../src/store/PairPremiumBinder';
 import { RealtimeConnector } from '../src/realtime/RealtimeConnector';
 import { MusicRealtimeSync } from '../src/realtime/MusicRealtimeSync';
 import { colors } from '../src/theme/tokens';
@@ -87,6 +89,7 @@ function RootNavigator() {
     <AuthGate>
       <RealtimeConnector />
       <MusicRealtimeSync />
+      <PairPremiumBinder />
       <StatusBar style="light" />
       <Stack
         screenOptions={{
@@ -104,7 +107,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AppProvider>
         <MemoriesProvider>
-          <RootNavigator />
+          <PremiumProvider>
+            <RootNavigator />
+          </PremiumProvider>
         </MemoriesProvider>
       </AppProvider>
     </GestureHandlerRootView>

@@ -18,6 +18,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
+import { usePremium } from '../../src/store/PremiumStore';
 
 const SKIP_LIMIT = 3;
 const GAME_ID = 'truth-or-spark';
@@ -46,6 +47,7 @@ export default function TruthOrSparkScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
+  const { spicyUnlocked, isPlus } = usePremium();
   const params = useLocalSearchParams<{ seed?: string; solo?: string; startAt?: string }>();
 
   const [matchSeed, setMatchSeed] = useState(() => {
@@ -475,6 +477,11 @@ export default function TruthOrSparkScreen() {
 
   const changeFilter = (f: SparkFilter) => {
     if (!sessionStarted) return;
+    if (f === 'spicy' && !spicyUnlocked) {
+      showTurnToast('Spicy · Duo Plus (Profile → Plus / trial 7д)');
+      void juice.miss();
+      return;
+    }
     setFilter(f);
     setIndex(0);
     setSkips(SKIP_LIMIT);
@@ -569,10 +576,16 @@ export default function TruthOrSparkScreen() {
               key={f}
               onPress={() => changeFilter(f)}
               disabled={!sessionStarted}
-              style={[styles.chip, filter === f && styles.chipActive, !sessionStarted && styles.chipDim]}
+              style={[
+                styles.chip,
+                filter === f && styles.chipActive,
+                !sessionStarted && styles.chipDim,
+                f === 'spicy' && !spicyUnlocked && styles.chipLocked,
+              ]}
             >
               <Text style={[styles.chipLabel, filter === f && styles.chipLabelActive]}>
-                {f}
+                {f === 'spicy' && !spicyUnlocked ? 'spicy · plus' : f}
+                {f === 'spicy' && isPlus ? ' ✓' : ''}
               </Text>
             </Pressable>
           ))}
@@ -710,6 +723,10 @@ const styles = StyleSheet.create({
   },
   chipDim: {
     opacity: 0.45,
+  },
+  chipLocked: {
+    borderStyle: 'dashed',
+    opacity: 0.75,
   },
   chipLabel: {
     fontFamily: fonts.uiMedium,
