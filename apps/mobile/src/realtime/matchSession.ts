@@ -61,6 +61,13 @@ export function peekMatchSession(gameId: string, pairCode?: string) {
   return pending;
 }
 
+/** Any in-flight match for this pair (Home resume chip). */
+export function peekPairMatchSession(pairCode?: string) {
+  if (!alive(pending)) return null;
+  if (pairCode && pending.pairCode !== pairCode.toUpperCase()) return null;
+  return pending;
+}
+
 export function consumeMatchSession(gameId: string, pairCode?: string) {
   const hit = peekMatchSession(gameId, pairCode);
   if (!hit) return null;

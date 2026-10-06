@@ -87,7 +87,9 @@ export default function ProfileScreen() {
         <Text style={styles.kicker}>Profile</Text>
         <Text style={typography.headline}>Пара и настройки</Text>
         <Text style={typography.body}>
-          Локальный профиль · Google Sign-In пока нет · identity = код пары ({pair?.id ?? '—'})
+          Auth:{' '}
+          {user?.authProvider === 'google' ? 'Google' : 'локальный'}
+          {user?.email ? ` · ${user.email}` : ''} · pair {pair?.id ?? '—'}
         </Text>
         <View style={styles.statStrip}>
           {(

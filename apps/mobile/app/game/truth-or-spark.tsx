@@ -69,9 +69,13 @@ export default function TruthOrSparkScreen() {
   const [peerName, setPeerName] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [turnMine, setTurnMine] = useState(true);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const [peerIdleSec, setPeerIdleSec] = useState(0);
   const [turnToast, setTurnToast] = useState<string | null>(null);
   const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const turnToastRef = useRef<string | null>(null);
+  const turnWaitSince = useRef<number | null>(null);
+  const idleForced = useRef(false);
   const lastSkipAt = useRef(0);
   const lastFilterAt = useRef(0);
   const lastFilterChoice = useRef<SparkFilter>('soft');
@@ -113,9 +117,56 @@ export default function TruthOrSparkScreen() {
           : 'Партнёр снова online',
       );
       void juice.hit();
+      // Partner back — leave solo escape if they return mid-wait
+      if (forceSolo && params.solo !== '1') {
+        setForceSolo(false);
+        idleForced.current = false;
+      }
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence]);
+  }, [pair?.partnerPresence, forceSolo, params.solo]);
+
+  // Soft-lock escape: partner's turn + no advance → countdown → соло
+  useEffect(() => {
+    const waiting =
+      sessionStarted &&
+      live &&
+      !turnMine &&
+      !forceSolo &&
+      params.solo !== '1';
+    if (!waiting) {
+      turnWaitSince.current = null;
+      setPeerIdleSec(0);
+      return;
+    }
+    if (turnWaitSince.current == null) turnWaitSince.current = Date.now();
+    const id = setInterval(() => {
+      const sec = Math.floor((Date.now() - (turnWaitSince.current ?? Date.now())) / 1000);
+      setPeerIdleSec(sec);
+      if (sec >= 35 && !idleForced.current) {
+        idleForced.current = true;
+        setForceSolo(true);
+        showTurnToast('Партнёр молчит · соло 35с');
+        void juice.miss();
+        pairRealtime.sendGame(GAME_ID, {
+          soloEscape: true,
+          fromId: user?.id,
+          from: user?.displayName,
+        });
+      }
+    }, 400);
+    return () => clearInterval(id);
+  }, [sessionStarted, live, turnMine, forceSolo, params.solo, user?.id, user?.displayName]);
+
+  useEffect(() => {
+    if (turnMine) {
+      turnWaitSince.current = null;
+      setPeerIdleSec(0);
+      idleForced.current = false;
+    }
+  }, [turnMine]);
+
+  const canAct = sessionStarted && (turnMine || forceSolo || params.solo === '1' || !live);
 
   const flipIn = () => {
     cardOpacity.value = 0.35;
@@ -173,9 +224,20 @@ export default function TruthOrSparkScreen() {
         filterChange?: boolean;
         hello?: boolean;
         deckWrap?: boolean;
+        soloEscape?: boolean;
       } | undefined;
       if (!payload) return;
       setLive(true);
+      if (payload.soloEscape && payload.fromId !== user.id) {
+        showTurnToast(
+          turnToastRef.current === 'Партнёр ушёл в соло' ||
+            turnToastRef.current === 'Оба в соло'
+            ? 'Оба в соло'
+            : 'Партнёр ушёл в соло',
+        );
+        void juice.miss();
+        return;
+      }
       if (payload.hello) {
         if (payload.fromName) setPeerName(payload.fromName);
         const both = Date.now() - lastHelloAt.current < 2500;
@@ -486,6 +548,16 @@ export default function TruthOrSparkScreen() {
         {!sessionStarted ? (
           <Text style={styles.waitStart}>Ждём общий countdown из лобби — карточки откроются вместе.</Text>
         ) : null}
+        {sessionStarted && live && !turnMine && !forceSolo && params.solo !== '1' ? (
+          <Text style={styles.idleHint}>
+            Ход партнёра · ждём {peerIdleSec}с
+            {peerIdleSec >= 18 ? ' · скоро можно соло' : ''}
+            {peerIdleSec >= 18 ? ` · авто через ${Math.max(0, 35 - peerIdleSec)}с` : ''}
+          </Text>
+        ) : null}
+        {forceSolo && params.solo !== '1' ? (
+          <Text style={styles.idleHintOn}>Соло-режим · партнёр не отвечал</Text>
+        ) : null}
 
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
@@ -518,18 +590,38 @@ export default function TruthOrSparkScreen() {
 
         <View style={styles.actions}>
           <LpdButton
-            label="Дальше (обоим)"
+            label={forceSolo && params.solo !== '1' ? 'Дальше (соло)' : 'Дальше (обоим)'}
             onPress={next}
-            disabled={!sessionStarted || (!turnMine && params.solo !== '1' && live)}
+            disabled={!canAct}
           />
           <LpdButton
-            label="Skip"
+            label={`Skip · ${skips}`}
             variant="ghost"
-            disabled={
-              !sessionStarted || skips <= 0 || (!turnMine && params.solo !== '1' && live)
-            }
+            disabled={!canAct || skips <= 0}
             onPress={skip}
           />
+          {sessionStarted &&
+          live &&
+          !turnMine &&
+          !forceSolo &&
+          params.solo !== '1' &&
+          peerIdleSec >= 18 ? (
+            <LpdButton
+              label={`Продолжить соло · ${peerIdleSec}с`}
+              variant="ghost"
+              onPress={() => {
+                setForceSolo(true);
+                idleForced.current = true;
+                showTurnToast('Соло — можно листать');
+                void juice.hit();
+                pairRealtime.sendGame(GAME_ID, {
+                  soloEscape: true,
+                  fromId: user?.id,
+                  from: user?.displayName,
+                });
+              }}
+            />
+          ) : null}
           {index > 0 && index % deck.length === 0 ? (
             <LpdButton
               label="Перетасовать колоду"
@@ -579,6 +671,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     lineHeight: 18,
+  },
+  idleHint: {
+    fontFamily: fonts.mono,
+    fontSize: 12,
+    color: colors.textMuted,
+  },
+  idleHintOn: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
   },
   progressTrack: {
     height: 3,

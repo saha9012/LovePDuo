@@ -19,6 +19,22 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { juice } from '../../src/audio/juice';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { copyText, pairInviteMessage } from '../../src/utils/copyText';
+import {
+  clearMatchSession,
+  hydrateMatchSession,
+  peekPairMatchSession,
+  type MatchSession,
+} from '../../src/realtime/matchSession';
+
+const GAME_TITLES: Record<string, string> = {
+  'sky-claim': 'Sky Claim',
+  heartbeat: 'Heartbeat',
+  'truth-or-spark': 'Truth Or Spark',
+  'signal-draw': 'Signal Draw',
+  'orbit-catch': 'Orbit Catch',
+  'soft-duel': 'Soft Duel',
+  'word-veil': 'Word Veil',
+};
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -31,6 +47,7 @@ export default function HomeScreen() {
   const [warmthToast, setWarmthToast] = useState<string | null>(null);
   const [roomToast, setRoomToast] = useState<string | null>(null);
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
+  const [resumeMatch, setResumeMatch] = useState<MatchSession | null>(null);
   const lastMemory = memories[0];
   const lastNote = notes[0];
   const warmthSeen = React.useRef(0);
@@ -56,6 +73,25 @@ export default function HomeScreen() {
       off();
     };
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    void hydrateMatchSession().then(() => {
+      if (!alive || !pair?.code) return;
+      setResumeMatch(peekPairMatchSession(pair.code));
+    });
+    const t = setInterval(() => {
+      if (!pair?.code) {
+        setResumeMatch(null);
+        return;
+      }
+      setResumeMatch(peekPairMatchSession(pair.code));
+    }, 2000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [pair?.code]);
 
   useEffect(() => {
     const id = lastMemory?.id ?? '';
@@ -480,6 +516,48 @@ export default function HomeScreen() {
           ))}
         </View>
 
+        {resumeMatch ? (
+          <View style={styles.resumeCard}>
+            <Pressable
+              onPress={() => {
+                const age = Math.max(
+                  0,
+                  Math.round((Date.now() - resumeMatch.startAtMs) / 1000),
+                );
+                void juice.hit();
+                router.push({
+                  pathname: '/game/lobby',
+                  params: { game: resumeMatch.gameId },
+                });
+                setRoomToast(
+                  `Сессия · ${GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId} · ${age}с`,
+                );
+                setTimeout(() => setRoomToast(null), 1600);
+              }}
+            >
+              <Text style={styles.resumeKicker}>Сессия пары</Text>
+              <Text style={styles.resumeTitle}>
+                {GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId}
+              </Text>
+              <Text style={styles.resumeMeta}>
+                seed {resumeMatch.seed} ·{' '}
+                {Math.max(0, Math.round((Date.now() - resumeMatch.startAtMs) / 1000))}с назад · тап
+                — в лобби
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                clearMatchSession(pair?.code);
+                setResumeMatch(null);
+                void juice.miss();
+              }}
+              hitSlop={8}
+            >
+              <Text style={styles.resumeDismiss}>сбросить</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         {(warmthToast || roomToast || peerLobby) && (
           <View style={styles.toastBlock}>
             {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
@@ -709,6 +787,39 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
     textTransform: 'lowercase',
+  },
+  resumeCard: {
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.4)',
+    backgroundColor: 'rgba(142,59,74,0.22)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: 4,
+  },
+  resumeKicker: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: colors.accentAmber,
+  },
+  resumeTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 17,
+    color: colors.textPrimary,
+  },
+  resumeMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  resumeDismiss: {
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    fontFamily: fonts.uiMedium,
+    fontSize: 12,
+    color: colors.danger,
   },
   toastBlock: { gap: 4 },
   ctaBlock: {

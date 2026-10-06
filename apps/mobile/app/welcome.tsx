@@ -17,6 +17,7 @@ import { colors, fonts, radii, spacing } from '../src/theme/tokens';
 import { typography } from '../src/theme/typography';
 import { useApp } from '../src/store/AppStore';
 import { juice } from '../src/audio/juice';
+import { googleConfigured, googleStatusLabel, signInWithGoogle } from '../src/auth/googleAuth';
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -113,6 +114,31 @@ export default function WelcomeScreen() {
     router.push('/pair/join');
   };
 
+  const tryGoogle = async () => {
+    void juice.hit();
+    if (!googleConfigured()) {
+      setRoomToast(googleStatusLabel());
+      setTimeout(() => setRoomToast(null), 2400);
+      void juice.miss();
+      return;
+    }
+    const profile = await signInWithGoogle();
+    if (!profile) {
+      setRoomToast('Google OAuth ещё не подключён — войди локальным именем');
+      setTimeout(() => setRoomToast(null), 2400);
+      void juice.miss();
+      return;
+    }
+    setName(profile.displayName);
+    await signIn(profile.displayName, {
+      authProvider: 'google',
+      email: profile.email,
+    });
+    setRoomToast(`Google · ${profile.displayName}`);
+    setTimeout(() => setRoomToast(null), 1800);
+    void juice.perfect();
+  };
+
   return (
     <LpdBackground mood="night">
       <View style={[styles.root, { paddingTop: insets.top + 28, paddingBottom: insets.bottom + 24 }]}>
@@ -141,7 +167,7 @@ export default function WelcomeScreen() {
 
         <Animated.View style={[styles.cta, contentStyle]}>
           <LpdButton
-            label={pair ? `В комнату «${pair.name}»` : 'Войти в комнату'}
+            label={pair ? `В пару «${pair.name}»` : 'Создать пару'}
             onPress={() => void enter()}
           />
           {pair ? (
@@ -156,14 +182,19 @@ export default function WelcomeScreen() {
           ) : (
             <LpdButton label="У меня есть код пары" variant="ghost" onPress={() => void goJoin()} />
           )}
+          <LpdButton
+            label={googleConfigured() ? 'Google Sign-In' : 'Google · скоро (.env)'}
+            variant="ghost"
+            onPress={() => void tryGoogle()}
+          />
+          {roomToast ? <Text style={styles.authToast}>{roomToast}</Text> : null}
           <Text style={styles.foot}>
             {pair
-              ? `Код ${pair.code} сохранён${
-                  typeof pair.roomSize === 'number' ? ` · в комнате ${pair.roomSize}` : ''
-                }. Можно жечь дальше.`
-              : 'Создай пару или войди по коду — два телефона, одна комната.'}
+              ? `Код пары ${pair.code} сохранён${
+                  typeof pair.roomSize === 'number' ? ` · online ${pair.roomSize}` : ''
+                }. Auth: ${user?.authProvider === 'google' ? 'Google' : 'локальный'}.`
+              : 'Создай пару или войди по коду — два телефона, одна пара. Google — опционально.'}
           </Text>
-          {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
         </Animated.View>
       </View>
     </LpdBackground>
@@ -224,10 +255,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
   },
-  roomToast: {
+  authToast: {
     textAlign: 'center',
     fontFamily: fonts.uiSemi,
-    fontSize: 14,
-    color: colors.accentRose,
+    fontSize: 13,
+    color: colors.accentAmber,
+    lineHeight: 18,
   },
 });

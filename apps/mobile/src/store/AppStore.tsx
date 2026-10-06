@@ -14,10 +14,14 @@ import { track } from '../analytics/track';
 
 export type Presence = 'online' | 'away' | 'offline';
 
+export type AuthProvider = 'local' | 'google';
+
 export type UserProfile = {
   id: string;
   displayName: string;
   gender?: 'f' | 'm' | 'x';
+  authProvider?: AuthProvider;
+  email?: string;
 };
 
 export type PairState = {
@@ -89,7 +93,10 @@ type AppState = {
   notes: TinyNote[];
   playlists: Playlist[];
   activePlaylistId: string | null;
-  signIn: (name: string) => Promise<UserProfile>;
+  signIn: (
+    name: string,
+    opts?: { authProvider?: AuthProvider; email?: string },
+  ) => Promise<UserProfile>;
   updateDisplayName: (name: string) => Promise<UserProfile>;
   signOut: () => Promise<void>;
   createPair: (pairName?: string, hostUserId?: string) => Promise<PairState>;
@@ -229,15 +236,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   }, [hydrated, user, pair, tracks, notes, playlists, activePlaylistId, warmthPulse]);
 
-  const signIn = useCallback(async (name: string) => {
-    const clean = name.trim() || 'Игрок';
-    let next: UserProfile = { id: makeId('usr'), displayName: clean };
-    setUser((prev) => {
-      next = prev ? { ...prev, displayName: clean } : next;
+  const signIn = useCallback(
+    async (name: string, opts?: { authProvider?: AuthProvider; email?: string }) => {
+      const clean = name.trim() || 'Игрок';
+      let next: UserProfile = {
+        id: makeId('usr'),
+        displayName: clean,
+        authProvider: opts?.authProvider ?? 'local',
+        email: opts?.email,
+      };
+      setUser((prev) => {
+        next = prev
+          ? {
+              ...prev,
+              displayName: clean,
+              authProvider: opts?.authProvider ?? prev.authProvider ?? 'local',
+              email: opts?.email ?? prev.email,
+            }
+          : next;
+        return next;
+      });
       return next;
-    });
-    return next;
-  }, []);
+    },
+    [],
+  );
 
   const updateDisplayName = useCallback(async (name: string) => {
     return signIn(name);
