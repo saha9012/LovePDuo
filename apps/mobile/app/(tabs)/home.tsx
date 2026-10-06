@@ -222,6 +222,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPeerLobby(null);
+        return;
+      }
       if (msg.type === 'peer_joined') {
         const name = typeof msg.name === 'string' && msg.name ? msg.name : 'Партнёр';
         const racing =

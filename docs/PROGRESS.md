@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Play clears peer-lobby on peer_left · scrapbook shows лимит  
 - [x] Together candle continues solo on peer_left · lobby pair≠WS  
 - [x] Mid-match leave announces leaveMatch → partner forceSolo  
 - [x] Scrapbook empty shows Free/Plus memory ceiling  
