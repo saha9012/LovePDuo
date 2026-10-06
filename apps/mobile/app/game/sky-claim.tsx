@@ -33,6 +33,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -720,11 +721,21 @@ export default function SkyClaimScreen() {
             <Text style={styles.readyTitle}>Лови огни</Text>
             <Text style={styles.readyBody}>
               Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд.
-              {params.solo !== '1' && !partnerLive ? ' Ждём партнёра в Sky…' : ''}
+              {isWaitingSyncedStart(params.solo, params.startAt)
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !partnerLive
+                  ? ' Ждём партнёра в Sky…'
+                  : ''}
             </Text>
-            <Pressable onPress={start} style={styles.startBtn}>
-              <Text style={styles.startLabel}>Старт</Text>
-            </Pressable>
+            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+              <Text style={styles.readyBody}>
+                {syncedStartCountdownLabel(params.startAt, peerNote)}
+              </Text>
+            ) : (
+              <Pressable onPress={start} style={styles.startBtn}>
+                <Text style={styles.startLabel}>Старт</Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <Pressable

@@ -21,6 +21,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Pt = { x: number; y: number };
 type Stroke = { id: string; color: string; points: Pt[]; by: 'me' | 'peer'; width: number };
@@ -65,7 +66,10 @@ export default function SignalDrawScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const seed = Number(params.seed) || Date.now() % 100000;
+  const [matchSeed, setMatchSeed] = useState(
+    () => Number(params.seed) || Date.now() % 100000,
+  );
+  const seed = matchSeed;
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [strokes, setStrokes] = useState<Stroke[]>([]);
@@ -215,13 +219,14 @@ export default function SignalDrawScreen() {
       }
       if (payload.rematch) {
         setPeerSeen(true);
+        if (typeof payload.seed === 'number') setMatchSeed(payload.seed);
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
           (toastRef.current === 'Оба: ещё раунд' || toastRef.current === 'Оба снова');
         showToast(racing ? 'Оба снова' : both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         void (both ? juice.perfect() : juice.sync());
-        startRef.current();
+        setTimeout(() => startRef.current(), 0);
         return;
       }
       if (payload.phase === 'finished') {
@@ -398,8 +403,10 @@ export default function SignalDrawScreen() {
 
   const rematch = () => {
     lastRematchAt.current = Date.now();
-    pairRealtime.sendGame('signal-draw', { rematch: true, seed: Date.now() % 100000, hello: true });
-    start();
+    const next = Date.now() % 100000;
+    setMatchSeed(next);
+    pairRealtime.sendGame('signal-draw', { rematch: true, seed: next, hello: true });
+    setTimeout(() => startRef.current(), 0);
   };
 
   useEffect(() => {
@@ -713,9 +720,19 @@ export default function SignalDrawScreen() {
             <Text style={styles.hero}>Рисуйте сигнал</Text>
             <Text style={styles.body}>
               Общий холст (Svg). Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
-              {params.solo !== '1' && !peerSeen ? ' Ждём партнёра на холсте…' : ''}
+              {isWaitingSyncedStart(params.solo, params.startAt)
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !peerSeen
+                  ? ' Ждём партнёра на холсте…'
+                  : ''}
             </Text>
-            <LpdButton label="Старт" onPress={start} />
+            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+              <Text style={styles.meta}>
+                {syncedStartCountdownLabel(params.startAt, toast)}
+              </Text>
+            ) : (
+              <LpdButton label="Старт" onPress={start} />
+            )}
           </View>
         ) : (
           <>

@@ -59,11 +59,19 @@ export default function GameLobbyScreen() {
   const isHost = Boolean(
     user?.id && pair?.hostUserId && pair.hostUserId === user.id,
   );
-  /** Stable host, or lex-smaller userId when host was never recorded (legacy joins). */
+  /** Stored host id is neither me nor the ready peer — reinstall / stale host. */
+  const hostStale = Boolean(
+    pair?.hostUserId &&
+      user?.id &&
+      pair.hostUserId !== user.id &&
+      peerUserId &&
+      pair.hostUserId !== peerUserId,
+  );
+  /** Stable host, lex-host when empty, or lex-host when recorded host is offline/stale. */
   const canStart = Boolean(
     user?.id &&
       (isHost ||
-        (!pair?.hostUserId && peerUserId && user.id < peerUserId)),
+        ((!pair?.hostUserId || hostStale) && peerUserId && user.id < peerUserId)),
   );
 
   const peerReadyScale = useSharedValue(1);

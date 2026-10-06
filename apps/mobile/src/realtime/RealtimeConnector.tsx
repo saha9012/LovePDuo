@@ -224,6 +224,24 @@ export function RealtimeConnector() {
         if (peer?.name) {
           setPartnerInfo(peer.name, 'online');
         }
+        const liveIds = [
+          user.id,
+          ...(peers ?? [])
+            .map((p) => p.userId)
+            .filter((id): id is string => Boolean(id)),
+        ];
+        const unique = [...new Set(liveIds)];
+        if (pair.hostUserId && !unique.includes(pair.hostUserId) && unique.length > 0) {
+          const elected = unique.slice().sort()[0];
+          setHostUserId(elected);
+          if (elected === user.id) {
+            pairRealtime.sendGame('pair-meta', {
+              hostUserId: user.id,
+              pairName: pair.name,
+              fromId: user.id,
+            });
+          }
+        }
         flushAll();
       }
       if (msg.type === 'pair_sync') {
@@ -261,6 +279,23 @@ export function RealtimeConnector() {
         void juice.sync();
         if (typeof msg.name === 'string' && msg.name) {
           setPartnerInfo(msg.name, 'online');
+        }
+        const peerId = typeof msg.userId === 'string' ? msg.userId : null;
+        if (
+          peerId &&
+          pair.hostUserId &&
+          pair.hostUserId !== user.id &&
+          pair.hostUserId !== peerId
+        ) {
+          const elected = [user.id, peerId].sort()[0];
+          setHostUserId(elected);
+          if (elected === user.id) {
+            pairRealtime.sendGame('pair-meta', {
+              hostUserId: user.id,
+              pairName: pair.name,
+              fromId: user.id,
+            });
+          }
         }
         flushAll();
       }

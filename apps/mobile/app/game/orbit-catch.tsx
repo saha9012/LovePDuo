@@ -19,6 +19,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -553,11 +554,21 @@ export default function OrbitCatchScreen() {
             <Text style={styles.hero}>Ловите орбиту</Text>
             <Text style={styles.body}>
               Жми, когда янтарный маркер совпадает с розовым орбом. Очки пары складываются.
-              {params.solo !== '1' && !peerSeen ? ' Ждём партнёра на орбите…' : ''}
+              {isWaitingSyncedStart(params.solo, params.startAt)
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !peerSeen
+                  ? ' Ждём партнёра на орбите…'
+                  : ''}
             </Text>
-            <Pressable onPress={start} style={styles.btn}>
-              <Text style={styles.btnLabel}>Старт</Text>
-            </Pressable>
+            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+              <Text style={styles.meta}>
+                {syncedStartCountdownLabel(params.startAt, peerNote)}
+              </Text>
+            ) : (
+              <Pressable onPress={start} style={styles.btn}>
+                <Text style={styles.btnLabel}>Старт</Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <>

@@ -753,7 +753,7 @@ export default function MusicScreen() {
     }
     setActivePlaylist(id);
     if (mood !== 'pulse') setMood(mood);
-    pairRealtime.sendGame('playlist', { playlistId: id, mood });
+    sendMusicOrQueue('playlist', { playlistId: id, mood, fromId: user?.id });
     void juice.card();
   };
 
@@ -773,13 +773,15 @@ export default function MusicScreen() {
     const prev = playlists.find((p) => p.id === id)?.name;
     const ok = renamePlaylist(id, next);
     if (!ok || prev === next) return;
-    pairRealtime.sendGame('playlist-rename', {
+    const result = sendMusicOrQueue('playlist-rename', {
       playlistId: id,
       name: next,
       from: user?.displayName,
       fromId: user?.id,
     });
-    showNote(`Полка «${next}» — у обоих`);
+    showNote(
+      result === 'sent' ? `Полка «${next}» — у обоих` : `Полка «${next}» · sync ждёт online`,
+    );
     void juice.card();
   };
 
@@ -798,12 +800,12 @@ export default function MusicScreen() {
       return;
     }
     setActivePlaylist(pl.id);
-    pairRealtime.sendGame('playlist-create', {
+    sendMusicOrQueue('playlist-create', {
       ...pl,
       from: user?.displayName,
       fromId: user?.id,
     });
-    pairRealtime.sendGame('playlist', { playlistId: pl.id, mood: pl.mood });
+    sendMusicOrQueue('playlist', { playlistId: pl.id, mood: pl.mood, fromId: user?.id });
     beginRename(pl.id, pl.name);
     showNote('Новая полка — переименуй и пиши.');
     void juice.hit();

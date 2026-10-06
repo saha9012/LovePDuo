@@ -354,7 +354,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const setHostUserId = useCallback((hostUserId: string) => {
     const clean = hostUserId.trim();
-    if (!clean) return;
     setPair((prev) => {
       if (!prev || prev.hostUserId === clean) return prev;
       return { ...prev, hostUserId: clean };

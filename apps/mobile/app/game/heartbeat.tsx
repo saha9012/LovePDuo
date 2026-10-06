@@ -27,6 +27,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 type Phase = 'ready' | 'playing' | 'finished';
 
@@ -675,11 +676,21 @@ export default function HeartbeatScreen() {
             <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
             <Text style={styles.body}>
               Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.
-              {params.solo !== '1' && !partnerLive ? ' Ждём партнёра на бите…' : ''}
+              {isWaitingSyncedStart(params.solo, params.startAt)
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !partnerLive
+                  ? ' Ждём партнёра на бите…'
+                  : ''}
             </Text>
-            <Pressable onPress={start} style={styles.btn}>
-              <Text style={styles.btnLabel}>Старт</Text>
-            </Pressable>
+            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+              <Text style={styles.meta}>
+                {syncedStartCountdownLabel(params.startAt, peerNote)}
+              </Text>
+            ) : (
+              <Pressable onPress={start} style={styles.btn}>
+                <Text style={styles.btnLabel}>Старт</Text>
+              </Pressable>
+            )}
           </View>
         ) : (
           <>
