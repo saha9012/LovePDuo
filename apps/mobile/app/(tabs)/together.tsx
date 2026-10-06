@@ -39,6 +39,18 @@ import {
 
 const CANDLE_SEC = 120;
 
+function sparkDayKey(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function dailySparkIndex(pairCode: string, filter: SparkFilter, length: number) {
+  if (length <= 0) return 0;
+  const key = `${pairCode}|${sparkDayKey()}|${filter}`;
+  let h = 0;
+  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  return h % length;
+}
+
 export default function TogetherScreen() {
   const insets = useSafeAreaInsets();
   const {
@@ -54,7 +66,6 @@ export default function TogetherScreen() {
   } = useApp();
   const { items: memories, clearMemories, removeMemory, addMemory, receiveMemory } = useMemories();
   const { spicyUnlocked, maxMemories, isPlus } = usePremium();
-  const [idx, setIdx] = useState(0);
   const [sparkFilter, setSparkFilter] = useState<SparkFilter>('soft');
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
@@ -64,7 +75,11 @@ export default function TogetherScreen() {
     () => sparksRu.filter((s) => s.filter === sparkFilter),
     [sparkFilter],
   );
-  const card = deck[idx % (deck.length || 1)] ?? sparksRu[0];
+  const idx = useMemo(
+    () => dailySparkIndex(pair?.code ?? 'solo', sparkFilter, deck.length || 1),
+    [pair?.code, sparkFilter, deck.length],
+  );
+  const card = deck[idx] ?? sparksRu[0];
   const flame = useSharedValue(1);
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
@@ -88,7 +103,6 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!spicyUnlocked && sparkFilter === 'spicy') {
       setSparkFilter('soft');
-      setIdx(0);
     }
   }, [spicyUnlocked, sparkFilter]);
 
@@ -298,28 +312,22 @@ export default function TogetherScreen() {
           if (payload.filter === 'spicy' && !spicyUnlocked) {
             showPeer('Spicy · Duo Plus — остаёшься soft');
             void juice.miss();
-          } else {
+          } else if (payload.filter !== sparkFilter) {
             setSparkFilter(payload.filter);
+            const both = Date.now() - lastSparkAt.current < 2200;
+            showPeer(
+              both
+                ? payload.filter === 'spicy'
+                  ? 'Оба: spicy'
+                  : 'Оба: soft'
+                : payload.from
+                  ? `${payload.from}: ${payload.filter}`
+                  : `Колода ${payload.filter}`,
+            );
+            void (both ? juice.perfect() : juice.card());
           }
         }
-        if (typeof payload?.idx === 'number') {
-          setIdx(payload.idx);
-          const both = Date.now() - lastSparkAt.current < 2200;
-          const racing =
-            both &&
-            (peerToastRef.current === 'Оба: новая искра' ||
-              peerToastRef.current === 'Оба в искрах');
-          showPeer(
-            racing
-              ? 'Оба в искрах'
-              : both
-                ? 'Оба: новая искра'
-                : payload.from
-                  ? `${payload.from}: новая искра`
-                  : 'Новая искра от партнёра',
-          );
-          void (both ? juice.perfect() : juice.card());
-        }
+        // Daily Spark is day-keyed — ignore free-browse idx from older clients.
       }
       if (msg.type === 'game' && msg.gameId === 'tiny-note') {
         const payload = msg.payload as TinyNote | undefined;
@@ -404,6 +412,7 @@ export default function TogetherScreen() {
     markNoteSynced,
     user,
     spicyUnlocked,
+    sparkFilter,
   ]);
 
   useEffect(() => {
@@ -441,34 +450,21 @@ export default function TogetherScreen() {
       return;
     }
     setSparkFilter(f);
-    setIdx(0);
     lastSparkAt.current = Date.now();
+    const nextDeck = sparksRu.filter((s) => s.filter === f);
+    const dayIdx = dailySparkIndex(pair?.code ?? 'solo', f, nextDeck.length || 1);
     const result = sendPairMetaOrQueue('spark', {
-      idx: 0,
+      idx: dayIdx,
       filter: f,
       from: user?.displayName,
     });
     showPeer(
       result === 'sent'
         ? f === 'spicy'
-          ? 'Spicy · у обоих'
-          : 'Soft · у обоих'
+          ? 'Spicy · у обоих · сегодня'
+          : 'Soft · у обоих · сегодня'
         : `${f} · sync ждёт online`,
     );
-    void juice.card();
-  };
-
-  const nextSpark = () => {
-    setIdx((v) => {
-      const next = v + 1;
-      lastSparkAt.current = Date.now();
-      sendPairMetaOrQueue('spark', {
-        idx: next,
-        filter: sparkFilter,
-        from: user?.displayName,
-      });
-      return next;
-    });
     void juice.card();
   };
 
@@ -575,8 +571,7 @@ export default function TogetherScreen() {
         <Text style={styles.kicker}>Together</Text>
         <Text style={typography.headline}>Ритуалы и искры</Text>
         <Text style={typography.body}>
-          {notes.length} заметок · {memories.length} memory · искра {idx + 1}/{deck.length || 1}
-          {` · ${sparkFilter}`}
+          {notes.length} заметок · {memories.length} memory · Daily Spark · {sparkFilter}
           {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
           {pair
             ? peerInWsRoom
@@ -603,7 +598,7 @@ export default function TogetherScreen() {
               ['n', String(notes.length), 'notes'],
               ['ch', String(noteChars), 'букв'],
               ['m', String(memories.length), 'memory'],
-              ['s', String(idx + 1), 'искра'],
+              ['s', 'день', 'spark'],
               ['f', sparkFilter, 'колода'],
               ['c', lit ? `${mins}:${secs.toString().padStart(2, '0')}` : 'off', 'свеча'],
               ['w', String(warmthPulse), 'тепло'],
@@ -628,7 +623,7 @@ export default function TogetherScreen() {
           </Text>
         ) : null}
 
-        <SectionRule label="Искра" right={`${idx + 1}/${deck.length || 1} · ${sparkFilter}`} />
+        <SectionRule label="Daily Spark · сегодня" right={sparkFilter} />
 
         <View style={styles.filterRow}>
           {(['soft', 'spicy'] as const).map((f) => (
@@ -653,6 +648,7 @@ export default function TogetherScreen() {
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
           <Text style={styles.text}>{card.text}</Text>
+          <Text style={styles.draftMeta}>Одна на день · завтра другая</Text>
           {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
         </View>
 
@@ -738,10 +734,8 @@ export default function TogetherScreen() {
         </View>
 
         <View style={styles.actions}>
-          <LpdButton label="Следующая искра" onPress={nextSpark} />
           <LpdButton
             label={lit ? 'Свеча горит…' : 'Зажечь свечу (2 мин)'}
-            variant="ghost"
             disabled={lit}
             onPress={startCandle}
           />
