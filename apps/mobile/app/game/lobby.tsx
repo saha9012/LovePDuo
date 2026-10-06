@@ -38,7 +38,7 @@ export default function GameLobbyScreen() {
   const router = useRouter();
   const { game } = useLocalSearchParams<{ game?: string }>();
   const gameId = (game as keyof typeof routes) || 'sky-claim';
-  const { user, pair, bumpGamesStarted, touchPairActive } = useApp();
+  const { user, pair, bumpGamesStarted, touchPairActive, setHostUserId } = useApp();
   const [readyMe, setReadyMe] = useState(false);
   const [readyPeer, setReadyPeer] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -363,6 +363,16 @@ export default function GameLobbyScreen() {
     }
     startSent.current = true;
     bothReadyNoted.current = true;
+    if (user?.id && (hostStale || !pair?.hostUserId)) {
+      setHostUserId(user.id);
+      if (pairRealtime.connected && getLastRoomSize() >= 2) {
+        pairRealtime.sendGame('pair-meta', {
+          hostUserId: user.id,
+          pairName: pair?.name,
+          fromId: user.id,
+        });
+      }
+    }
     const seed = Math.floor(Math.random() * 100000);
     const startAt = Date.now() + 2800;
     setMatchSeed(seed);
@@ -390,10 +400,15 @@ export default function GameLobbyScreen() {
     countdown,
     gameId,
     canStart,
+    hostStale,
+    user?.id,
+    pair?.hostUserId,
+    pair?.name,
     pair?.code,
     pair?.id,
     bumpGamesStarted,
     touchPairActive,
+    setHostUserId,
   ]);
 
   const countStyle = useAnimatedStyle(() => ({
