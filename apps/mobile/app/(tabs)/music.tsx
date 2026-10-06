@@ -920,7 +920,33 @@ export default function MusicScreen() {
           </Text>
         ) : null}
         {nowPlayingId ? (
-          <View style={styles.playbackRow}>
+          <View style={styles.playbackCard}>
+            {(() => {
+              const list = visibleTracks;
+              const idx = list.findIndex((t) => t.id === nowPlayingId);
+              const cur = list[idx];
+              const left =
+                progress && progress.dur > 0
+                  ? Math.max(0, progress.dur - progress.pos)
+                  : null;
+              return (
+                <>
+                  <Text style={styles.playbackTitle} numberOfLines={1}>
+                    {cur ? `${cur.title} — ${cur.artist}` : 'Сейчас играет'}
+                  </Text>
+                  <Text style={styles.playbackMeta}>
+                    {idx >= 0 ? `${idx + 1}/${list.length}` : `—/${list.length}`}
+                    {progress && progress.dur > 0
+                      ? ` · ${formatMs(progress.pos)} / ${formatMs(progress.dur)}`
+                      : ''}
+                    {left != null ? ` · −${formatMs(left)}` : ''}
+                    {progress && progress.dur > 0
+                      ? ` · ${Math.round((progress.pos / progress.dur) * 100)}%`
+                      : ''}
+                  </Text>
+                </>
+              );
+            })()}
             {progress && progress.dur > 0 ? (
               <Pressable
                 style={styles.progressBlock}
@@ -950,62 +976,71 @@ export default function MusicScreen() {
                     ]}
                   />
                 </View>
-                <Text style={styles.progressTime}>
-                  {formatMs(progress.pos)} / {formatMs(progress.dur)} · тап = seek
-                </Text>
+                <Text style={styles.progressTime}>тап по полосе = seek</Text>
               </Pressable>
             ) : null}
-            <LpdButton
-              label="Предыдущий"
-              variant="ghost"
-              onPress={() => {
-                const list = visibleTracksRef.current;
-                const idx = list.findIndex((t) => t.id === nowPlayingId);
-                const before = idx > 0 ? list.slice(0, idx).reverse() : [];
-                const prevLocal = before.find(
-                  (t) => Boolean(t.uri) && t.playbackMode === 'local',
-                );
-                if (!prevLocal) {
-                  showNote('Раньше локальных треков нет.');
-                  void juice.miss();
-                  return;
-                }
-                void playTrackRef.current(prevLocal);
-              }}
-            />
-            <LpdButton
-              label="Стоп"
-              variant="ghost"
-              onPress={async () => {
-                await sound?.stopAsync();
-                await sound?.unloadAsync();
-                setSound(null);
-                setNowPlaying(null);
-                setProgress(null);
-                lastStopAt.current = Date.now();
-                pairRealtime.sendGame('now-playing', { title: null, from: user?.displayName });
-                showNote('Остановили — партнёр видит.');
-                void juice.miss();
-              }}
-            />
-            <LpdButton
-              label="Следующий"
-              variant="ghost"
-              onPress={() => {
-                const list = visibleTracksRef.current;
-                const idx = list.findIndex((t) => t.id === nowPlayingId);
-                const following = idx >= 0 ? list.slice(idx + 1) : list;
-                const nextLocal = following.find(
-                  (t) => Boolean(t.uri) && t.playbackMode === 'local',
-                );
-                if (!nextLocal) {
-                  showNote('Дальше локальных треков нет.');
-                  void juice.miss();
-                  return;
-                }
-                void playTrackRef.current(nextLocal);
-              }}
-            />
+            <View style={styles.playbackRow}>
+              <View style={styles.playbackBtn}>
+                <LpdButton
+                  label="‹"
+                  variant="ghost"
+                  onPress={() => {
+                    const list = visibleTracksRef.current;
+                    const idx = list.findIndex((t) => t.id === nowPlayingId);
+                    const before = idx > 0 ? list.slice(0, idx).reverse() : [];
+                    const prevLocal = before.find(
+                      (t) => Boolean(t.uri) && t.playbackMode === 'local',
+                    );
+                    if (!prevLocal) {
+                      showNote('Раньше локальных треков нет.');
+                      void juice.miss();
+                      return;
+                    }
+                    void playTrackRef.current(prevLocal);
+                  }}
+                />
+              </View>
+              <View style={styles.playbackBtn}>
+                <LpdButton
+                  label="■"
+                  variant="ghost"
+                  onPress={async () => {
+                    await sound?.stopAsync();
+                    await sound?.unloadAsync();
+                    setSound(null);
+                    setNowPlaying(null);
+                    setProgress(null);
+                    lastStopAt.current = Date.now();
+                    pairRealtime.sendGame('now-playing', {
+                      title: null,
+                      from: user?.displayName,
+                    });
+                    showNote('Остановили — партнёр видит.');
+                    void juice.miss();
+                  }}
+                />
+              </View>
+              <View style={styles.playbackBtn}>
+                <LpdButton
+                  label="›"
+                  variant="ghost"
+                  onPress={() => {
+                    const list = visibleTracksRef.current;
+                    const idx = list.findIndex((t) => t.id === nowPlayingId);
+                    const following = idx >= 0 ? list.slice(idx + 1) : list;
+                    const nextLocal = following.find(
+                      (t) => Boolean(t.uri) && t.playbackMode === 'local',
+                    );
+                    if (!nextLocal) {
+                      showNote('Дальше локальных треков нет.');
+                      void juice.miss();
+                      return;
+                    }
+                    void playTrackRef.current(nextLocal);
+                  }}
+                />
+              </View>
+            </View>
           </View>
         ) : null}
 
@@ -1208,8 +1243,30 @@ const styles = StyleSheet.create({
   actions: {
     gap: spacing.sm,
   },
-  playbackRow: {
+  playbackCard: {
     gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: 'rgba(226,176,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.55)',
+  },
+  playbackTitle: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  playbackMeta: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.accentAmber,
+  },
+  playbackRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  playbackBtn: {
+    flex: 1,
   },
   progressBlock: {
     gap: 6,

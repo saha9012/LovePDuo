@@ -625,6 +625,20 @@ export default function SignalDrawScreen() {
 
   const myScore = myCount.current * 10;
   const theirScore = (partnerStrokes || peerCount.current) * 10;
+  const myInkPts = useMemo(
+    () =>
+      strokes
+        .filter((s) => s.by === 'me')
+        .reduce((n, s) => n + s.points.length, 0),
+    [strokes],
+  );
+  const peerInkPts = useMemo(
+    () =>
+      strokes
+        .filter((s) => s.by === 'peer')
+        .reduce((n, s) => n + s.points.length, 0),
+    [strokes],
+  );
   const line = pickPostMatchLine(myScore, theirScore || 1, seed);
 
   const renderStroke = useCallback(
@@ -697,9 +711,12 @@ export default function SignalDrawScreen() {
           <>
             <View style={styles.hud}>
               <Text style={styles.stat}>{timeLeft}s</Text>
-              <Text style={styles.stat}>ты {myCount.current}</Text>
+              <Text style={styles.stat}>
+                ты {myCount.current} · {myInkPts} pts
+              </Text>
               <Text style={[styles.stat, peerPulse && styles.peerLive]}>
                 партнёр {partnerStrokes}
+                {peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''}
                 {peerPulse ? ' · live' : ''}
               </Text>
             </View>
@@ -774,8 +791,8 @@ const styles = StyleSheet.create({
   ready: { flex: 1, justifyContent: 'center', gap: spacing.md, paddingHorizontal: spacing.sm },
   hero: { fontFamily: fonts.display, fontSize: 34, color: colors.textPrimary },
   body: { fontFamily: fonts.ui, color: colors.textSecondary, lineHeight: 22 },
-  hud: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary },
+  hud: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
+  stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary, fontSize: 13 },
   peerLive: { color: colors.accentRose, fontFamily: fonts.uiSemi },
   toast: {
     fontFamily: fonts.uiMedium,

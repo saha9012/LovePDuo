@@ -39,6 +39,8 @@ export default function OrbitCatchScreen() {
   const [angle, setAngle] = useState(0);
   const [orbAngle, setOrbAngle] = useState(0);
   const [caught, setCaught] = useState(0);
+  const [misses, setMisses] = useState(0);
+  const [attempts, setAttempts] = useState(0);
   const [partnerCaught, setPartnerCaught] = useState(0);
   const [timeLeft, setTimeLeft] = useState(35);
   const [aligned, setAligned] = useState(false);
@@ -302,6 +304,8 @@ export default function OrbitCatchScreen() {
     setSyncFinish(false);
     setFinishDualLabel(null);
     setCaught(0);
+    setMisses(0);
+    setAttempts(0);
     setPartnerCaught(0);
     setTimeLeft(35);
     setAngle(0);
@@ -432,6 +436,7 @@ export default function OrbitCatchScreen() {
 
   const onCatch = () => {
     if (phase !== 'playing') return;
+    setAttempts((a) => a + 1);
     const diff = Math.abs(Math.sin(angle - orbAngle));
     if (diff < 0.22) {
       caughtRef.current += 1;
@@ -467,6 +472,7 @@ export default function OrbitCatchScreen() {
         }, 320);
       }
     } else {
+      setMisses((m) => m + 1);
       lastMissAt.current = Date.now();
       void juice.miss();
       pairRealtime.sendGame('orbit-catch', { miss: true });
@@ -544,6 +550,10 @@ export default function OrbitCatchScreen() {
             <View style={styles.hud}>
               <Text style={styles.stat}>{timeLeft}s</Text>
               <Text style={styles.stat}>ты {caught}</Text>
+              <Text style={styles.stat}>
+                {caught}✓/{misses}✗
+                {attempts > 0 ? ` · ${Math.round((caught / attempts) * 100)}%` : ''}
+              </Text>
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
@@ -571,7 +581,9 @@ export default function OrbitCatchScreen() {
                 />
               </View>
               <Text style={[styles.hint, aligned && styles.hintHot]}>
-                {aligned ? 'СЕЙЧАС' : 'TAP в совпадении'}
+                {aligned
+                  ? `СЕЙЧАС · Δ${Math.abs(Math.sin(angle - orbAngle)).toFixed(2)}`
+                  : `TAP в совпадении · Δ${Math.abs(Math.sin(angle - orbAngle)).toFixed(2)}`}
               </Text>
             </Pressable>
           </>
@@ -607,8 +619,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(226,176,122,0.35)',
   },
   btnLabel: { fontFamily: fonts.uiSemi, color: colors.textPrimary },
-  hud: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary },
+  hud: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8 },
+  stat: { fontFamily: fonts.uiMedium, color: colors.textSecondary, fontSize: 13 },
   partnerHot: { color: colors.accentRose, fontFamily: fonts.uiSemi },
   stage: {
     flex: 1,
