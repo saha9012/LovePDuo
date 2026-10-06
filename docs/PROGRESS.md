@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Mid-match leave announces leaveMatch → partner forceSolo  
 - [x] Scrapbook empty shows Free/Plus memory ceiling  
 - [x] Outbox flush only when WS room has a peer (no solo fake-sync)  
 - [x] Unlink drops undelivered notes/memories (no fake synced)  
