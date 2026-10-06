@@ -762,7 +762,7 @@ export default function TogetherScreen() {
             <EmptyState
               title="Скрапбук пуст"
               body="Финиш игры или догоревшая свеча появятся здесь у обоих."
-              meta="0 memory · сыграйте раунд"
+              meta={`0/${maxMemories} memory · ${isPlus ? 'Plus' : 'Free'} · сыграйте раунд`}
             />
           ) : (
             <>
