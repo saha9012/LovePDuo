@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Welcome footer partner online gates on WS ≥2  
 - [x] Play/Welcome partner online gates on WS ≥2  
 - [x] Together header gates partner online on WS ≥2  
 - [x] Inbound hello keeps intentional Solo (catalog)  

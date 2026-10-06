@@ -269,7 +269,13 @@ export default function WelcomeScreen() {
             {pair
               ? `Код пары ${pair.code} сохранён на устройстве${
                   typeof pair.roomSize === 'number' ? ` · WS online ${pair.roomSize}` : ''
-                } · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'} · ${
+                } · ${
+                  typeof pair.roomSize === 'number' && pair.roomSize >= 2
+                    ? 'партнёр online'
+                    : pair.partnerPresence === 'online'
+                      ? 'presence ≠ room'
+                      : 'партнёр offline'
+                } · ${
                   user?.authProvider === 'google'
                     ? `Google${user.email ? ` · ${user.email}` : ''}`
                     : 'локальный профиль (не облако)'
