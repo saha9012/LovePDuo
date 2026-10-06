@@ -254,6 +254,7 @@ export default function WordVeilScreen() {
         setPresenceHint(
           hintRef.current === 'Партнёр вышел' ||
             hintRef.current === 'Партнёр вышел · соло' ||
+            hintRef.current === 'Партнёр вышел из матча · соло' ||
             hintRef.current === 'Партнёр вернулся' ||
             hintRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'

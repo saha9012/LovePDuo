@@ -223,6 +223,7 @@ export default function TruthOrSparkScreen() {
         showTurnToast(
           turnToastRef.current === 'Партнёр вышел' ||
             turnToastRef.current === 'Партнёр вышел · соло' ||
+            turnToastRef.current === 'Партнёр вышел из матча · соло' ||
             turnToastRef.current === 'Партнёр вернулся' ||
             turnToastRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'
