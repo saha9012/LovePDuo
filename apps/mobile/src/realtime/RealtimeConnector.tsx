@@ -5,6 +5,7 @@ import { usePremium } from '../store/PremiumStore';
 import { pairRealtime } from './PairRealtime';
 import { setMatchSession } from './matchSession';
 import { setLastRoomSize, getLastRoomSize } from './pairPresence';
+import { sendGameIfPeerLive } from './sendGameIfPeerLive';
 import { flushWarmthOutbox } from './warmthOutbox';
 import { flushMusicOutbox } from './musicOutbox';
 import { flushMemoryMutationOutbox } from './memoryMutationOutbox';
@@ -19,12 +20,15 @@ function flushNoteOutbox(
   markNoteSynced: (id: string) => void,
 ) {
   const outbox = pendingNotes();
+  let sent = 0;
   for (const n of outbox) {
     const { pendingSync: _p, ...payload } = n;
-    pairRealtime.sendGame('tiny-note', payload);
-    markNoteSynced(n.id);
+    if (sendGameIfPeerLive('tiny-note', payload)) {
+      markNoteSynced(n.id);
+      sent += 1;
+    }
   }
-  return outbox.length;
+  return sent;
 }
 
 function flushMemoryOutbox(
@@ -33,16 +37,21 @@ function flushMemoryOutbox(
   from?: { displayName?: string; id?: string },
 ) {
   const outbox = pendingMemories();
+  let sent = 0;
   for (const m of outbox) {
     const { pendingSync: _p, ...payload } = m;
-    pairRealtime.sendGame('memory-add', {
-      ...payload,
-      from: from?.displayName,
-      fromId: from?.id,
-    });
-    markMemorySynced(m.id);
+    if (
+      sendGameIfPeerLive('memory-add', {
+        ...payload,
+        from: from?.displayName,
+        fromId: from?.id,
+      })
+    ) {
+      markMemorySynced(m.id);
+      sent += 1;
+    }
   }
-  return outbox.length;
+  return sent;
 }
 
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */

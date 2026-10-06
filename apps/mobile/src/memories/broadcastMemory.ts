@@ -1,5 +1,6 @@
 import { pairRealtime } from '../realtime/PairRealtime';
 import { getLastRoomSize } from '../realtime/pairPresence';
+import { sendGameIfPeerLive } from '../realtime/sendGameIfPeerLive';
 import { sendMemoryMutationOrQueue } from '../realtime/memoryMutationOutbox';
 import { markMemorySyncedExternal, type MemoryItem } from '../store/MemoriesStore';
 
@@ -16,11 +17,14 @@ function fromFields(from: FromUser) {
 export function broadcastMemory(memory: MemoryItem, from?: FromUser) {
   const { pendingSync: _p, ...payload } = memory;
   // Only when peer is live — otherwise leave pendingSync for RealtimeConnector flush.
-  if (!(pairRealtime.connected && getLastRoomSize() >= 2)) return;
-  pairRealtime.sendGame('memory-add', {
-    ...payload,
-    ...fromFields(from),
-  });
+  if (
+    !sendGameIfPeerLive('memory-add', {
+      ...payload,
+      ...fromFields(from),
+    })
+  ) {
+    return;
+  }
   markMemorySyncedExternal(memory.id);
 }
 

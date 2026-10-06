@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Outbox flush marks synced only on live send  
 - [x] Together notes send/flush via sendGameIfPeerLive  
 - [x] Music now-playing + Together candle via sendGameIfPeerLive  
 - [x] Play peek/filter + lobby host via sendGameIfPeerLive  
