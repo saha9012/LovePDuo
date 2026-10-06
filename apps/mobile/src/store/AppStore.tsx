@@ -349,9 +349,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     clearMatchSession();
     clearAllSyncOutboxes();
     dropAllPendingMemorySyncExternal();
-    setNotes((prev) =>
-      prev.map((n) => (n.pendingSync ? { ...n, pendingSync: false } : n)),
-    );
+    // Undelivered notes never reached the partner — drop them instead of faking sync.
+    setNotes((prev) => prev.filter((n) => !n.pendingSync));
     setPair(null);
   }, []);
 

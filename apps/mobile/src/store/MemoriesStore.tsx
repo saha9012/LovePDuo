@@ -45,7 +45,7 @@ export function markMemorySyncedExternal(id: string) {
   markSyncedHook?.(id);
 }
 
-/** Drop pending flags so old-pair memories never flush into a new invite. */
+/** Drop undelivered memories so they never flush into a new invite. */
 export function dropAllPendingMemorySyncExternal() {
   dropPendingHook?.();
 }
@@ -118,11 +118,8 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const dropAllPendingSync = useCallback(() => {
-    setItems((prev) =>
-      prev.some((m) => m.pendingSync)
-        ? prev.map((m) => (m.pendingSync ? { ...m, pendingSync: false } : m))
-        : prev,
-    );
+    // Undelivered memories never reached the partner — remove, don't fake synced.
+    setItems((prev) => (prev.some((m) => m.pendingSync) ? prev.filter((m) => !m.pendingSync) : prev));
   }, []);
 
   useEffect(() => {
