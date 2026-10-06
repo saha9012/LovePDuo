@@ -198,7 +198,7 @@ export default function OrbitCatchScreen() {
             (peerNoteRef.current === 'оба ещё раунд' || peerNoteRef.current === 'оба снова');
           bumpPeerNote(racing ? 'оба снова' : both ? 'оба ещё раунд' : 'ещё раунд');
           void (both ? juice.perfect() : juice.sync());
-          startRef.current();
+          setTimeout(() => startRef.current(), 0);
           return;
         }
         if (payload?.phase === 'finished') {
@@ -345,7 +345,7 @@ export default function OrbitCatchScreen() {
     seedRef.current = next;
     lastRematchAt.current = Date.now();
     pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next, hello: true });
-    start();
+    setTimeout(() => startRef.current(), 0);
   };
 
   useEffect(() => {

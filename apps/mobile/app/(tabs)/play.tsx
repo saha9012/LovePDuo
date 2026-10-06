@@ -9,6 +9,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -281,11 +282,13 @@ export default function PlayScreen() {
     void AsyncStorage.setItem(LAST_GAME_KEY, game);
     void juice.hit();
     const title = CATALOG.find((g) => g.game === game)?.title ?? game;
-    pairRealtime.sendGame('play-peek', {
-      game,
-      title,
-      fromId: user?.id,
-    });
+    if (pairRealtime.connected && getLastRoomSize() >= 2) {
+      pairRealtime.sendGame('play-peek', {
+        game,
+        title,
+        fromId: user?.id,
+      });
+    }
     router.push({ pathname: '/game/lobby', params: { game } });
   };
 

@@ -238,7 +238,7 @@ export default function SoftDuelScreen() {
           (flashRef.current === 'Оба: ещё раунд' || flashRef.current === 'Оба снова');
         setFlash(racing ? 'Оба снова' : both ? 'Оба: ещё раунд' : 'Партнёр: ещё раунд');
         void (both ? juice.perfect() : juice.sync());
-        startRef.current();
+        setTimeout(() => startRef.current(), 0);
         return;
       }
       if (payload?.early) {
@@ -545,7 +545,7 @@ export default function SoftDuelScreen() {
     );
     void (racing ? juice.perfect() : juice.sync());
     pairRealtime.sendGame('soft-duel', { rematch: true, seed: next, hello: true });
-    start();
+    setTimeout(() => startRef.current(), 0);
   };
 
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
