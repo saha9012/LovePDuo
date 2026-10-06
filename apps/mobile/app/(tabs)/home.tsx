@@ -25,7 +25,11 @@ import {
   peekPairMatchSession,
   type MatchSession,
 } from '../../src/realtime/matchSession';
-import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
+import { sendWarmthOrQueue, pendingWarmthCount } from '../../src/realtime/warmthOutbox';
+import { pendingMusicCount } from '../../src/realtime/musicOutbox';
+import { pendingMemoryMutationCount } from '../../src/realtime/memoryMutationOutbox';
+import { pendingNoteMutationCount } from '../../src/realtime/noteMutationOutbox';
+import { pendingPairMetaCount } from '../../src/realtime/pairMetaOutbox';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { SectionRule } from '../../src/components/SectionRule';
 
@@ -51,6 +55,7 @@ export default function HomeScreen() {
   const [roomToast, setRoomToast] = useState<string | null>(null);
   const [peerLobby, setPeerLobby] = useState<{ game: string; title: string } | null>(null);
   const [resumeMatch, setResumeMatch] = useState<MatchSession | null>(null);
+  const [outboxTick, setOutboxTick] = useState(0);
   const lastMemory = memories[0];
   const lastNote = notes[0];
   const warmthSeen = React.useRef(0);
@@ -65,6 +70,12 @@ export default function HomeScreen() {
   const roomSizeSeen = React.useRef(pair?.roomSize ?? 0);
   const lastMoodMatchAt = React.useRef(0);
   const lastMoodMatch = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pair) return;
+    const id = setInterval(() => setOutboxTick((n) => n + 1), 2000);
+    return () => clearInterval(id);
+  }, [pair?.code]);
 
   useEffect(() => {
     roomToastRef.current = roomToast;
@@ -431,6 +442,17 @@ export default function HomeScreen() {
     return [...memRows, ...noteRows].sort((a, b) => b.at - a.at).slice(0, 10);
   }, [memories, notes]);
   const feedPending = recentFeed.filter((r) => r.pending).length;
+  const outboxPending = useMemo(() => {
+    void outboxTick;
+    return (
+      pendingWarmthCount() +
+      pendingMusicCount() +
+      pendingMemoryMutationCount() +
+      pendingNoteMutationCount() +
+      pendingPairMetaCount()
+    );
+  }, [outboxTick, pair?.code, wsOnline]);
+  const syncWaiting = feedPending + outboxPending;
 
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
     const same = pair?.mood === m;
@@ -508,6 +530,7 @@ export default function HomeScreen() {
           <Text style={styles.meta}>
             Пара {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
             {typeof pair?.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''}
+            {syncWaiting > 0 ? ` · sync ${syncWaiting}` : ''}
           </Text>
         </View>
 
@@ -678,7 +701,8 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>Лента пары</Text>
             <Text style={styles.sectionMeta}>
               {recentFeed.length} событий
-              {feedPending > 0 ? ` · ${feedPending} ждут online` : ''}
+              {feedPending > 0 ? ` · ${feedPending} note/mem ждут` : ''}
+              {outboxPending > 0 ? ` · ${outboxPending} outbox` : ''}
             </Text>
           </View>
           {recentFeed.length === 0 ? (

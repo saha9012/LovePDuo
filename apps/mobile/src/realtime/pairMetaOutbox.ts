@@ -37,3 +37,7 @@ export function flushPairMetaOutbox(): number {
 export function clearPairMetaOutbox() {
   queue = [];
 }
+
+export function pendingPairMetaCount() {
+  return queue.length;
+}

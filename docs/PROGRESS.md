@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home shows outbox pending (music/warmth/meta)  
 - [x] Mutation outbox flush keeps undelivered items  
 - [x] peer_joined hello skipped after leaveMatch until rematch  
 - [x] Catalog rematch ·соло hints after leaveMatch  

@@ -37,3 +37,7 @@ export function flushNoteMutationOutbox(): number {
 export function clearNoteMutationOutbox() {
   queue = [];
 }
+
+export function pendingNoteMutationCount() {
+  return queue.length;
+}
