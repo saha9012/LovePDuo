@@ -137,12 +137,18 @@ export default function TruthOrSparkScreen() {
       showTurnToast('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      showTurnToast(
-        turnToastRef.current === 'Партнёр offline' ||
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
+      const racing =
+        duoLive &&
+        (turnToastRef.current === 'Партнёр offline' ||
           turnToastRef.current === 'Партнёр снова online' ||
-          turnToastRef.current === 'Оба на связи'
+          turnToastRef.current === 'Оба на связи');
+      showTurnToast(
+        racing
           ? 'Оба на связи'
-          : 'Партнёр снова online',
+          : duoLive
+            ? 'Партнёр снова online'
+            : 'Партнёр presence · ждём WS 2/2',
       );
       void juice.hit();
       // Partner presence back — clear idle soloEscape only when WS room is live,

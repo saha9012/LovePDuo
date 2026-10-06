@@ -134,12 +134,18 @@ export default function WordVeilScreen() {
       return () => clearTimeout(t);
     }
     if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      setPresenceHint(
-        hintRef.current === 'Партнёр offline' ||
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
+      const racing =
+        duoLive &&
+        (hintRef.current === 'Партнёр offline' ||
           hintRef.current === 'Партнёр снова online' ||
-          hintRef.current === 'Оба на связи'
+          hintRef.current === 'Оба на связи');
+      setPresenceHint(
+        racing
           ? 'Оба на связи'
-          : 'Партнёр снова online',
+          : duoLive
+            ? 'Партнёр снова online'
+            : 'Партнёр presence · ждём WS 2/2',
       );
       void juice.hit();
       const t = setTimeout(() => setPresenceHint(null), 1800);
@@ -147,7 +153,7 @@ export default function WordVeilScreen() {
       return () => clearTimeout(t);
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, phase]);
+  }, [pair?.partnerPresence, pair?.roomSize, phase]);
 
   const scoreWords = (a: string, b: string) => {
     const x = a.trim().toLowerCase();

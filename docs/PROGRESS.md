@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Catalog «Оба на связи» toasts require WS ≥2  
 - [x] Home «Оба на связи» toast requires WS ≥2  
 - [x] Home live chip requires WS room ≥2  
 - [x] Welcome kicker gates «на связи» on WS ≥2  

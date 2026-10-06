@@ -125,15 +125,23 @@ export default function SoftDuelScreen() {
       setFlash('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
       const racing =
-        flashRef.current === 'Партнёр offline' ||
-        flashRef.current === 'Партнёр online' ||
-        flashRef.current === 'Оба на связи';
-      setFlash(racing ? 'Оба на связи' : 'Партнёр online');
+        duoLive &&
+        (flashRef.current === 'Партнёр offline' ||
+          flashRef.current === 'Партнёр online' ||
+          flashRef.current === 'Оба на связи');
+      setFlash(
+        racing
+          ? 'Оба на связи'
+          : duoLive
+            ? 'Партнёр online'
+            : 'Партнёр presence · ждём WS 2/2',
+      );
       void juice.hit();
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, phase]);
+  }, [pair?.partnerPresence, pair?.roomSize, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;

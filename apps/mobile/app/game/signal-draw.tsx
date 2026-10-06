@@ -168,17 +168,23 @@ export default function SignalDrawScreen() {
       showToast('Партнёр offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      showToast(
-        toastRef.current === 'Партнёр offline' ||
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
+      const racing =
+        duoLive &&
+        (toastRef.current === 'Партнёр offline' ||
           toastRef.current === 'Партнёр снова online' ||
-          toastRef.current === 'Оба на связи'
+          toastRef.current === 'Оба на связи');
+      showToast(
+        racing
           ? 'Оба на связи'
-          : 'Партнёр снова online',
+          : duoLive
+            ? 'Партнёр снова online'
+            : 'Партнёр presence · ждём WS 2/2',
       );
       void juice.hit();
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, phase]);
+  }, [pair?.partnerPresence, pair?.roomSize, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;
