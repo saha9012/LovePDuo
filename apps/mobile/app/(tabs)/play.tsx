@@ -361,11 +361,13 @@ export default function PlayScreen() {
                 );
                 void juice.hit();
                 setTimeout(() => setPeekToast(null), 1200);
-                pairRealtime.sendGame('play-filter', {
-                  filter: id,
-                  fromId: user?.id,
-                  from: user?.displayName,
-                });
+                if (pairRealtime.connected && getLastRoomSize() >= 2) {
+                  pairRealtime.sendGame('play-filter', {
+                    filter: id,
+                    fromId: user?.id,
+                    from: user?.displayName,
+                  });
+                }
               }}
               style={[styles.chip, filter === id && styles.chipOn]}
             >

@@ -143,11 +143,13 @@ export default function GameLobbyScreen() {
       'orbit-catch': 'Orbit Catch',
     };
     pairRealtime.connect(pair.code, user.id, user.displayName);
-    pairRealtime.sendGame('play-peek', {
-      game: gameId,
-      title: titles[gameId] ?? gameId,
-      fromId: user.id,
-    });
+    if (pairRealtime.connected && getLastRoomSize() >= 2) {
+      pairRealtime.sendGame('play-peek', {
+        game: gameId,
+        title: titles[gameId] ?? gameId,
+        fromId: user.id,
+      });
+    }
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         const wasCounting = countdownRef.current != null;
