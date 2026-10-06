@@ -6,8 +6,9 @@
 
 ## Latest
 
+- [x] Lobby leave → peer cancel countdown · Together candle/spark outbox  
 - [x] Duo Plus / pair-meta announce queues when alone · Profile trial/unlock honesty  
-- [x] Live synced-start countdown tick · display-name outbox  
+- [x] Live synced-start countdown tick · display-name outbox · play-peek only when live  
 - [x] ToS synced-start countdown labels · pair room-name outbox  
 - [x] Host claim on peer_left · lobby stale-host copy · mid-match forceSolo (HB/Orbit/Sky/Draw)  
 - [x] Word Veil synced-start gate · Soft shared helper · memory/note remove outbox  
