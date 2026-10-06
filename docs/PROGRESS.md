@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Heartbeat Solo demo ready + Sync ·demo label  
 - [x] ToS syncMeta prefers solo after forceSolo  
 - [x] ToS advance CTA says соло on Solo/Demo  
 - [x] ToS post-match Solo demo title + lines  

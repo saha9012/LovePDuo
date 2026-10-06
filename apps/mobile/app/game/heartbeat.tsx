@@ -770,12 +770,21 @@ export default function HeartbeatScreen() {
         </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.readyTitle}>Чувствуй бит вдвоём</Text>
+            <Text style={styles.readyTitle}>
+              {params.solo === '1' || forceSolo
+                ? 'Чувствуй бит · соло demo'
+                : 'Чувствуй бит вдвоём'}
+            </Text>
             <Text style={styles.body}>
-              Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.
+              {params.solo === '1' || forceSolo
+                ? 'Тапай в ритм. Perfect / Great / Miss. Sync bonus здесь demo — не живой пульс пары.'
+                : 'Тапай в ритм. Perfect / Great / Miss. Sync bonus, если почти одновременно с партнёром.'}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
-                : params.solo !== '1' && !partnerLive
+                : params.solo !== '1' &&
+                    !forceSolo &&
+                    !partnerLive &&
+                    (pair?.roomSize ?? 0) < 2
                   ? ' Ждём партнёра на бите…'
                   : ''}
             </Text>
@@ -793,7 +802,10 @@ export default function HeartbeatScreen() {
           <>
             <View style={styles.hud}>
               <Text style={styles.stat}>Очки {score}</Text>
-              <Text style={styles.stat}>Sync +{syncBonus}</Text>
+              <Text style={styles.stat}>
+                Sync +{syncBonus}
+                {params.solo === '1' || forceSolo ? ' · demo' : ''}
+              </Text>
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
