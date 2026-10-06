@@ -194,16 +194,21 @@ export default function TogetherScreen() {
         });
         const outbox = pendingNotes();
         if (outbox.length > 0) {
+          let sent = 0;
           for (const n of outbox) {
             const { pendingSync: _p, ...payload } = n;
-            pairRealtime.sendGame('tiny-note', payload);
-            markNoteSynced(n.id);
+            if (sendGameIfPeerLive('tiny-note', payload)) {
+              markNoteSynced(n.id);
+              sent += 1;
+            }
           }
-          showPeer(
-            outbox.length === 1
-              ? 'Записка ушла партнёру'
-              : `${outbox.length} записки ушли партнёру`,
-          );
+          if (sent > 0) {
+            showPeer(
+              sent === 1
+                ? 'Записка ушла партнёру'
+                : `${sent} записки ушли партнёру`,
+            );
+          }
         }
         return;
       }
@@ -464,10 +469,8 @@ export default function TogetherScreen() {
     if (!note) return;
     lastNoteSentAt.current = Date.now();
     lastNoteLen.current = note.text.trim().length;
-    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
-    if (peerLive) {
-      const { pendingSync: _p, ...payload } = note;
-      pairRealtime.sendGame('tiny-note', payload);
+    const { pendingSync: _p, ...payload } = note;
+    if (sendGameIfPeerLive('tiny-note', payload)) {
       markNoteSynced(note.id);
       showPeer('Записка ушла');
     } else {

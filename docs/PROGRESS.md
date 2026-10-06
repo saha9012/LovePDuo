@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Together notes send/flush via sendGameIfPeerLive  
 - [x] Music now-playing + Together candle via sendGameIfPeerLive  
 - [x] Play peek/filter + lobby host via sendGameIfPeerLive  
 - [x] Mid-match sends skip forceSolo (sendGameIfDuo)  
