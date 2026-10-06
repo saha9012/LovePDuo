@@ -356,6 +356,12 @@ export default function WordVeilScreen() {
       }
       if (payload?.phase === 'finished') {
         if (peerLeftMatchRef.current) return;
+        if (params.solo === '1') {
+          setPresenceHint('Партнёр закрыл · соло');
+          void juice.sync();
+          setTimeout(() => setPresenceHint(null), 1600);
+          return;
+        }
         const peerPts = typeof payload.score === 'number' ? payload.score : 0;
         setTheirScore(peerPts);
         setPresenceHint('Партнёр закрыл раунд');
@@ -401,7 +407,7 @@ export default function WordVeilScreen() {
         void (both ? juice.perfect() : juice.sync());
         return;
       }
-      if (peerLeftMatchRef.current) return;
+      if (peerLeftMatchRef.current || params.solo === '1') return;
       if (typeof payload?.typing === 'boolean') {
         if (payload.typing) {
           setPeerTyping((was) => {

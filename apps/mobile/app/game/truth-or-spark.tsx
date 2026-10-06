@@ -306,6 +306,11 @@ export default function TruthOrSparkScreen() {
       if (!peerLeftMatchRef.current) setLive(true);
       if (payload.phase === 'finished' && payload.fromId !== user.id) {
         if (peerLeftMatchRef.current) return;
+        if (params.solo === '1') {
+          showTurnToast('Партнёр закрыл · соло');
+          void juice.sync();
+          return;
+        }
         finishLogged.current = true;
         setSyncFinish(true);
         setFinished(true);
@@ -320,7 +325,7 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.soloEscape && payload.fromId !== user.id) {
-        if (peerLeftMatchRef.current) return;
+        if (peerLeftMatchRef.current || params.solo === '1') return;
         setForceSolo(true);
         idleForced.current = true;
         setTurnMine(true);
@@ -391,7 +396,7 @@ export default function TruthOrSparkScreen() {
         void (both ? juice.perfect() : juice.sync());
         return;
       }
-      if (peerLeftMatchRef.current) return;
+      if (peerLeftMatchRef.current || params.solo === '1') return;
       if (payload.filterChange && (payload.filter === 'soft' || payload.filter === 'spicy')) {
         if (payload.filter === 'spicy' && !spicyUnlocked) {
           if (typeof payload.index === 'number') setIndex(payload.index);

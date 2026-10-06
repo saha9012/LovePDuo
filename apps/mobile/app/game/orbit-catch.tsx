@@ -274,7 +274,7 @@ export default function OrbitCatchScreen() {
           setTimeout(() => startRef.current(), 0);
           return;
         }
-        if (peerLeftMatchRef.current) return;
+        if (peerLeftMatchRef.current || params.solo === '1') return;
         if (payload?.phase === 'finished') {
           partnerFinishedRef.current = true;
           if (typeof payload.caught === 'number') {

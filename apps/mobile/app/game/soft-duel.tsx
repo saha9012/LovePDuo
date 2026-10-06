@@ -249,7 +249,7 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.arm) {
-        if (peerLeftMatchRef.current) return;
+        if (peerLeftMatchRef.current || params.solo === '1') return;
         setPartnerFlash(true);
         const bothPress =
           flashRef.current === 'ЖМИ' ||
@@ -283,7 +283,7 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.phase === 'start') {
-        if (peerLeftMatchRef.current) return;
+        if (peerLeftMatchRef.current || params.solo === '1') return;
         setPartnerLive(true);
         partnerLiveRef.current = true;
         const late =
@@ -324,8 +324,8 @@ export default function SoftDuelScreen() {
         setTimeout(() => startRef.current(), 0);
         return;
       }
-      // Abandoned match — ignore stale taps/scores until rematch.
-      if (peerLeftMatchRef.current) return;
+      // Abandoned / intentional Solo — ignore mid-match duo payloads.
+      if (peerLeftMatchRef.current || params.solo === '1') return;
       if (payload?.early) {
         setPartnerEarlies((n) => n + 1);
         setPartnerLastMs(null);
