@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Together candle continues solo on peer_left · lobby pair≠WS  
 - [x] Mid-match leave announces leaveMatch → partner forceSolo  
 - [x] Scrapbook empty shows Free/Plus memory ceiling  
 - [x] Outbox flush only when WS room has a peer (no solo fake-sync)  
