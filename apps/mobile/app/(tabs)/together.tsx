@@ -390,10 +390,12 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     lastHelloAt.current = Date.now();
-    pairRealtime.sendGame('together-hello', {
-      from: user.displayName,
-      fromId: user.id,
-    });
+    if (pairRealtime.connected && getLastRoomSize() >= 2) {
+      pairRealtime.sendGame('together-hello', {
+        from: user.displayName,
+        fromId: user.id,
+      });
+    }
   }, [pair?.code, user?.id, user?.displayName]);
 
   const startCandle = () => {
