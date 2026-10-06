@@ -74,6 +74,7 @@ export default function WordVeilScreen() {
   const lockedRef = useRef(false);
   const waitingPeerRef = useRef(false);
   const partnerWordRef = useRef('');
+  const partnerWordFromPeerRef = useRef(false);
   const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(matchSeed);
   const resetRef = useRef<() => void>(() => undefined);
@@ -232,6 +233,7 @@ export default function WordVeilScreen() {
   const resetRound = () => {
     setMine('');
     setPartnerWord('');
+    partnerWordFromPeerRef.current = false;
     setLocked(false);
     setWaitingPeer(false);
     setPeerTyping(false);
@@ -435,6 +437,7 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.word) {
+        partnerWordFromPeerRef.current = true;
         setPartnerWord(payload.word);
         setPeerTyping(false);
         if (lockedRef.current) {
@@ -545,13 +548,15 @@ export default function WordVeilScreen() {
       phase: 'finished',
       score: myScore,
     });
+    const soloDemoPartner =
+      params.solo === '1' ||
+      (forceSoloRef.current && !partnerWordFromPeerRef.current);
     const mem = addMemory({
       kind: 'veil',
       title: 'Word Veil',
-      detail:
-        params.solo === '1' || forceSoloRef.current
-          ? `Solo demo · ${prompt}: «${mine}» / «${partnerWord || '…'}»`
-          : `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
+      detail: soloDemoPartner
+        ? `Solo demo · ${prompt}: «${mine}» / «${partnerWord || '…'}»`
+        : `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
     });
     broadcastMemory(mem, user);
   };
@@ -575,7 +580,9 @@ export default function WordVeilScreen() {
     resetRound();
   };
 
-  const line = pickPostMatchLine(myScore, theirScore, matchSeed, params.solo === '1' || forceSolo);
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && !partnerWordFromPeerRef.current);
+  const line = pickPostMatchLine(myScore, theirScore, matchSeed, soloDemoPartner);
   const matchLabel = useMemo(() => {
     if (myScore >= 5) return 'Одинаковый пульс слов';
     if (myScore >= 3) return 'Почти одно слово';
@@ -593,7 +600,6 @@ export default function WordVeilScreen() {
   if (phase === 'finished') {
     const pct =
       myScore >= 5 ? '100%' : myScore >= 3 ? '60%' : myScore >= 1 ? '30%' : '0%';
-    const demo = params.solo === '1' || forceSolo;
     return (
       <LpdBackground mood="warm">
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
@@ -603,17 +609,17 @@ export default function WordVeilScreen() {
           </Text>
           <Text style={styles.revealLine}>
             Партнёр: «{(partnerWord || '').trim() || '—'}» · {(partnerWord || '').trim().length}{' '}
-            букв{demo ? ' · demo' : ''}
+            букв{soloDemoPartner ? ' · demo' : ''}
           </Text>
           <Text style={styles.revealMeta}>
-            prompt «{prompt}» · связь {myScore}/5{demo ? ' · solo demo' : ''} · {pct} · seed{' '}
+            prompt «{prompt}» · связь {myScore}/5{soloDemoPartner ? ' · solo demo' : ''} · {pct} · seed{' '}
             {matchSeed}
           </Text>
           <PostMatchCard
-            title={demo ? 'Solo demo' : matchLabel}
+            title={soloDemoPartner ? 'Solo demo' : matchLabel}
             line={line.text}
             gameId="word-veil"
-            winnerLabel={demo ? 'Solo demo' : 'Word Veil'}
+            winnerLabel={soloDemoPartner ? 'Solo demo' : 'Word Veil'}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('word-veil', user, seedRef.current);
@@ -715,13 +721,11 @@ export default function WordVeilScreen() {
                 </Text>
                 <Text style={styles.revealLine}>
                   Партнёр: {partnerWord || '…'}
-                  {params.solo === '1' || forceSolo ? ' · demo' : ''}
+                  {soloDemoPartner ? ' · demo' : ''}
                 </Text>
                 <Text style={styles.revealMeta}>
                   {(partnerWord || '').trim().length} букв
-                  {params.solo === '1' || forceSolo
-                    ? ' · solo demo'
-                    : ` · оба ${myScore}/5`}
+                  {soloDemoPartner ? ' · solo demo' : ` · оба ${myScore}/5`}
                 </Text>
                 <View style={styles.scoreRow}>
                   <Text style={styles.score}>Связь {myScore}/5</Text>
