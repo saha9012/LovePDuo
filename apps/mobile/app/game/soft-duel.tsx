@@ -74,6 +74,7 @@ export default function SoftDuelScreen() {
   );
   const myScoreRef = useRef(0);
   const partnerScoreRef = useRef(0);
+  const partnerScoreFromPeerRef = useRef(false);
   const partnerLiveRef = useRef(false);
   const nextRoundTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const armTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -345,6 +346,7 @@ export default function SoftDuelScreen() {
         return;
       }
       if (typeof payload?.score === 'number') {
+        partnerScoreFromPeerRef.current = true;
         setPartnerScore(payload.score);
         setPartnerLive(true);
         partnerLiveRef.current = true;
@@ -504,13 +506,13 @@ export default function SoftDuelScreen() {
         title: 'Soft Duel',
         detail:
           params.solo === '1' ||
-          (forceSoloRef.current && partnerScoreRef.current === 0)
+          (forceSoloRef.current && !partnerScoreFromPeerRef.current)
             ? `Solo demo · ты ${myScoreRef.current}`
             : partnerFinishedRef.current
               ? `Оба финиш · ты ${myScoreRef.current}`
               : partnerLiveRef.current
                 ? `Ты ${myScoreRef.current} · партнёр live`
-                : partnerScoreRef.current > 0
+                : partnerScoreFromPeerRef.current
                   ? `Ты ${myScoreRef.current} · партнёр ${partnerScoreRef.current}`
                   : `Ты ${myScoreRef.current} · ждём партнёра`,
       });
@@ -524,9 +526,9 @@ export default function SoftDuelScreen() {
         setSyncFinish(true);
         void juice.perfect();
       }
-      // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
+      // Demo invent only when no peer score ever arrived — never overwrite or re-label invent.
       if (
-        partnerScoreRef.current === 0 &&
+        !partnerScoreFromPeerRef.current &&
         (params.solo === '1' || forceSoloRef.current)
       ) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
@@ -598,6 +600,7 @@ export default function SoftDuelScreen() {
     setFinishDualLabel(null);
     setMyScore(0);
     setPartnerScore(0);
+    partnerScoreFromPeerRef.current = false;
     setPerfects(0);
     setGoods(0);
     setOks(0);
@@ -793,7 +796,7 @@ export default function SoftDuelScreen() {
   useEffect(() => () => clearRoundTimers(), []);
 
   const soloDemoPartner =
-    params.solo === '1' || (forceSolo && partnerScore === 0);
+    params.solo === '1' || (forceSolo && !partnerScoreFromPeerRef.current);
   const line = pickPostMatchLine(myScore, partnerScore, matchSeed, soloDemoPartner);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],

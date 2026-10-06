@@ -84,6 +84,7 @@ export default function SkyClaimScreen() {
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerScoreRef = useRef(0);
+  const partnerScoreFromPeerRef = useRef(false);
   const forceSoloRef = useRef(params.solo === '1');
   const partnerFinishedRef = useRef(false);
   const flashRef = useRef<string | null>(null);
@@ -349,6 +350,7 @@ export default function SkyClaimScreen() {
           void juice.perfect();
         }
         if (typeof payload?.score === 'number') {
+          partnerScoreFromPeerRef.current = true;
           setPartnerScore(payload.score);
           setPartnerLive(true);
           partnerLiveRef.current = true;
@@ -452,6 +454,8 @@ export default function SkyClaimScreen() {
     setMisses(0);
     comboRef.current = 0;
     scoreRef.current = 0;
+    setPartnerScore(0);
+    partnerScoreFromPeerRef.current = false;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
     setFinishDualLabel(null);
@@ -557,7 +561,7 @@ export default function SkyClaimScreen() {
       });
       // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
       if (
-        partnerScoreRef.current === 0 &&
+        !partnerScoreFromPeerRef.current &&
         (params.solo === '1' || forceSoloRef.current)
       ) {
         const partner = Math.max(
@@ -582,13 +586,13 @@ export default function SkyClaimScreen() {
         title: 'Sky Claim',
         detail:
           params.solo === '1' ||
-          (forceSoloRef.current && partnerScoreRef.current === 0)
+          (forceSoloRef.current && !partnerScoreFromPeerRef.current)
             ? `Solo demo · ты ${scoreRef.current}`
             : partnerFinishedRef.current
               ? `Оба финиш · ты ${scoreRef.current}`
               : partnerLiveRef.current
                 ? `Ты ${scoreRef.current} · партнёр live`
-                : partnerScoreRef.current > 0
+                : partnerScoreFromPeerRef.current
                   ? `Ты ${scoreRef.current} · партнёр ${partnerScoreRef.current}`
                   : `Ты ${scoreRef.current} · ждём партнёра`,
       });
@@ -750,7 +754,7 @@ export default function SkyClaimScreen() {
   );
 
   const soloDemoPartner =
-    params.solo === '1' || (forceSolo && partnerScore === 0);
+    params.solo === '1' || (forceSolo && !partnerScoreFromPeerRef.current);
   const line = pickPostMatchLine(score, partnerScore, matchSeed, soloDemoPartner);
   const partnerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: partnerScale.value }],

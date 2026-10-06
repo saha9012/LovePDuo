@@ -72,6 +72,7 @@ export default function HeartbeatScreen() {
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerScoreRef = useRef(0);
+  const partnerScoreFromPeerRef = useRef(false);
   const forceSoloRef = useRef(params.solo === '1');
   const lastBroadcastSec = useRef(-1);
   const partnerFinishedRef = useRef(false);
@@ -328,6 +329,7 @@ export default function HeartbeatScreen() {
         );
         void juice.perfect();
         if (typeof payload.total === 'number') {
+          partnerScoreFromPeerRef.current = true;
           setPartnerScore(payload.total);
         }
         return;
@@ -350,6 +352,7 @@ export default function HeartbeatScreen() {
       if (payload?.phase === 'finished') {
         partnerFinishedRef.current = true;
         if (typeof payload.total === 'number') {
+          partnerScoreFromPeerRef.current = true;
           setPartnerScore(payload.total);
           setPartnerLive(true);
           partnerLiveRef.current = true;
@@ -371,6 +374,7 @@ export default function HeartbeatScreen() {
         return;
       }
       if (typeof payload?.total === 'number') {
+        partnerScoreFromPeerRef.current = true;
         setPartnerScore(payload.total);
         setPartnerLive(true);
         partnerLiveRef.current = true;
@@ -461,6 +465,8 @@ export default function HeartbeatScreen() {
     setMisses(0);
     setSyncFinish(false);
     setFinishDualLabel(null);
+    setPartnerScore(0);
+    partnerScoreFromPeerRef.current = false;
     cursor.current = 0;
     scoreRef.current = 0;
     syncRef.current = 0;
@@ -566,7 +572,7 @@ export default function HeartbeatScreen() {
         sendGameIfDuo(forceSoloRef.current, 'heartbeat', { phase: 'finished', total });
         // Demo partner score only when none arrived — never overwrite a real leaveMatch score.
         if (
-          partnerScoreRef.current === 0 &&
+          !partnerScoreFromPeerRef.current &&
           (params.solo === '1' || forceSoloRef.current)
         ) {
           const partner = Math.max(
@@ -593,13 +599,13 @@ export default function HeartbeatScreen() {
           title: 'Heartbeat Tap',
           detail:
             params.solo === '1' ||
-            (forceSoloRef.current && partnerScoreRef.current === 0)
+            (forceSoloRef.current && !partnerScoreFromPeerRef.current)
               ? `Solo demo · итог ${total} · sync +${syncRef.current}`
               : partnerFinishedRef.current
                 ? `Оба финиш · итог ${total}`
                 : partnerLiveRef.current
                   ? `Итог ${total} · sync +${syncRef.current} · live`
-                  : partnerScoreRef.current > 0
+                  : partnerScoreFromPeerRef.current
                     ? `Итог ${total} · партнёр ${partnerScoreRef.current}`
                     : `Итог ${total} · ждём партнёра`,
         });
@@ -721,7 +727,7 @@ export default function HeartbeatScreen() {
 
   const total = score + syncBonus;
   const soloDemoPartner =
-    params.solo === '1' || (forceSolo && partnerScore === 0);
+    params.solo === '1' || (forceSolo && !partnerScoreFromPeerRef.current);
   const line = pickPostMatchLine(
     total,
     partnerScore,
