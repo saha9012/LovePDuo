@@ -654,7 +654,7 @@ export default function TruthOrSparkScreen() {
     setForceSolo(soloAgain);
     idleForced.current = soloAgain;
     lastRematchAt.current = Date.now();
-    sendGameIfPeerLive(GAME_ID, {
+    sendGameIfDuo(soloAgain, GAME_ID, {
       rematch: true,
       seed: nextSeed,
       index: 0,

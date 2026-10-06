@@ -621,7 +621,7 @@ export default function SoftDuelScreen() {
           : 'Ещё раунд',
     );
     void (racing ? juice.perfect() : juice.sync());
-    sendGameIfPeerLive('soft-duel', { rematch: true, seed: next, hello: true });
+    sendGameIfDuo(forceSoloRef.current, 'soft-duel', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

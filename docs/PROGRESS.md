@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Solo rematch does not spray rematch into WS room  
 - [x] Rematch duo only if peer did not leaveMatch (Home ≠ match)  
 - [x] Outbox flush marks synced only on live send  
 - [x] Together notes send/flush via sendGameIfPeerLive  

@@ -463,7 +463,7 @@ export default function SkyClaimScreen() {
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
-    sendGameIfPeerLive('sky-claim', { rematch: true, seed: next, hello: true });
+    sendGameIfDuo(forceSoloRef.current, 'sky-claim', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

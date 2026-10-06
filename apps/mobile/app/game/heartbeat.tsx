@@ -470,7 +470,7 @@ export default function HeartbeatScreen() {
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
-    sendGameIfPeerLive('heartbeat', { rematch: true, seed: next, hello: true });
+    sendGameIfDuo(forceSoloRef.current, 'heartbeat', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 

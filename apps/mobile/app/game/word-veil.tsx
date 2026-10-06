@@ -537,7 +537,7 @@ export default function WordVeilScreen() {
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
-    sendGameIfPeerLive('word-veil', { rematch: true, seed: next, hello: true });
+    sendGameIfDuo(forceSoloRef.current, 'word-veil', { rematch: true, seed: next, hello: true });
     resetRound();
   };
 

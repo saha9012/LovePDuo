@@ -489,7 +489,7 @@ export default function SignalDrawScreen() {
     if (peerLive) setPeerSeen(true);
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
-    sendGameIfPeerLive('signal-draw', { rematch: true, seed: next, hello: true });
+    sendGameIfDuo(forceSoloRef.current, 'signal-draw', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
 
