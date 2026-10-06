@@ -842,9 +842,15 @@ export default function SoftDuelScreen() {
         </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.hero}>Реакция на двоих</Text>
+            <Text style={styles.hero}>
+              {params.solo === '1' || forceSolo
+                ? 'Реакция · соло demo'
+                : 'Реакция на двоих'}
+            </Text>
             <Text style={styles.body}>
-              Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. {ROUNDS} раундов.
+              {params.solo === '1' || forceSolo
+                ? `Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. ${ROUNDS} раундов. Счёт партнёра здесь demo — не живая реакция пары.`
+                : `Слово вспыхивает — жми. Рано = штраф. Perfect / Good / Ok. ${ROUNDS} раундов.`}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' && !forceSolo && !partnerLive

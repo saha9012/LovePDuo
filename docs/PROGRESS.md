@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Soft/Veil/Orbit/Draw ready gates соло demo  
 - [x] Heartbeat Solo demo ready + Sync ·demo label  
 - [x] ToS syncMeta prefers solo after forceSolo  
 - [x] ToS advance CTA says соло on Solo/Demo  

@@ -824,12 +824,18 @@ export default function SignalDrawScreen() {
         </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.hero}>Рисуйте сигнал</Text>
+            <Text style={styles.hero}>
+              {params.solo === '1' || forceSolo
+                ? 'Сигнал · соло demo'
+                : 'Рисуйте сигнал'}
+            </Text>
             <Text style={styles.body}>
-              Общий холст (Svg). Янтарь — ты, пыльная роза — партнёр. Плотный штрих, {ROUND_SEC} секунд.
+              {params.solo === '1' || forceSolo
+                ? `Холст (Svg). Янтарь — ты. Штрихи партнёра здесь demo. ${ROUND_SEC} секунд.`
+                : `Общий холст (Svg). Янтарь — ты, пыльная роза — партнёр. Плотный штрих, ${ROUND_SEC} секунд.`}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
-                : params.solo !== '1' && !peerSeen
+                : params.solo !== '1' && !forceSolo && !peerSeen
                   ? ' Ждём партнёра на холсте…'
                   : ''}
             </Text>

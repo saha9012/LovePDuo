@@ -647,12 +647,18 @@ export default function OrbitCatchScreen() {
         </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.hero}>Ловите орбиту</Text>
+            <Text style={styles.hero}>
+              {params.solo === '1' || forceSolo
+                ? 'Орбита · соло demo'
+                : 'Ловите орбиту'}
+            </Text>
             <Text style={styles.body}>
-              Жми, когда янтарный маркер совпадает с розовым орбом. Очки пары складываются.
+              {params.solo === '1' || forceSolo
+                ? 'Жми, когда янтарный маркер совпадает с розовым орбом. Счёт партнёра здесь demo — не co-op пары.'
+                : 'Жми, когда янтарный маркер совпадает с розовым орбом. Очки пары складываются.'}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
-                : params.solo !== '1' && !peerSeen
+                : params.solo !== '1' && !forceSolo && !peerSeen
                   ? ' Ждём партнёра на орбите…'
                   : ''}
             </Text>

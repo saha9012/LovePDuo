@@ -616,9 +616,15 @@ export default function WordVeilScreen() {
         </View>
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.hero}>Ассоциация вдвоём</Text>
+            <Text style={styles.hero}>
+              {params.solo === '1' || forceSolo
+                ? 'Ассоциация · соло demo'
+                : 'Ассоциация вдвоём'}
+            </Text>
             <Text style={styles.body}>
-              Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.
+              {params.solo === '1' || forceSolo
+                ? 'Одно слово-якорь. Пишешь своё — ответ партнёра здесь demo из seed.'
+                : 'Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.'}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
                 : params.solo !== '1' &&
