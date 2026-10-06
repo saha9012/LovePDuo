@@ -1024,7 +1024,8 @@ export default function MusicScreen() {
           {tracks.length === 0 ? (
             <EmptyState
               title="Пока тихо"
-              body="Загрузите первый трек — он останется в комнате после перезахода. Удалить можно крестиком у карточки."
+              body="Загрузите первый трек — он останется у пары после перезахода. Удалить — × у карточки."
+              meta={`0 треков · полок ${playlists.length}/${maxShelves}${isPlus ? ' · Plus' : ' · Free'}`}
             />
           ) : (
             visibleTracks.map((t) => {
