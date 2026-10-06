@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Gate mount hellos (games + Music/Together) via sendGameIfPeerLive  
 - [x] Lobby start claims stale/empty host · host re-elect via outbox · peek/filter live-only  
 - [x] Clear sync outboxes + drop pending note/memory on unlink/sign-out  
 - [x] Music upload/stub/react outbox · Now Playing live-only · Lobby leave notify  
