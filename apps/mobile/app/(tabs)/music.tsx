@@ -809,9 +809,11 @@ export default function MusicScreen() {
         reaction,
         from: user?.displayName,
       });
-      if (sync === 'queued') {
-        showNote('Реакция · sync ждёт WS 2/2');
-      }
+      showNote(
+        sync === 'sent'
+          ? 'Реакция у обоих'
+          : 'Реакция локально · sync ждёт WS 2/2',
+      );
     }
     void juice.card();
   };

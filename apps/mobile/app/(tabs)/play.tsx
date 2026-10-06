@@ -447,7 +447,11 @@ export default function PlayScreen() {
                 subtitle={g.subtitle}
                 accent={g.accent}
                 cover={g.cover}
-                badge={g.badge}
+                badge={
+                  typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                    ? g.badge
+                    : `${g.badge}·solo`
+                }
                 plays={startStats?.byGame[g.game] ?? 0}
                 onPress={() => openGame(g.game)}
               />

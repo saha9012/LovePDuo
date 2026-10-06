@@ -504,7 +504,11 @@ export default function ProfileScreen() {
             />
           ) : (
             <LpdButton
-              label="Снять Plus (dev)"
+              label={
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'Снять Plus (dev)'
+                  : 'Снять Plus (dev · sync ждёт WS 2/2)'
+              }
               variant="ghost"
               onPress={() => {
                 premium.clearPlus();
