@@ -144,8 +144,8 @@ export default function TruthOrSparkScreen() {
           : 'Партнёр снова online',
       );
       void juice.hit();
-      // Partner back — leave solo escape if they return mid-wait
-      if (forceSolo && params.solo !== '1') {
+      // Partner presence back — clear idle soloEscape only, not intentional leaveMatch.
+      if (forceSolo && params.solo !== '1' && !peerLeftMatchRef.current) {
         setForceSolo(false);
         idleForced.current = false;
       }
