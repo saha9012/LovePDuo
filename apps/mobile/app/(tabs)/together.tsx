@@ -513,6 +513,21 @@ export default function TogetherScreen() {
     void juice.miss();
   };
 
+  const reportNote = (note: TinyNote) => {
+    void (async () => {
+      const ok = await confirmDestructive(
+        'Пожаловаться на записку?',
+        'Скроем её у вас. Облачной модерации пока нет — жалоба только локальный лог.',
+        'Скрыть',
+      );
+      if (!ok) return;
+      removeNote(note.id);
+      track('ugc_report', { kind: 'note', noteId: note.id });
+      showPeer('Скрыто локально · жалоба записана');
+      void juice.miss();
+    })();
+  };
+
   const deleteMemory = (id: string, title: string, detail: string) => {
     void (async () => {
       const ok = await confirmDestructive(
@@ -718,16 +733,28 @@ export default function TogetherScreen() {
                   {n.from}: {n.text}
                   {n.pendingSync ? ' · ждёт' : ''}
                 </Text>
-                <Pressable
-                  onPress={() => deleteNote(n)}
-                  onLongPress={() => performDeleteNote(n)}
-                  delayLongPress={380}
-                  style={styles.noteDelete}
-                  accessibilityLabel="Удалить заметку"
-                  hitSlop={12}
-                >
-                  <Text style={styles.noteDeleteLabel}>×</Text>
-                </Pressable>
+                <View style={styles.noteActions}>
+                  {n.from !== user?.displayName ? (
+                    <Pressable
+                      onPress={() => reportNote(n)}
+                      style={styles.noteDelete}
+                      accessibilityLabel="Пожаловаться на заметку"
+                      hitSlop={12}
+                    >
+                      <Text style={styles.noteDeleteLabel}>!</Text>
+                    </Pressable>
+                  ) : null}
+                  <Pressable
+                    onPress={() => deleteNote(n)}
+                    onLongPress={() => performDeleteNote(n)}
+                    delayLongPress={380}
+                    style={styles.noteDelete}
+                    accessibilityLabel="Удалить заметку"
+                    hitSlop={12}
+                  >
+                    <Text style={styles.noteDeleteLabel}>×</Text>
+                  </Pressable>
+                </View>
               </View>
             ))
           )}
@@ -1061,6 +1088,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
+  },
+  noteActions: {
+    flexDirection: 'row',
+    gap: 4,
   },
   noteDelete: {
     width: 32,

@@ -7,7 +7,8 @@ type EventName =
   | 'track_uploaded'
   | 'track_removed'
   | 'warmth_sent'
-  | 'note_sent';
+  | 'note_sent'
+  | 'ugc_report';
 
 type Payload = Record<string, string | number | boolean | undefined>;
 
