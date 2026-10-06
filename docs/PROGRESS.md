@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Duo Plus / pair-meta announce queues when alone · Profile trial/unlock honesty  
 - [x] Live synced-start countdown tick · display-name outbox  
 - [x] ToS synced-start countdown labels · pair room-name outbox  
 - [x] Host claim on peer_left · lobby stale-host copy · mid-match forceSolo (HB/Orbit/Sky/Draw)  
