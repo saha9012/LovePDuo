@@ -824,12 +824,18 @@ export default function SkyClaimScreen() {
 
         {phase === 'ready' ? (
           <View style={styles.ready}>
-            <Text style={styles.readyTitle}>Лови огни</Text>
+            <Text style={styles.readyTitle}>
+              {params.solo === '1' || forceSolo
+                ? 'Лови огни · соло demo'
+                : 'Лови огни вдвоём'}
+            </Text>
             <Text style={styles.readyBody}>
-              Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд.
+              {params.solo === '1' || forceSolo
+                ? 'Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд. Счёт партнёра здесь demo — не живой дуэль пары.'
+                : 'Своё поле. Янтарные искры дороже. Обманки штрафуют. ~50 секунд.'}
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
-                : params.solo !== '1' && !partnerLive
+                : params.solo !== '1' && !forceSolo && !partnerLive
                   ? ' Ждём партнёра в Sky…'
                   : ''}
             </Text>
