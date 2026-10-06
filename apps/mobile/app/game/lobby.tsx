@@ -18,7 +18,7 @@ import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
-import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
+import { clearMatchSession, peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
 import { loadPlayStats, recordGameStart } from '../../src/stats/playStats';
@@ -159,6 +159,7 @@ export default function GameLobbyScreen() {
         setMatchSeed(null);
         setStartAtMs(null);
         startSent.current = false;
+        if (wasCounting) clearMatchSession(pair?.code);
         void juice.miss();
         showCancelToast(
           wasCounting ? 'Партнёр вышел — старт отменён' : 'Партнёр вышел из лобби',
@@ -212,6 +213,7 @@ export default function GameLobbyScreen() {
           setMatchSeed(null);
           setStartAtMs(null);
           startSent.current = false;
+          if (wasCounting) clearMatchSession(pair?.code);
           void juice.miss();
           showCancelToast(
             wasCounting ? 'Партнёр ушёл — старт отменён' : 'Партнёр ушёл из лобби',
@@ -249,6 +251,7 @@ export default function GameLobbyScreen() {
             setMatchSeed(null);
             setStartAtMs(null);
             startSent.current = false;
+            if (wasCounting) clearMatchSession(pair?.code);
             showCancelToast(
               both
                 ? cancelToastRef.current === 'Оба сняли Ready' ||
@@ -448,11 +451,13 @@ export default function GameLobbyScreen() {
 
   const onUnready = () => {
     if (!user) return;
+    const wasCounting = countdown != null;
     setReadyMe(false);
     setCountdown(null);
     setMatchSeed(null);
     setStartAtMs(null);
     startSent.current = false;
+    if (wasCounting) clearMatchSession(pair?.code);
     juice.miss();
     sendGameIfPeerLive(gameId, { ready: false, userId: user.id });
   };
@@ -489,6 +494,7 @@ export default function GameLobbyScreen() {
       setMatchSeed(null);
       setStartAtMs(null);
       startSent.current = false;
+      clearMatchSession(pair?.code);
       router.back();
     };
     if (countdown != null || readyMe) {
