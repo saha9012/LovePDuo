@@ -155,6 +155,7 @@ export default function SoftDuelScreen() {
         const racing =
           flashRef.current === 'Партнёр вышел' ||
           flashRef.current === 'Партнёр вышел · соло' ||
+          flashRef.current === 'Партнёр вышел из матча · соло' ||
           flashRef.current === 'Партнёр снова в паре' ||
           flashRef.current === 'Оба снова в паре' ||
           flashRef.current === 'Партнёр снова в комнате' ||
