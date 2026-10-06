@@ -102,6 +102,7 @@ export default function SignalDrawScreen() {
   const peerCount = useRef(0);
   const partnerFinishedRef = useRef(false);
   const forceSoloRef = useRef(params.solo === '1');
+  const seedRef = useRef(matchSeed);
   const phaseRef = useRef<Phase>('ready');
   const lastSend = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
@@ -128,6 +129,10 @@ export default function SignalDrawScreen() {
   useEffect(() => {
     forceSoloRef.current = forceSolo;
   }, [forceSolo]);
+
+  useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
 
   useEffect(() => {
     brushRef.current = brush;
@@ -227,6 +232,9 @@ export default function SignalDrawScreen() {
       } | undefined;
       if (!payload) return;
       if (payload.leaveMatch && payload.fromId !== user.id) {
+        if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+          return;
+        }
         setForceSolo(true);
         forceSoloRef.current = true;
         setPeerSeen(false);
@@ -264,7 +272,10 @@ export default function SignalDrawScreen() {
         setPeerSeen(true);
         setForceSolo(false);
         forceSoloRef.current = false;
-        if (typeof payload.seed === 'number') setMatchSeed(payload.seed);
+        if (typeof payload.seed === 'number') {
+          setMatchSeed(payload.seed);
+          seedRef.current = payload.seed;
+        }
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
@@ -450,6 +461,7 @@ export default function SignalDrawScreen() {
     lastRematchAt.current = Date.now();
     const next = Date.now() % 100000;
     setMatchSeed(next);
+    seedRef.current = next;
     const soloAgain = params.solo === '1' || !peerSeen;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
@@ -749,7 +761,7 @@ export default function SignalDrawScreen() {
             line={line.text}
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('signal-draw', user);
+              announceLeaveMatch('signal-draw', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'signal-draw' } });
             }}
           />
@@ -767,7 +779,7 @@ export default function SignalDrawScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('signal-draw', user);
+                announceLeaveMatch('signal-draw', user, seedRef.current);
                 router.back();
               });
             }}

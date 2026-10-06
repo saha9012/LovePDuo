@@ -186,6 +186,10 @@ export default function SoftDuelScreen() {
         fromId?: string;
       } | undefined;
       if (payload?.leaveMatch && payload.fromId !== user.id) {
+        // Stale leave from a prior seed — rematch already started a new round.
+        if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+          return;
+        }
         setPartnerLive(false);
         partnerLiveRef.current = false;
         setForceSolo(true);
@@ -771,7 +775,7 @@ export default function SoftDuelScreen() {
             line={line.text}
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('soft-duel', user);
+              announceLeaveMatch('soft-duel', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'soft-duel' } });
             }}
           />
@@ -789,7 +793,7 @@ export default function SoftDuelScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('soft-duel', user);
+                announceLeaveMatch('soft-duel', user, seedRef.current);
                 router.back();
               });
             }}

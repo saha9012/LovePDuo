@@ -210,6 +210,9 @@ export default function HeartbeatScreen() {
         fromId?: string;
       } | undefined;
       if (payload?.leaveMatch && payload.fromId !== user.id) {
+        if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+          return;
+        }
         setPartnerLive(false);
         partnerLiveRef.current = false;
         setForceSolo(true);
@@ -699,7 +702,7 @@ export default function HeartbeatScreen() {
             line={line.text}
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('heartbeat', user);
+              announceLeaveMatch('heartbeat', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'heartbeat' } });
             }}
           />
@@ -717,7 +720,7 @@ export default function HeartbeatScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('heartbeat', user);
+                announceLeaveMatch('heartbeat', user, seedRef.current);
                 router.back();
               });
             }}

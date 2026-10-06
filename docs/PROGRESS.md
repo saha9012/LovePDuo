@@ -6,6 +6,8 @@
 
 ## Latest
 
+- [x] leaveMatch carries seed · ignore stale leave after rematch  
+- [x] ToS cancels synced-start timers on forceSolo  
 - [x] Cancel synced-start timers when forceSolo flips  
 - [x] peer_left on ready auto-starts · leaveMatch ready auto-start  
 - [x] leaveMatch on ready auto-starts remaining player  

@@ -183,6 +183,9 @@ export default function OrbitCatchScreen() {
           fromId?: string;
         } | undefined;
         if (payload?.leaveMatch && payload.fromId !== user.id) {
+          if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+            return;
+          }
           setForceSolo(true);
           forceSoloRef.current = true;
           setPeerSeen(false);
@@ -584,7 +587,7 @@ export default function OrbitCatchScreen() {
             line={line.text}
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('orbit-catch', user);
+              announceLeaveMatch('orbit-catch', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'orbit-catch' } });
             }}
           />
@@ -602,7 +605,7 @@ export default function OrbitCatchScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('orbit-catch', user);
+                announceLeaveMatch('orbit-catch', user, seedRef.current);
                 router.back();
               });
             }}

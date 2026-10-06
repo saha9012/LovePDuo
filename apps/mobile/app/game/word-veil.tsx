@@ -283,6 +283,9 @@ export default function WordVeilScreen() {
         fromId?: string;
       } | undefined;
       if (payload?.leaveMatch && payload.fromId !== user.id) {
+        if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+          return;
+        }
         setForceSolo(true);
         setPresenceHint('Партнёр вышел из матча · соло');
         setTimeout(() => setPresenceHint(null), 1600);
@@ -540,7 +543,7 @@ export default function WordVeilScreen() {
             winnerLabel="Word Veil"
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('word-veil', user);
+              announceLeaveMatch('word-veil', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'word-veil' } });
             }}
           />
@@ -560,7 +563,7 @@ export default function WordVeilScreen() {
                 phase === 'playing' || phase === 'reveal',
               ).then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('word-veil', user);
+                announceLeaveMatch('word-veil', user, seedRef.current);
                 router.back();
               });
             }}

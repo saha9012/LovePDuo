@@ -103,7 +103,12 @@ export default function TruthOrSparkScreen() {
   const lastHelloAt = useRef(0);
   const lastDeckWrapAt = useRef(0);
   const lastNextAt = useRef(0);
+  const seedRef = useRef(matchSeed);
   const prevPresence = useRef(pair?.partnerPresence);
+
+  useEffect(() => {
+    seedRef.current = matchSeed;
+  }, [matchSeed]);
 
   const deck = useMemo(() => shuffleDeck(matchSeed, filter), [matchSeed, filter]);
   const card = deck[index % deck.length];
@@ -263,6 +268,9 @@ export default function TruthOrSparkScreen() {
       if (!payload) return;
       setLive(true);
       if (payload.leaveMatch && payload.fromId !== user.id) {
+        if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+          return;
+        }
         setLive(false);
         setForceSolo(true);
         idleForced.current = true;
@@ -313,6 +321,7 @@ export default function TruthOrSparkScreen() {
       }
       if (payload.rematch && typeof payload.seed === 'number') {
         setMatchSeed(payload.seed);
+        seedRef.current = payload.seed;
         setIndex(0);
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
@@ -606,6 +615,7 @@ export default function TruthOrSparkScreen() {
     if (!sessionStarted) return;
     const nextSeed = Math.floor(Math.random() * 100000);
     setMatchSeed(nextSeed);
+    seedRef.current = nextSeed;
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
@@ -660,7 +670,7 @@ export default function TruthOrSparkScreen() {
             line={line.text}
             onRematch={reshuffle}
             onHome={() => {
-              announceLeaveMatch(GAME_ID, user);
+              announceLeaveMatch(GAME_ID, user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: GAME_ID } });
             }}
           />
@@ -678,7 +688,7 @@ export default function TruthOrSparkScreen() {
             onPress={() => {
               void confirmLeaveMatch(sessionStarted && index > 0).then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch(GAME_ID, user);
+                announceLeaveMatch(GAME_ID, user, seedRef.current);
                 router.back();
               });
             }}

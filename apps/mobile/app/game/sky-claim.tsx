@@ -202,6 +202,9 @@ export default function SkyClaimScreen() {
           fromId?: string;
         } | undefined;
         if (payload?.leaveMatch && payload.fromId !== user.id) {
+          if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
+            return;
+          }
           setPartnerLive(false);
           partnerLiveRef.current = false;
           setForceSolo(true);
@@ -720,7 +723,7 @@ export default function SkyClaimScreen() {
             line={line.text}
             onRematch={rematch}
             onHome={() => {
-              announceLeaveMatch('sky-claim', user);
+              announceLeaveMatch('sky-claim', user, seedRef.current);
               router.replace({ pathname: '/game/lobby', params: { game: 'sky-claim' } });
             }}
           />
@@ -738,7 +741,7 @@ export default function SkyClaimScreen() {
             onPress={() => {
               void confirmLeaveMatch(phase === 'playing').then((ok) => {
                 if (!ok) return;
-                announceLeaveMatch('sky-claim', user);
+                announceLeaveMatch('sky-claim', user, seedRef.current);
                 router.back();
               });
             }}
