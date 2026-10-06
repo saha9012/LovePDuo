@@ -229,7 +229,7 @@ export default function SignalDrawScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('signal-draw', { hello: true, fromId: user.id });
         }
         return;
@@ -270,6 +270,13 @@ export default function SignalDrawScreen() {
           if (payload.hello) {
             showToast('Партнёр в комнате · соло до rematch');
             void juice.hit();
+          }
+          return;
+        }
+        if (params.solo === '1') {
+          if (payload.hello) {
+            showToast('Партнёр в комнате · соло');
+            void juice.sync();
           }
           return;
         }

@@ -291,7 +291,7 @@ export default function WordVeilScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
         }
         setTimeout(() => setPresenceHint(null), 1600);
@@ -328,6 +328,12 @@ export default function WordVeilScreen() {
         if (peerLeftMatchRef.current) {
           setPresenceHint('Партнёр в комнате · соло до rematch');
           void juice.hit();
+          setTimeout(() => setPresenceHint(null), 1600);
+          return;
+        }
+        if (params.solo === '1') {
+          setPresenceHint('Партнёр в комнате · соло');
+          void juice.sync();
           setTimeout(() => setPresenceHint(null), 1600);
           return;
         }

@@ -188,7 +188,7 @@ export default function SoftDuelScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('soft-duel', { hello: true, fromId: user.id });
         }
         return;
@@ -230,6 +230,11 @@ export default function SoftDuelScreen() {
         if (peerLeftMatchRef.current) {
           setFlash('Партнёр в комнате · соло до rematch');
           void juice.hit();
+          return;
+        }
+        if (params.solo === '1') {
+          setFlash('Партнёр в комнате · соло');
+          void juice.sync();
           return;
         }
         const both = Date.now() - lastHelloAt.current < 2500;

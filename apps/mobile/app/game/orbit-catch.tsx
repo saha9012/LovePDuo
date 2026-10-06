@@ -184,7 +184,7 @@ export default function OrbitCatchScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
         }
         return;
@@ -221,6 +221,13 @@ export default function OrbitCatchScreen() {
             if (payload?.hello) {
               bumpPeerNote('комната · соло');
               void juice.hit();
+            }
+            return;
+          }
+          if (params.solo === '1') {
+            if (payload?.hello) {
+              bumpPeerNote('комната · соло');
+              void juice.sync();
             }
             return;
           }

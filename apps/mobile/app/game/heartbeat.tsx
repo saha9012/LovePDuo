@@ -216,7 +216,7 @@ export default function HeartbeatScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('heartbeat', { hello: true, fromId: user.id });
         }
         return;
@@ -257,6 +257,11 @@ export default function HeartbeatScreen() {
         if (peerLeftMatchRef.current) {
           bumpPeerNote('комната · соло', 1200);
           void juice.hit();
+          return;
+        }
+        if (params.solo === '1') {
+          bumpPeerNote('комната · соло', 1200);
+          void juice.sync();
           return;
         }
         const both = Date.now() - lastHelloAt.current < 2500;

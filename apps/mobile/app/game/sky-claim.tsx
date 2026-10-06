@@ -202,7 +202,7 @@ export default function SkyClaimScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
         }
         return;
@@ -242,6 +242,11 @@ export default function SkyClaimScreen() {
           if (peerLeftMatchRef.current) {
             bumpPeerNote('комната · соло');
             void juice.hit();
+            return;
+          }
+          if (params.solo === '1') {
+            bumpPeerNote('комната · соло');
+            void juice.sync();
             return;
           }
           const both = Date.now() - lastHelloAt.current < 2500;

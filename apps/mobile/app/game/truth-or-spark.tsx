@@ -260,7 +260,7 @@ export default function TruthOrSparkScreen() {
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
-        if (!peerLeftMatchRef.current) {
+        if (!peerLeftMatchRef.current && params.solo !== '1') {
           sendGameIfPeerLive(GAME_ID, {
             hello: true,
             fromName: user.displayName,
@@ -338,6 +338,11 @@ export default function TruthOrSparkScreen() {
         if (peerLeftMatchRef.current) {
           showTurnToast('Партнёр в комнате · соло до rematch');
           void juice.hit();
+          return;
+        }
+        if (params.solo === '1') {
+          showTurnToast('Партнёр в комнате · соло');
+          void juice.sync();
           return;
         }
         const both = Date.now() - lastHelloAt.current < 2500;
