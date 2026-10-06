@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Word Veil memory marks Solo demo associations  
 - [x] Word Veil PostMatch Solo demo title/winner  
 - [x] Welcome footer partner online gates on WS ≥2  
 - [x] Play/Welcome partner online gates on WS ≥2  

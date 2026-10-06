@@ -536,7 +536,10 @@ export default function WordVeilScreen() {
     const mem = addMemory({
       kind: 'veil',
       title: 'Word Veil',
-      detail: `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
+      detail:
+        params.solo === '1' || forceSoloRef.current
+          ? `Solo demo · ${prompt}: «${mine}» / «${partnerWord || '…'}»`
+          : `${prompt}: «${mine}» / «${partnerWord || '…'}»`,
     });
     broadcastMemory(mem, user);
   };
