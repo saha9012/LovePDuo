@@ -293,11 +293,15 @@ export default function PlayScreen() {
     void AsyncStorage.setItem(LAST_GAME_KEY, game);
     void juice.hit();
     const title = CATALOG.find((g) => g.game === game)?.title ?? game;
-    sendGameIfPeerLive('play-peek', {
+    const peeked = sendGameIfPeerLive('play-peek', {
       game,
       title,
       fromId: user?.id,
     });
+    if (!peeked) {
+      setPeekToast('Лобби · Solo / Demo, пока нет WS 2/2');
+      setTimeout(() => setPeekToast(null), 1600);
+    }
     router.push({ pathname: '/game/lobby', params: { game } });
   };
 

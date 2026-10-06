@@ -1167,11 +1167,34 @@ export default function MusicScreen() {
         ) : null}
 
         <View style={styles.actions}>
-          <LpdButton label="Загрузить трек" onPress={() => void upload()} />
-          <LpdButton label="Добавить из Spotify (мета)" variant="ghost" onPress={addSpotifyStub} />
-          <LpdButton label="Импорт VK (fallback)" variant="ghost" onPress={addVkStub} />
+          <LpdButton
+            label={peerInWsRoom ? 'Загрузить трек' : 'Загрузить трек (meta ждёт WS 2/2)'}
+            onPress={() => void upload()}
+          />
+          <LpdButton
+            label={
+              peerInWsRoom
+                ? 'Добавить из Spotify (мета)'
+                : 'Spotify мета (sync ждёт WS 2/2)'
+            }
+            variant="ghost"
+            onPress={addSpotifyStub}
+          />
+          <LpdButton
+            label={peerInWsRoom ? 'Импорт VK (fallback)' : 'VK мета (sync ждёт WS 2/2)'}
+            variant="ghost"
+            onPress={addVkStub}
+          />
           {tracks.length > 0 ? (
-            <LpdButton label="Очистить библиотеку" variant="ghost" onPress={clearLibrary} />
+            <LpdButton
+              label={
+                peerInWsRoom
+                  ? 'Очистить библиотеку'
+                  : 'Очистить библиотеку (sync ждёт WS 2/2)'
+              }
+              variant="ghost"
+              onPress={clearLibrary}
+            />
           ) : null}
         </View>
         <Text style={styles.spotifyHint}>{spotifyStatusLabel()}</Text>
