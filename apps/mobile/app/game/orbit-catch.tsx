@@ -45,6 +45,19 @@ export default function OrbitCatchScreen() {
     return 11;
   });
   const seed = matchSeed;
+  const [phase, setPhase] = useState<Phase>('ready');
+  const [angle, setAngle] = useState(0);
+  const [orbAngle, setOrbAngle] = useState(0);
+  const [caught, setCaught] = useState(0);
+  const [misses, setMisses] = useState(0);
+  const [attempts, setAttempts] = useState(0);
+  const [partnerCaught, setPartnerCaught] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(35);
+  const [aligned, setAligned] = useState(false);
+  const [partnerFlash, setPartnerFlash] = useState(false);
+  const [peerNote, setPeerNote] = useState<string | null>(null);
+  const [peerSeen, setPeerSeen] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,

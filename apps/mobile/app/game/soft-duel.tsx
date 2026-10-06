@@ -34,13 +34,14 @@ export default function SoftDuelScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const seed = (() => {
+  const [matchSeed, setMatchSeed] = useState(() => {
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
     const session = consumeMatchSession('soft-duel');
     if (session) return session.seed;
     return Date.now() % 100000;
-  })();
+  });
+  const seed = matchSeed;
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [round, setRound] = useState(0);
@@ -64,7 +65,6 @@ export default function SoftDuelScreen() {
   const [armed, setArmed] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [partnerRound, setPartnerRound] = useState(0);
-  const [matchSeed, setMatchSeed] = useState(seed);
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,
