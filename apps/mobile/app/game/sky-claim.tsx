@@ -46,9 +46,9 @@ export default function SkyClaimScreen() {
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const initialSeed = useMemo(() => {
+    const session = consumeMatchSession('sky-claim');
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
-    const session = consumeMatchSession('sky-claim');
     if (session) return session.seed;
     return Date.now() % 100000;
   }, [params.seed]);

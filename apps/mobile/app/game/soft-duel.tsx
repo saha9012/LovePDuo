@@ -35,9 +35,9 @@ export default function SoftDuelScreen() {
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const [matchSeed, setMatchSeed] = useState(() => {
+    const session = consumeMatchSession('soft-duel');
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
-    const session = consumeMatchSession('soft-duel');
     if (session) return session.seed;
     return Date.now() % 100000;
   });

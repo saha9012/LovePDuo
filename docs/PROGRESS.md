@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Entering a match consumes session (Home resume disappears)  
 - [x] Late match resume enters game · Soft/Orbit/Draw/Veil consumeMatchSession  
 - [x] Lobby ready/start live-only · memory broadcast skips empty room · Together hello gated  
 - [x] Finish + mid-match game signals live-only (all catalog games)  

@@ -60,9 +60,9 @@ export default function TruthOrSparkScreen() {
   useSyncedStartWaiting(params.solo, params.startAt);
 
   const [matchSeed, setMatchSeed] = useState(() => {
+    const session = consumeMatchSession(GAME_ID);
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
-    const session = consumeMatchSession(GAME_ID);
     if (session) return session.seed;
     return Date.now() % 100000;
   });

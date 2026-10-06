@@ -70,9 +70,9 @@ export default function SignalDrawScreen() {
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(() => {
+    const session = consumeMatchSession('signal-draw');
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
-    const session = consumeMatchSession('signal-draw');
     if (session) return session.seed;
     return Date.now() % 100000;
   });

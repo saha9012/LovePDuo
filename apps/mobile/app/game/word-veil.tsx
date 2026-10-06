@@ -45,9 +45,9 @@ export default function WordVeilScreen() {
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
   const [matchSeed, setMatchSeed] = useState(() => {
+    const session = consumeMatchSession('word-veil');
     const fromParam = Number(params.seed);
     if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
-    const session = consumeMatchSession('word-veil');
     if (session) return session.seed;
     return 7;
   });
