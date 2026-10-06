@@ -592,13 +592,16 @@ export default function HeartbeatScreen() {
           kind: 'heartbeat',
           title: 'Heartbeat Tap',
           detail:
-            params.solo === '1' || forceSoloRef.current
+            params.solo === '1' ||
+            (forceSoloRef.current && partnerScoreRef.current === 0)
               ? `Solo demo · итог ${total} · sync +${syncRef.current}`
               : partnerFinishedRef.current
                 ? `Оба финиш · итог ${total}`
                 : partnerLiveRef.current
                   ? `Итог ${total} · sync +${syncRef.current} · live`
-                  : `Итог ${total} · ждём партнёра`,
+                  : partnerScoreRef.current > 0
+                    ? `Итог ${total} · партнёр ${partnerScoreRef.current}`
+                    : `Итог ${total} · ждём партнёра`,
         });
         broadcastMemory(mem, user);
       } else {
@@ -717,11 +720,13 @@ export default function HeartbeatScreen() {
   };
 
   const total = score + syncBonus;
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && partnerScore === 0);
   const line = pickPostMatchLine(
     total,
     partnerScore,
     matchSeed + (elapsed || 1),
-    params.solo === '1' || forceSolo,
+    soloDemoPartner,
   );
   const beatPulse = Math.sin((elapsed / (60000 / heartbeatConfig.bpm)) * Math.PI * 2);
   const padStyle = useAnimatedStyle(() => ({
@@ -741,7 +746,7 @@ export default function HeartbeatScreen() {
           <Text style={styles.title}>Heartbeat Tap</Text>
           <Text style={styles.meta}>
             Ты {total} · sync +{syncBonus}
-            {params.solo === '1' || forceSolo
+            {soloDemoPartner
               ? ` · Партнёр ${partnerScore} · demo`
               : partnerLive
                 ? ` · Партнёр ${partnerScore} · live`
@@ -757,7 +762,7 @@ export default function HeartbeatScreen() {
           </Text>
           <PostMatchCard
             title={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : !partnerLive && partnerScore === 0
                   ? 'Ждём счёт партнёра'
@@ -767,7 +772,7 @@ export default function HeartbeatScreen() {
             }
             gameId="heartbeat"
             winnerLabel={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : syncFinish
                   ? finishDualLabel ?? 'Оба финиш'
@@ -838,12 +843,12 @@ export default function HeartbeatScreen() {
               <Text style={styles.stat}>Очки {score}</Text>
               <Text style={styles.stat}>
                 Sync +{syncBonus}
-                {params.solo === '1' || forceSolo ? ' · demo' : ''}
+                {soloDemoPartner ? ' · demo' : ''}
               </Text>
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
-                {params.solo === '1' || forceSolo ? (
+                {soloDemoPartner ? (
                   <>
                     партнёр · demo
                     {peerNote ? ` · ${peerNote}` : ''}

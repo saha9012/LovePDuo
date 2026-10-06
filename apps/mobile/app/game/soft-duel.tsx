@@ -503,13 +503,16 @@ export default function SoftDuelScreen() {
         kind: 'duel',
         title: 'Soft Duel',
         detail:
-          params.solo === '1' || forceSoloRef.current
+          params.solo === '1' ||
+          (forceSoloRef.current && partnerScoreRef.current === 0)
             ? `Solo demo · ты ${myScoreRef.current}`
             : partnerFinishedRef.current
               ? `Оба финиш · ты ${myScoreRef.current}`
               : partnerLiveRef.current
                 ? `Ты ${myScoreRef.current} · партнёр live`
-                : `Ты ${myScoreRef.current} · ждём партнёра`,
+                : partnerScoreRef.current > 0
+                  ? `Ты ${myScoreRef.current} · партнёр ${partnerScoreRef.current}`
+                  : `Ты ${myScoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
@@ -789,7 +792,9 @@ export default function SoftDuelScreen() {
 
   useEffect(() => () => clearRoundTimers(), []);
 
-  const line = pickPostMatchLine(myScore, partnerScore, matchSeed, params.solo === '1' || forceSolo);
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && partnerScore === 0);
+  const line = pickPostMatchLine(myScore, partnerScore, matchSeed, soloDemoPartner);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],
   }));
@@ -807,7 +812,7 @@ export default function SoftDuelScreen() {
           <Text style={styles.title}>Soft Duel</Text>
           <Text style={styles.meta}>
             Ты {myScore}
-            {params.solo === '1' || forceSolo
+            {soloDemoPartner
               ? ` · Партнёр ${partnerScore} · demo`
               : partnerLive
                 ? ` · Партнёр ${partnerScore} · live`
@@ -823,12 +828,16 @@ export default function SoftDuelScreen() {
             <Text style={styles.meta}>
               партнёр P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E{partnerEarlies}
               {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
-              {partnerLive && !forceSolo && params.solo !== '1' ? ' · live' : ' · demo'}
+              {partnerLive && !forceSolo && params.solo !== '1'
+                ? ' · live'
+                : soloDemoPartner
+                  ? ' · demo'
+                  : ''}
             </Text>
           ) : null}
           <PostMatchCard
             title={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : !partnerLive && partnerScore === 0
                   ? 'Ждём счёт партнёра'
@@ -838,7 +847,7 @@ export default function SoftDuelScreen() {
             }
             gameId="soft-duel"
             winnerLabel={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : syncFinish
                   ? finishDualLabel ?? 'Оба финиш'
@@ -909,7 +918,7 @@ export default function SoftDuelScreen() {
                 r{round + 1}/{ROUNDS} · ты {myScore} · P{perfects}/G{goods}/Ok{oks}/E{earlies}
                 {lastMs != null ? ` · ${lastMs}ms` : ''}
               </Text>
-              {params.solo === '1' || forceSolo ? (
+              {soloDemoPartner ? (
                 <Text style={styles.meta}>партнёр demo</Text>
               ) : partnerLive ? (
                 <Animated.Text
@@ -920,6 +929,12 @@ export default function SoftDuelScreen() {
                   {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''} · r
                   {Math.min(ROUNDS, partnerRound + 1)} · live
                 </Animated.Text>
+              ) : partnerScore > 0 ? (
+                <Text style={styles.meta}>
+                  партнёр {partnerScore} · P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E
+                  {partnerEarlies}
+                  {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
+                </Text>
               ) : (
                 <Text style={styles.meta}>ожидаем партнёра…</Text>
               )}

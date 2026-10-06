@@ -581,13 +581,16 @@ export default function SkyClaimScreen() {
         kind: 'sky',
         title: 'Sky Claim',
         detail:
-          params.solo === '1' || forceSoloRef.current
+          params.solo === '1' ||
+          (forceSoloRef.current && partnerScoreRef.current === 0)
             ? `Solo demo · ты ${scoreRef.current}`
             : partnerFinishedRef.current
               ? `Оба финиш · ты ${scoreRef.current}`
               : partnerLiveRef.current
                 ? `Ты ${scoreRef.current} · партнёр live`
-                : `Ты ${scoreRef.current} · ждём партнёра`,
+                : partnerScoreRef.current > 0
+                  ? `Ты ${scoreRef.current} · партнёр ${partnerScoreRef.current}`
+                  : `Ты ${scoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);
@@ -746,7 +749,9 @@ export default function SkyClaimScreen() {
     [phase],
   );
 
-  const line = pickPostMatchLine(score, partnerScore, matchSeed, params.solo === '1' || forceSolo);
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && partnerScore === 0);
+  const line = pickPostMatchLine(score, partnerScore, matchSeed, soloDemoPartner);
   const partnerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: partnerScale.value }],
   }));
@@ -758,7 +763,7 @@ export default function SkyClaimScreen() {
           <Text style={styles.hud}>Sky Claim</Text>
           <Text style={styles.scoreline}>
             Ты {score}
-            {params.solo === '1' || forceSolo
+            {soloDemoPartner
               ? ` · Партнёр ${partnerScore} · demo`
               : partnerLive
                 ? ` · Партнёр ${partnerScore} · live`
@@ -768,7 +773,7 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : !partnerLive && partnerScore === 0
                   ? 'Ждём счёт партнёра'
@@ -779,7 +784,7 @@ export default function SkyClaimScreen() {
                       : 'Синхрон'
             }
             winnerLabel={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : syncFinish
                   ? finishDualLabel ?? 'Оба финиш'
@@ -833,7 +838,7 @@ export default function SkyClaimScreen() {
               partnerStyle,
             ]}
           >
-            {params.solo === '1' || forceSolo ? (
+            {soloDemoPartner ? (
               <>
                 Партнёр · demo
                 {peerNote ? ` · ${peerNote}` : ''}
