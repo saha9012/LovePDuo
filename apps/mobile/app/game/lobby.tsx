@@ -315,13 +315,23 @@ export default function GameLobbyScreen() {
     const pending = peekMatchSession(gameId, pair.code);
     if (!pending) return;
     const msLeft = pending.startAtMs - Date.now();
-    if (msLeft < -8_000) return;
+    if (msLeft < -8_000) {
+      // Past synced-start window — enter with stored seed instead of a dead lobby.
+      router.replace({
+        pathname: routes[gameId],
+        params: {
+          seed: String(pending.seed),
+          startAt: String(pending.startAtMs),
+        },
+      });
+      return;
+    }
     setMatchSeed(pending.seed);
     setStartAtMs(pending.startAtMs);
     setCountdown(Math.max(0, Math.min(3, Math.ceil(msLeft / 720))));
     showCancelToast('Сессия пары восстановлена');
     void juice.sync();
-  }, [gameId, pair?.code]);
+  }, [gameId, pair?.code, router]);
 
   useEffect(() => {
     if (countdown === null) return;

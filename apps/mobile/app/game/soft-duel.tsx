@@ -16,6 +16,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
@@ -33,7 +34,13 @@ export default function SoftDuelScreen() {
   const { user, pair } = useApp();
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
-  const seed = Number(params.seed) || Date.now() % 100000;
+  const seed = (() => {
+    const fromParam = Number(params.seed);
+    if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
+    const session = consumeMatchSession('soft-duel');
+    if (session) return session.seed;
+    return Date.now() % 100000;
+  })();
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [round, setRound] = useState(0);

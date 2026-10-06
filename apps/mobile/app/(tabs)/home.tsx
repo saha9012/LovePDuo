@@ -553,7 +553,10 @@ export default function HomeScreen() {
               <Text style={styles.resumeMeta}>
                 seed {resumeMatch.seed} ·{' '}
                 {Math.max(0, Math.round((Date.now() - resumeMatch.startAtMs) / 1000))}с назад · тап
-                — в лобби
+                —{' '}
+                {Date.now() - resumeMatch.startAtMs > 8_000
+                  ? 'в матч'
+                  : 'в лобби'}
               </Text>
             </Pressable>
             <Pressable

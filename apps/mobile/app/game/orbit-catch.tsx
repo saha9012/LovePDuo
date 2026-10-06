@@ -16,6 +16,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
@@ -36,22 +37,14 @@ export default function OrbitCatchScreen() {
   const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; startAt?: string; solo?: string }>();
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt);
-  const seed = Number(params.seed) || 11;
-
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [angle, setAngle] = useState(0);
-  const [orbAngle, setOrbAngle] = useState(0);
-  const [caught, setCaught] = useState(0);
-  const [misses, setMisses] = useState(0);
-  const [attempts, setAttempts] = useState(0);
-  const [partnerCaught, setPartnerCaught] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(35);
-  const [aligned, setAligned] = useState(false);
-  const [partnerFlash, setPartnerFlash] = useState(false);
-  const [peerNote, setPeerNote] = useState<string | null>(null);
-  const [peerSeen, setPeerSeen] = useState(false);
-  const [forceSolo, setForceSolo] = useState(params.solo === '1');
-  const [matchSeed, setMatchSeed] = useState(seed);
+  const [matchSeed, setMatchSeed] = useState(() => {
+    const fromParam = Number(params.seed);
+    if (Number.isFinite(fromParam) && fromParam > 0) return fromParam;
+    const session = consumeMatchSession('orbit-catch');
+    if (session) return session.seed;
+    return 11;
+  });
+  const seed = matchSeed;
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,
