@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] leaveMatch on ready auto-starts remaining player  
 - [x] forceSolo skips synced-start wait after leaveMatch  
 - [x] Ready-screen exit announces leaveMatch · PostMatch Home leaveMatch  
 - [x] PostMatch Home announces leaveMatch · leaveMatch rejoin races  
