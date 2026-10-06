@@ -86,8 +86,8 @@ export default function CreatePairScreen() {
         <View style={styles.block}>
           <Text style={typography.headline}>Собери пару</Text>
           <Text style={typography.body}>
-            Создай код пары. Второй телефон входит по нему — и вы на связи вдвоём. Пара ≠ комната:
-            код — ваша связка, realtime только живой канал.
+            Создай код пары. Второй телефон входит по нему. Пара ≠ комната: код — identity, WS 2/2 —
+            когда оба в realtime-комнате.
           </Text>
           <View style={styles.statStrip}>
             {(

@@ -185,10 +185,11 @@ export default function HomeScreen() {
           (roomToastRef.current === 'Партнёр offline' ||
             roomToastRef.current === 'Партнёр away' ||
             roomToastRef.current === 'Партнёр снова рядом' ||
-            roomToastRef.current === 'Оба на связи');
+            roomToastRef.current === 'Оба на связи' ||
+            roomToastRef.current === 'Оба в комнате');
         setRoomToast(
           racing
-            ? 'Оба на связи'
+            ? 'Оба в комнате'
             : duoLive
               ? 'Партнёр снова рядом'
               : 'Партнёр presence · ждём WS 2/2',

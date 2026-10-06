@@ -175,10 +175,11 @@ export default function SignalDrawScreen() {
         (toastRef.current === 'Партнёр offline' ||
           toastRef.current === 'Партнёр снова online' ||
           toastRef.current === 'Партнёр снова в комнате' ||
-          toastRef.current === 'Оба на связи');
+          toastRef.current === 'Оба на связи' ||
+          toastRef.current === 'Оба в комнате');
       showToast(
         racing
-          ? 'Оба на связи'
+          ? 'Оба в комнате'
           : duoLive
             ? 'Партнёр снова в комнате'
             : 'Партнёр presence · ждём WS 2/2',

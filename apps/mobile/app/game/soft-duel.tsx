@@ -132,10 +132,11 @@ export default function SoftDuelScreen() {
         (flashRef.current === 'Партнёр offline' ||
           flashRef.current === 'Партнёр online' ||
           flashRef.current === 'Партнёр в комнате' ||
-          flashRef.current === 'Оба на связи');
+          flashRef.current === 'Оба на связи' ||
+          flashRef.current === 'Оба в комнате');
       setFlash(
         racing
-          ? 'Оба на связи'
+          ? 'Оба в комнате'
           : duoLive
             ? 'Партнёр в комнате'
             : 'Партнёр presence · ждём WS 2/2',

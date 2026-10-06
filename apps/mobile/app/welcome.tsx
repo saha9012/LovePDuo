@@ -230,7 +230,7 @@ export default function WelcomeScreen() {
           <Text style={styles.kicker}>
             {pair
               ? typeof pair.roomSize === 'number' && pair.roomSize >= 2
-                ? 'Пара на связи'
+                ? 'Пара в комнате'
                 : 'Пара · ждём WS'
               : 'LPD online'}
           </Text>

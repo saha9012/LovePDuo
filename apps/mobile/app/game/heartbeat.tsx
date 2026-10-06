@@ -147,9 +147,10 @@ export default function HeartbeatScreen() {
         (peerNoteRef.current === 'offline' ||
           peerNoteRef.current === 'online' ||
           peerNoteRef.current === 'в комнате' ||
-          peerNoteRef.current === 'оба на связи');
+          peerNoteRef.current === 'оба на связи' ||
+          peerNoteRef.current === 'оба в комнате');
       const note = racing
-        ? 'оба на связи'
+        ? 'оба в комнате'
         : duoLive
           ? 'в комнате'
           : 'presence · ждём WS 2/2';

@@ -141,10 +141,11 @@ export default function WordVeilScreen() {
         (hintRef.current === 'Партнёр offline' ||
           hintRef.current === 'Партнёр снова online' ||
           hintRef.current === 'Партнёр снова в комнате' ||
-          hintRef.current === 'Оба на связи');
+          hintRef.current === 'Оба на связи' ||
+          hintRef.current === 'Оба в комнате');
       setPresenceHint(
         racing
-          ? 'Оба на связи'
+          ? 'Оба в комнате'
           : duoLive
             ? 'Партнёр снова в комнате'
             : 'Партнёр presence · ждём WS 2/2',

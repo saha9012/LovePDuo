@@ -143,10 +143,11 @@ export default function TruthOrSparkScreen() {
         (turnToastRef.current === 'Партнёр offline' ||
           turnToastRef.current === 'Партнёр снова online' ||
           turnToastRef.current === 'Партнёр снова в комнате' ||
-          turnToastRef.current === 'Оба на связи');
+          turnToastRef.current === 'Оба на связи' ||
+          turnToastRef.current === 'Оба в комнате');
       showTurnToast(
         racing
-          ? 'Оба на связи'
+          ? 'Оба в комнате'
           : duoLive
             ? 'Партнёр снова в комнате'
             : 'Партнёр presence · ждём WS 2/2',

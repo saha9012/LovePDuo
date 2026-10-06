@@ -345,9 +345,13 @@ export default function GameLobbyScreen() {
     setMatchSeed(pending.seed);
     setStartAtMs(pending.startAtMs);
     setCountdown(Math.max(0, Math.min(3, Math.ceil(msLeft / 720))));
-    showCancelToast('Сессия пары восстановлена');
+    showCancelToast(
+      (pair?.roomSize ?? 0) >= 2
+        ? 'Сессия восстановлена · WS 2/2'
+        : 'Сессия восстановлена · ждём WS 2/2',
+    );
     void juice.sync();
-  }, [gameId, pair?.code, router]);
+  }, [gameId, pair?.code, pair?.roomSize, router]);
 
   useEffect(() => {
     if (countdown === null) return;
