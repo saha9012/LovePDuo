@@ -16,6 +16,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
@@ -582,8 +583,13 @@ export default function SoftDuelScreen() {
     seedRef.current = next;
     setSyncFinish(false);
     setFinishDualLabel(null);
-    const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
+    const soloAgain = params.solo === '1' || !peerLive;
     peerLeftMatchRef.current = false;
+    if (peerLive) {
+      setPartnerLive(true);
+      partnerLiveRef.current = true;
+    }
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
