@@ -16,6 +16,7 @@ import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
+import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
@@ -199,7 +200,21 @@ export default function GameLobbyScreen() {
           seed?: number;
           startAtMs?: number;
           reset?: boolean;
+          lobbyLeave?: boolean;
         } | undefined;
+        if (payload?.lobbyLeave && payload.userId !== user.id) {
+          const wasCounting = countdownRef.current != null;
+          setReadyPeer(false);
+          setCountdown(null);
+          setMatchSeed(null);
+          setStartAtMs(null);
+          startSent.current = false;
+          void juice.miss();
+          showCancelToast(
+            wasCounting ? 'Партнёр ушёл — старт отменён' : 'Партнёр ушёл из лобби',
+          );
+          return;
+        }
         if (payload?.reset) {
           setReadyMe(false);
           setReadyPeer(false);
@@ -426,8 +441,18 @@ export default function GameLobbyScreen() {
 
   const leaveLobby = () => {
     const leave = () => {
-      if (user && readyMe) {
-        pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
+      if (user) {
+        if (readyMe) {
+          pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
+        }
+        if (pairRealtime.connected && getLastRoomSize() >= 2) {
+          pairRealtime.sendGame(gameId, { lobbyLeave: true, userId: user.id });
+          pairRealtime.sendGame('play-peek', {
+            game: gameId,
+            leave: true,
+            fromId: user.id,
+          });
+        }
       }
       setReadyMe(false);
       setCountdown(null);
