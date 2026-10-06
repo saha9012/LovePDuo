@@ -796,7 +796,7 @@ export default function SoftDuelScreen() {
             <Text style={styles.meta}>
               партнёр P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E{partnerEarlies}
               {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
-              {partnerLive ? ' · live' : ' · demo'}
+              {partnerLive && !forceSolo && params.solo !== '1' ? ' · live' : ' · demo'}
             </Text>
           ) : null}
           <PostMatchCard
@@ -876,7 +876,9 @@ export default function SoftDuelScreen() {
                 r{round + 1}/{ROUNDS} · ты {myScore} · P{perfects}/G{goods}/Ok{oks}/E{earlies}
                 {lastMs != null ? ` · ${lastMs}ms` : ''}
               </Text>
-              {partnerLive ? (
+              {params.solo === '1' || forceSolo ? (
+                <Text style={styles.meta}>партнёр demo</Text>
+              ) : partnerLive ? (
                 <Animated.Text
                   style={[styles.partnerHud, partnerFlash && styles.partnerHudHot, partnerStyle]}
                 >
@@ -886,9 +888,7 @@ export default function SoftDuelScreen() {
                   {Math.min(ROUNDS, partnerRound + 1)} · live
                 </Animated.Text>
               ) : (
-                <Text style={styles.meta}>
-                  {params.solo === '1' || forceSolo ? 'партнёр demo' : 'ожидаем партнёра…'}
-                </Text>
+                <Text style={styles.meta}>ожидаем партнёра…</Text>
               )}
             </View>
             <Animated.View style={[styles.padWrap, padStyle]}>
