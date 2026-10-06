@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Lobby Solo hint gates on WS room ≥2  
 - [x] Together notes CTA gates on WS room ≥2  
 - [x] Play densifies pair≠WS room + partner presence  
 - [x] Profile shows pair-meta outbox pending  

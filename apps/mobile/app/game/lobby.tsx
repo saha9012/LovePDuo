@@ -566,9 +566,10 @@ export default function GameLobbyScreen() {
                 : 'Ждём партнёра READY — стартует один из двоих.'}
           {matchSeed != null ? ` · seed ${matchSeed}` : ''}
         </Text>
-        {pair?.partnerPresence !== 'online' && (pair?.roomSize ?? 0) < 2 ? (
+        {(pair?.roomSize ?? 0) < 2 ? (
           <Text style={styles.hostHint}>
-            Партнёр не в realtime — Solo / Demo, или жди online.
+            В WS нет партнёра ({typeof pair?.roomSize === 'number' ? `${pair.roomSize}/2` : '—'}) —
+            Solo / Demo, или жди комнату 2/2.
           </Text>
         ) : null}
 
