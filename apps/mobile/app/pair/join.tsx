@@ -152,7 +152,7 @@ export default function JoinPairScreen() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <Text style={styles.foot}>
             Auto-join на 6 символах — только после 16+. Deep link lovepduo://join/CODE тоже спросит
-            возраст.
+            возраст. Код связывает пару; live dual — когда WS комната станет 2/2.
           </Text>
         </View>
         <View style={styles.actions}>

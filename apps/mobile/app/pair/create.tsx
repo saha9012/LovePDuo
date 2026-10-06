@@ -142,8 +142,8 @@ export default function CreatePairScreen() {
           </Pressable>
           {ageError ? <Text style={styles.ageError}>{ageError}</Text> : null}
           <Text style={styles.foot}>
-            После создания — код из 6 символов и deep link для партнёра. 16+ нужен до create. Auth
-            пока локальный (Google — опционально на Welcome).
+            После создания — код из 6 символов и deep link. 16+ до create. Код = identity пары; WS
+            2/2 — отдельно, когда оба в комнате. Auth пока локальный (Google — на Welcome).
           </Text>
         </View>
         <View style={styles.actions}>
