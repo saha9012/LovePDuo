@@ -225,6 +225,9 @@ export default function GameLobbyScreen() {
           setReadyPeer(false);
           startSent.current = false;
           setCountdown(null);
+          setMatchSeed(null);
+          setStartAtMs(null);
+          clearMatchSession(pair?.code);
           return;
         }
         if (typeof payload?.ready === 'boolean' && payload.userId !== user.id) {

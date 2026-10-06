@@ -307,6 +307,7 @@ export default function PlayScreen() {
           {playStats.catalog} в каталоге · memory-игр {playStats.played} · стартов{' '}
           {startStats?.totalStarts ?? 0} · streak {startStats?.streakDays ?? 0}д
           {premium.isPlus ? ' · Plus' : ' · Free'}
+          {pair?.code ? ` · пара ${pair.code}` : ' · нет пары'}
         </Text>
         <View style={styles.statStrip}>
           {(
