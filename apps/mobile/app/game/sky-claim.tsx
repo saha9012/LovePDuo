@@ -220,6 +220,8 @@ export default function SkyClaimScreen() {
         if (payload?.rematch && typeof payload.seed === 'number') {
           setPartnerLive(true);
           partnerLiveRef.current = true;
+          setForceSolo(false);
+          forceSoloRef.current = false;
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
           const both = Date.now() - lastRematchAt.current < 2500;
@@ -406,6 +408,9 @@ export default function SkyClaimScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    setForceSolo(soloAgain);
+    forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     pairRealtime.sendGame('sky-claim', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);

@@ -191,6 +191,8 @@ export default function OrbitCatchScreen() {
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
           setPeerSeen(true);
+          setForceSolo(false);
+          forceSoloRef.current = false;
           setMatchSeed(payload.seed);
           seedRef.current = payload.seed;
           const both = Date.now() - lastRematchAt.current < 2500;
@@ -344,6 +346,9 @@ export default function OrbitCatchScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
+    const soloAgain = params.solo === '1' || !peerSeen;
+    setForceSolo(soloAgain);
+    forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     pairRealtime.sendGame('orbit-catch', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);

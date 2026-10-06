@@ -236,6 +236,8 @@ export default function SignalDrawScreen() {
       }
       if (payload.rematch) {
         setPeerSeen(true);
+        setForceSolo(false);
+        forceSoloRef.current = false;
         if (typeof payload.seed === 'number') setMatchSeed(payload.seed);
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
@@ -422,6 +424,9 @@ export default function SignalDrawScreen() {
     lastRematchAt.current = Date.now();
     const next = Date.now() % 100000;
     setMatchSeed(next);
+    const soloAgain = params.solo === '1' || !peerSeen;
+    setForceSolo(soloAgain);
+    forceSoloRef.current = soloAgain;
     pairRealtime.sendGame('signal-draw', { rematch: true, seed: next, hello: true });
     setTimeout(() => startRef.current(), 0);
   };
