@@ -663,6 +663,19 @@ export default function TruthOrSparkScreen() {
     lastFilterAt.current = Date.now();
     lastFilterChoice.current = f;
     broadcast(0, f, SKIP_LIMIT, { filterChange: true });
+    const dual =
+      !forceSolo &&
+      params.solo !== '1' &&
+      !peerLeftMatchRef.current &&
+      pairRealtime.connected &&
+      getLastRoomSize() >= 2;
+    showTurnToast(
+      dual
+        ? f === 'spicy'
+          ? 'spicy · у обоих'
+          : 'soft · у обоих'
+        : `${f} · соло · sync ждёт WS 2/2`,
+    );
     void juice.card();
   };
 
