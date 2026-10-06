@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Word Veil forceSoloRef guards synced-start timers  
 - [x] ToS presence online skips clear after leaveMatch  
 - [x] Rematch duo/solo from live WS room (not stale partnerLive)  
 - [x] peer_joined after leaveMatch stays solo until rematch  

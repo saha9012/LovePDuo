@@ -61,6 +61,7 @@ export default function WordVeilScreen() {
   const [locked, setLocked] = useState(false);
   const [waitingPeer, setWaitingPeer] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const forceSoloRef = useRef(params.solo === '1');
   const waitingSyncedStart = syncedStartGate && !forceSolo;
   const [peerTyping, setPeerTyping] = useState(false);
   const [myScore, setMyScore] = useState(0);
@@ -84,6 +85,10 @@ export default function WordVeilScreen() {
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
   const hintRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
 
   useEffect(() => {
     mineRef.current = mine;
@@ -207,6 +212,7 @@ export default function WordVeilScreen() {
   const continueSolo = () => {
     if (!lockedRef.current || partnerWordRef.current) return;
     setForceSolo(true);
+    forceSoloRef.current = true;
     setWaitingPeer(false);
     const demo = SEEDS[(seedRef.current + 3) % SEEDS.length];
     setPartnerWord(demo);
@@ -235,6 +241,7 @@ export default function WordVeilScreen() {
       if (msg.type === 'peer_left') {
         void juice.miss();
         setForceSolo(true);
+        forceSoloRef.current = true;
         const stuckWaiting =
           waitingPeerRef.current ||
           (lockedRef.current &&
@@ -261,6 +268,7 @@ export default function WordVeilScreen() {
           void juice.hit();
         } else {
           setForceSolo(false);
+          forceSoloRef.current = false;
           setPresenceHint(
             hintRef.current === 'Партнёр вышел' ||
               hintRef.current === 'Партнёр вышел · соло' ||
@@ -295,6 +303,7 @@ export default function WordVeilScreen() {
         }
         peerLeftMatchRef.current = true;
         setForceSolo(true);
+        forceSoloRef.current = true;
         setPresenceHint('Партнёр вышел из матча · соло');
         setTimeout(() => setPresenceHint(null), 1600);
         void juice.miss();
@@ -333,6 +342,7 @@ export default function WordVeilScreen() {
         } else if (phaseRef.current === 'playing' || phaseRef.current === 'reveal') {
           setWaitingPeer(false);
           setForceSolo(true);
+          forceSoloRef.current = true;
           if (!peerWord) {
             setPartnerWord('');
             setPhase('finished');
@@ -349,6 +359,7 @@ export default function WordVeilScreen() {
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setForceSolo(false);
+        forceSoloRef.current = false;
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
@@ -425,6 +436,7 @@ export default function WordVeilScreen() {
       void juice.hit();
       setTimeout(() => setPresenceHint(null), 1400);
       const id = setTimeout(() => {
+        if (forceSoloRef.current) return;
         if (phaseRef.current !== 'ready') return;
         setPhase('playing');
       }, delay);
@@ -436,7 +448,7 @@ export default function WordVeilScreen() {
       if (when > 80) {
         ticks.push(
           setTimeout(() => {
-            if (forceSolo) return;
+            if (forceSoloRef.current) return;
             setPresenceHint(`Старт ${sec}`);
             void juice.hit();
             setTimeout(() => setPresenceHint(null), 900);
@@ -445,6 +457,7 @@ export default function WordVeilScreen() {
       }
     }
     const id = setTimeout(() => {
+      if (forceSoloRef.current) return;
       if (phaseRef.current !== 'ready') return;
       setPhase('playing');
     }, delay);
@@ -507,6 +520,7 @@ export default function WordVeilScreen() {
     const soloAgain = params.solo === '1' || !peerLive;
     peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
+    forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     sendGameIfPeerLive('word-veil', { rematch: true, seed: next, hello: true });
     resetRound();
