@@ -405,9 +405,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const sendWarmth = useCallback(() => {
     setWarmthPulse((n) => n + 1);
-    setPair((prev) =>
-      prev ? { ...prev, partnerPresence: 'online' } : prev,
-    );
   }, []);
 
   const addTrack = useCallback((track: Omit<TrackItem, 'id'>) => {
