@@ -631,6 +631,39 @@ export default function MusicScreen() {
     })();
   };
 
+  /** Local hide only — no track-remove WS (partner keeps their copy). */
+  const reportTrack = (track: TrackItem) => {
+    void (async () => {
+      const ok = await confirmDestructive(
+        'Пожаловаться на трек?',
+        'Скроем его у вас. Облачной модерации пока нет — жалоба только локальный лог.',
+        'Скрыть',
+      );
+      if (!ok) return;
+      if (nowPlayingId === track.id || nowPlayingRef.current === track.id) {
+        try {
+          await soundRef.current?.stopAsync();
+          await soundRef.current?.unloadAsync();
+        } catch {
+          /* ignore */
+        }
+        setSound(null);
+        setNowPlaying(null);
+        setProgress(null);
+        lastStopAt.current = Date.now();
+        sendNowPlaying(null);
+      }
+      removeTrack(track.id);
+      trackEvent('ugc_report', {
+        kind: 'track',
+        trackId: track.id,
+        title: track.title,
+      });
+      showNote('Скрыто локально · жалоба записана');
+      void juice.miss();
+    })();
+  };
+
   const shelfRemove = (track: TrackItem) => {
     if (!active || !active.trackIds.includes(track.id)) return;
     removeTrackFromPlaylist(active.id, track.id);
@@ -1171,6 +1204,16 @@ export default function MusicScreen() {
                       </Pressable>
                     ))}
                   </View>
+                  {t.addedBy !== user?.displayName ? (
+                    <Pressable
+                      onPress={() => reportTrack(t)}
+                      style={styles.deleteBtn}
+                      accessibilityLabel={`Пожаловаться на ${t.title}`}
+                      hitSlop={12}
+                    >
+                      <Text style={styles.deleteLabel}>!</Text>
+                    </Pressable>
+                  ) : null}
                   <Pressable
                     onPress={() => deleteTrack(t)}
                     onLongPress={() => {
