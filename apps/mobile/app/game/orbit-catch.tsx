@@ -608,7 +608,7 @@ export default function OrbitCatchScreen() {
             {peerSeen ? ' · live' : ''}
           </Text>
           <PostMatchCard
-            title="Орбита закрыта"
+            title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Орбита закрыта'}
             gameId="orbit-catch"
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}

@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Post-match Solo demo titles (no fake duel win)  
 - [x] Solo/forceSolo HUDs mark partner score as demo  
 - [x] Word Veil marks solo partner word as demo  
 - [x] Profile Plus copy honest about local stats  

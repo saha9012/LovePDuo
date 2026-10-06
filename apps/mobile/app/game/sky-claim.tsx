@@ -743,13 +743,15 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={
-              params.solo !== '1' && !forceSolo && !partnerLive && partnerScore === 0
-                ? 'Ждём счёт партнёра'
-                : score > partnerScore
-                  ? 'Ты ведёшь'
-                  : score < partnerScore
-                    ? 'Партнёр впереди'
-                    : 'Синхрон'
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : !partnerLive && partnerScore === 0
+                  ? 'Ждём счёт партнёра'
+                  : score > partnerScore
+                    ? 'Ты ведёшь'
+                    : score < partnerScore
+                      ? 'Партнёр впереди'
+                      : 'Синхрон'
             }
             winnerLabel={
               syncFinish ? finishDualLabel ?? 'Оба финиш' : 'Post-match'

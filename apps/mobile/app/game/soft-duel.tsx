@@ -801,11 +801,13 @@ export default function SoftDuelScreen() {
           ) : null}
           <PostMatchCard
             title={
-              !partnerLive && partnerScore === 0 && params.solo !== '1' && !forceSolo
-                ? 'Ждём счёт партнёра'
-                : myScore >= partnerScore
-                  ? 'Реакция твоя'
-                  : 'Партнёр быстрее'
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : !partnerLive && partnerScore === 0
+                  ? 'Ждём счёт партнёра'
+                  : myScore >= partnerScore
+                    ? 'Реакция твоя'
+                    : 'Партнёр быстрее'
             }
             gameId="soft-duel"
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}

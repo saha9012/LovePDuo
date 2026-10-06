@@ -724,11 +724,13 @@ export default function HeartbeatScreen() {
           </Text>
           <PostMatchCard
             title={
-              !partnerLive && partnerScore === 0 && params.solo !== '1' && !forceSolo
-                ? 'Ждём счёт партнёра'
-                : total >= partnerScore
-                  ? 'Ритм твой'
-                  : 'Партнёр чувствует лучше'
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : !partnerLive && partnerScore === 0
+                  ? 'Ждём счёт партнёра'
+                  : total >= partnerScore
+                    ? 'Ритм твой'
+                    : 'Партнёр чувствует лучше'
             }
             gameId="heartbeat"
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
