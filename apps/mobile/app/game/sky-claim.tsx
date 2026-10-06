@@ -449,7 +449,8 @@ export default function SkyClaimScreen() {
         phase: 'finished',
         score: scoreRef.current,
       });
-      if (!partnerLiveRef.current) {
+      // Demo partner score only in solo — never invent while waiting on a live pair.
+      if (!partnerLiveRef.current && params.solo === '1') {
         const partner = Math.max(
           0,
           Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
@@ -472,7 +473,11 @@ export default function SkyClaimScreen() {
         title: 'Sky Claim',
         detail: partnerFinishedRef.current
           ? `Оба финиш · ты ${scoreRef.current}`
-          : `Ты ${scoreRef.current} · Партнёр ${partnerLiveRef.current ? 'live' : 'demo'}`,
+          : params.solo === '1'
+            ? `Solo demo · ты ${scoreRef.current}`
+            : partnerLiveRef.current
+              ? `Ты ${scoreRef.current} · партнёр live`
+              : `Ты ${scoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);
@@ -522,7 +527,7 @@ export default function SkyClaimScreen() {
       if (spawnTimer) clearInterval(spawnTimer);
       clearInterval(tick);
     };
-  }, [phase, spawner, addMemory, user]);
+  }, [phase, spawner, addMemory, user, params.solo]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const w = Math.max(1, e.nativeEvent.layout.width);
@@ -636,11 +641,25 @@ export default function SkyClaimScreen() {
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
           <Text style={styles.hud}>Sky Claim</Text>
           <Text style={styles.scoreline}>
-            Ты {score} · Партнёр {partnerScore}
-            {partnerLive ? ' · live' : ' · demo'}
+            Ты {score}
+            {params.solo === '1'
+              ? ` · Партнёр ${partnerScore} · demo`
+              : partnerLive
+                ? ` · Партнёр ${partnerScore} · live`
+                : partnerScore > 0
+                  ? ` · Партнёр ${partnerScore}`
+                  : ' · ждём партнёра'}
           </Text>
           <PostMatchCard
-            title={score > partnerScore ? 'Ты ведёшь' : score < partnerScore ? 'Партнёр впереди' : 'Синхрон'}
+            title={
+              params.solo !== '1' && !partnerLive && partnerScore === 0
+                ? 'Ждём счёт партнёра'
+                : score > partnerScore
+                  ? 'Ты ведёшь'
+                  : score < partnerScore
+                    ? 'Партнёр впереди'
+                    : 'Синхрон'
+            }
             winnerLabel={
               syncFinish ? finishDualLabel ?? 'Оба финиш' : 'Post-match'
             }

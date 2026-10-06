@@ -464,10 +464,15 @@ export default function SignalDrawScreen() {
             title: 'Signal Draw',
             detail: partnerFinishedRef.current
               ? `Оба финиш · штрихи ${myCount.current}`
-              : `Штрихи ${myCount.current} · партнёр ${peerCount.current}`,
+              : params.solo === '1'
+                ? `Solo demo · штрихи ${myCount.current}`
+                : peerCount.current > 0
+                  ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
+                  : `Штрихи ${myCount.current} · ждём партнёра`,
           });
           broadcastMemory(mem, user);
-          if (peerCount.current === 0) {
+          // Demo partner ink only in solo — never backfill while duo is live.
+          if (peerCount.current === 0 && params.solo === '1') {
             setPartnerStrokes(Math.max(1, Math.round(myCount.current * 0.85)));
           }
           return 0;
@@ -476,7 +481,7 @@ export default function SignalDrawScreen() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [phase, addMemory]);
+  }, [phase, addMemory, params.solo, user]);
 
   const applyCanvasFrame = (x: number, y: number, w: number, h: number) => {
     if (w < 2 || h < 2) return false;
@@ -639,7 +644,7 @@ export default function SignalDrawScreen() {
         .reduce((n, s) => n + s.points.length, 0),
     [strokes],
   );
-  const line = pickPostMatchLine(myScore, theirScore || 1, seed);
+  const line = pickPostMatchLine(myScore, theirScore, seed);
 
   const renderStroke = useCallback(
     (stroke: Stroke) => {
@@ -668,7 +673,12 @@ export default function SignalDrawScreen() {
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
           <Text style={styles.title}>Signal Draw</Text>
           <Text style={styles.meta}>
-            Твои линии {myCount.current} · Партнёр {partnerStrokes || peerCount.current}
+            Твои линии {myCount.current}
+            {params.solo === '1'
+              ? ` · партнёр demo ${partnerStrokes || peerCount.current}`
+              : peerCount.current > 0 || partnerStrokes > 0
+                ? ` · партнёр ${partnerStrokes || peerCount.current}`
+                : ' · ждём партнёра'}
           </Text>
           <PostMatchCard
             title="Общий холст закрыт"

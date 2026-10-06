@@ -195,19 +195,21 @@ export default function HomeScreen() {
     const prev = roomSizeSeen.current;
     if (prev > 0 && prev < 2 && size >= 2) {
       const afterLeave =
+        roomToastRef.current === 'Партнёр вышел' ||
         roomToastRef.current === 'Партнёр вышел из комнаты' ||
-        roomToastRef.current === 'Оба снова дома';
+        roomToastRef.current === 'Оба снова online';
       const racing =
+        roomToastRef.current === 'Оба в паре' ||
         roomToastRef.current === 'Оба в комнате' ||
-        roomToastRef.current === 'Оба дома';
-      setRoomToast(afterLeave ? 'Оба снова дома' : racing ? 'Оба дома' : 'Оба в комнате');
+        roomToastRef.current === 'Оба online';
+      setRoomToast(afterLeave ? 'Оба снова online' : racing ? 'Оба online' : 'Оба в паре');
       void juice.perfect();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
       return () => clearTimeout(t);
     }
     if (prev >= 2 && size === 1) {
-      setRoomToast('Партнёр вышел из комнаты');
+      setRoomToast('Партнёр вышел');
       void juice.miss();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
@@ -221,10 +223,11 @@ export default function HomeScreen() {
       if (msg.type === 'peer_joined') {
         const name = typeof msg.name === 'string' && msg.name ? msg.name : 'Партнёр';
         const racing =
+          roomToastRef.current === 'Партнёр вышел' ||
           roomToastRef.current === 'Партнёр вышел из комнаты' ||
-          roomToastRef.current === 'Оба снова дома' ||
+          roomToastRef.current === 'Оба снова online' ||
           roomToastRef.current?.endsWith(' вошёл');
-        setRoomToast(racing ? 'Оба снова дома' : `${name} вошёл`);
+        setRoomToast(racing ? 'Оба снова online' : `${name} вошёл`);
         void juice.sync();
         setTimeout(() => setRoomToast(null), 1800);
         return;
@@ -259,14 +262,16 @@ export default function HomeScreen() {
           const both = pair?.name === next;
           const racing =
             both &&
-            (roomToastRef.current === 'Оба назвали комнату' ||
+            (roomToastRef.current === 'Оба назвали пару' ||
+              roomToastRef.current === 'Оба назвали комнату' ||
+              roomToastRef.current?.startsWith('Пара:') ||
               roomToastRef.current?.startsWith('Комната:'));
           setRoomToast(
             racing
-              ? 'Оба в одной комнате'
+              ? 'Оба в одной паре'
               : both
-                ? 'Оба назвали комнату'
-                : `Комната: ${next}`,
+                ? 'Оба назвали пару'
+                : `Пара: ${next}`,
           );
           void (both ? juice.perfect() : juice.card());
           setTimeout(() => setRoomToast(null), 1800);
@@ -349,7 +354,7 @@ export default function HomeScreen() {
         meet &&
         (warmthToastRef.current === 'Тепло встречное' ||
           warmthToastRef.current === 'Оба в тепле');
-      const next = racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло в комнате';
+      const next = racing ? 'Оба в тепле' : meet ? 'Тепло встречное' : 'Тепло паре';
       warmthToastRef.current = next;
       setWarmthToast(next);
       void (meet ? juice.perfect() : juice.warmth());
