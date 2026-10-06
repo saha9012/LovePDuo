@@ -65,6 +65,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     void loadPlayStats().then(setPlayStats);
     void juice.hydrateMuted().then(setSfxMuted);
+    void AsyncStorage.getItem(AGE_OK_KEY).then((v) => setAgeOk16(v === '1'));
     hydrateWsUrl().then((url) => {
       setWsDraft(url);
       setWsSaved(url);
