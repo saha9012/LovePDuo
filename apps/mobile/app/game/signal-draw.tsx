@@ -103,6 +103,7 @@ export default function SignalDrawScreen() {
   const myCount = useRef(0);
   const peerCount = useRef(0);
   const partnerFinishedRef = useRef(false);
+  const partnerInkFromPeerRef = useRef(false);
   const forceSoloRef = useRef(params.solo === '1');
   const seedRef = useRef(matchSeed);
   const phaseRef = useRef<Phase>('ready');
@@ -329,6 +330,7 @@ export default function SignalDrawScreen() {
       if (payload.phase === 'finished') {
         partnerFinishedRef.current = true;
         if (typeof payload.count === 'number') {
+          partnerInkFromPeerRef.current = true;
           peerCount.current = payload.count;
           setPartnerStrokes(payload.count);
         }
@@ -382,6 +384,7 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.undo) {
+        partnerInkFromPeerRef.current = true;
         setStrokes((prev) => {
           const peerIdx = [...prev].map((s, i) => (s.by === 'peer' ? i : -1)).filter((i) => i >= 0);
           const last = peerIdx[peerIdx.length - 1];
@@ -402,6 +405,7 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.stroke) {
+        partnerInkFromPeerRef.current = true;
         const firstStroke = peerCount.current === 0;
         const s: Stroke = {
           ...payload.stroke,
@@ -450,6 +454,7 @@ export default function SignalDrawScreen() {
         }
       }
       if (payload.point) {
+        partnerInkFromPeerRef.current = true;
         setStrokes((prev) =>
           prev.map((s) =>
             s.id === payload.point!.strokeId
@@ -460,6 +465,7 @@ export default function SignalDrawScreen() {
         bumpPeer();
       }
       if (typeof payload.count === 'number') {
+        partnerInkFromPeerRef.current = true;
         peerCount.current = payload.count;
         setPartnerStrokes(payload.count);
       }
@@ -482,6 +488,7 @@ export default function SignalDrawScreen() {
     current.current = null;
     myCount.current = 0;
     peerCount.current = 0;
+    partnerInkFromPeerRef.current = false;
     partnerFinishedRef.current = false;
     setSyncFinish(false);
     setFinishDualLabel(null);
@@ -583,21 +590,26 @@ export default function SignalDrawScreen() {
             phase: 'finished',
             count: myCount.current,
           });
+          const soloDemoPartner =
+            params.solo === '1' ||
+            (forceSoloRef.current && !partnerInkFromPeerRef.current);
           const mem = addMemory({
             kind: 'draw',
             title: 'Signal Draw',
-            detail:
-              params.solo === '1' || forceSoloRef.current
-                ? `Solo demo · штрихи ${myCount.current}`
-                : partnerFinishedRef.current
-                  ? `Оба финиш · штрихи ${myCount.current}`
-                  : peerCount.current > 0
-                    ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
-                    : `Штрихи ${myCount.current} · ждём партнёра`,
+            detail: soloDemoPartner
+              ? `Solo demo · штрихи ${myCount.current}`
+              : partnerFinishedRef.current
+                ? `Оба финиш · штрихи ${myCount.current}`
+                : partnerInkFromPeerRef.current
+                  ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
+                  : `Штрихи ${myCount.current} · ждём партнёра`,
           });
           broadcastMemory(mem, user);
-          // Demo partner ink only in solo / forceSolo — never backfill while duo is live.
-          if (peerCount.current === 0 && (params.solo === '1' || forceSoloRef.current)) {
+          // Demo invent only when no peer ink ever arrived.
+          if (
+            !partnerInkFromPeerRef.current &&
+            (params.solo === '1' || forceSoloRef.current)
+          ) {
             setPartnerStrokes(Math.max(1, Math.round(myCount.current * 0.85)));
           }
           return 0;
@@ -758,6 +770,8 @@ export default function SignalDrawScreen() {
 
   const myScore = myCount.current * 10;
   const theirScore = (partnerStrokes || peerCount.current) * 10;
+  const soloDemoPartner =
+    params.solo === '1' || (forceSolo && !partnerInkFromPeerRef.current);
   const myInkPts = useMemo(
     () =>
       strokes
@@ -776,7 +790,7 @@ export default function SignalDrawScreen() {
     myScore,
     theirScore,
     seed,
-    params.solo === '1' || forceSolo,
+    soloDemoPartner,
   );
 
   const renderStroke = useCallback(
@@ -807,17 +821,17 @@ export default function SignalDrawScreen() {
           <Text style={styles.title}>Signal Draw</Text>
           <Text style={styles.meta}>
             Твои линии {myCount.current}
-            {params.solo === '1' || forceSolo
+            {soloDemoPartner
               ? ` · партнёр demo ${partnerStrokes || peerCount.current}`
-              : peerCount.current > 0 || partnerStrokes > 0
+              : partnerInkFromPeerRef.current || peerCount.current > 0 || partnerStrokes > 0
                 ? ` · партнёр ${partnerStrokes || peerCount.current}`
                 : ' · ждём партнёра'}
           </Text>
           <PostMatchCard
-            title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Общий холст закрыт'}
+            title={soloDemoPartner ? 'Solo demo' : 'Общий холст закрыт'}
             gameId="signal-draw"
             winnerLabel={
-              params.solo === '1' || forceSolo
+              soloDemoPartner
                 ? 'Solo demo'
                 : syncFinish
                   ? finishDualLabel ?? 'Оба финиш'
@@ -885,7 +899,7 @@ export default function SignalDrawScreen() {
                 ты {myCount.current} · {myInkPts} pts
               </Text>
               <Text style={[styles.stat, peerPulse && styles.peerLive]}>
-                {params.solo === '1' || forceSolo
+                {soloDemoPartner
                   ? `партнёр · demo${peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''}`
                   : `партнёр ${partnerStrokes}${
                       peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''
