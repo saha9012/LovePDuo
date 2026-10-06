@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Pair success: pair code ≠ WS room  
 - [x] Home feed shows pending note/memory sync · solo lobby clears session  
 - [x] Lobby cancel/unready/leave clears match session  
 - [x] Auth honesty: local ≠ cloud · pair = code+WS (Welcome/Profile)  

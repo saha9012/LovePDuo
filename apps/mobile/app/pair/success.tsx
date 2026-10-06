@@ -112,7 +112,8 @@ export default function PairSuccessScreen() {
           <Text style={styles.kicker}>Pair link</Text>
           <Text style={styles.title}>Вы связаны</Text>
           <Text style={typography.tease}>
-            Два телефона. Одна пара{pair?.name ? ` «${pair.name}»` : ''}. Можно жечь.
+            Два телефона. Одна пара{pair?.name ? ` «${pair.name}»` : ''} по коду — не «комната».
+            Online ниже = кто сейчас в WS.
           </Text>
           {peerToast ? <Text style={styles.peerToast}>{peerToast}</Text> : null}
           <View style={styles.statStrip}>
@@ -122,7 +123,7 @@ export default function PairSuccessScreen() {
                 [
                   'o',
                   typeof pair?.roomSize === 'number' ? `${pair.roomSize}/2` : '—',
-                  'online',
+                  'WS',
                 ],
                 ['p', pair?.partnerPresence === 'online' ? 'on' : 'off', 'партнёр'],
                 ['g', String(pair?.gamesStarted ?? 0), 'стартов'],
@@ -136,10 +137,12 @@ export default function PairSuccessScreen() {
             ))}
           </View>
           <View style={styles.codeBlock}>
-            <Text style={styles.codeLabel}>Код пары</Text>
+            <Text style={styles.codeLabel}>Код пары (identity)</Text>
             <Text style={typography.code}>{code}</Text>
           </View>
-          <Text style={styles.hint}>Покажи код партнёру или deep link {deepLink}</Text>
+          <Text style={styles.hint}>
+            Пара = код {code}. WS online — отдельно. Deep link: {deepLink}
+          </Text>
         </Animated.View>
         <View style={styles.actions}>
           <LpdButton
