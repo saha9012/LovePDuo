@@ -18,6 +18,7 @@ import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
 import { usePremium } from '../../src/store/PremiumStore';
 import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
+import { track } from '../../src/analytics/track';
 
 const AGE_OK_KEY = 'lovepduo.age_ok_16';
 
@@ -498,6 +499,37 @@ export default function ProfileScreen() {
               if (!next) void juice.hit();
             }}
           />
+          {pair ? (
+            <LpdButton
+              label="Пожаловаться на партнёра"
+              variant="ghost"
+              onPress={() => {
+                void confirmDestructive(
+                  'Пожаловаться на партнёра?',
+                  'Запишем локально. Облачной модерации пока нет. Можно сразу отвязать пару.',
+                  'Пожаловаться',
+                ).then(async (ok) => {
+                  if (!ok) return;
+                  track('ugc_report', {
+                    kind: 'partner',
+                    pairCode: pair.code,
+                    partnerName: pair.partnerName,
+                  });
+                  setWsToast('Жалоба записана локально');
+                  setTimeout(() => setWsToast(null), 1800);
+                  void juice.miss();
+                  const unlink = await confirmDestructive(
+                    'Отвязать пару?',
+                    'Код пары сбросится. Memories останутся локально.',
+                    'Отвязать',
+                  );
+                  if (!unlink) return;
+                  await unlinkPair();
+                  router.replace('/pair/create');
+                });
+              }}
+            />
+          ) : null}
           <LpdButton
             label="Отвязать пару"
             variant="ghost"
@@ -505,6 +537,7 @@ export default function ProfileScreen() {
               void confirmDestructive(
                 'Отвязать пару?',
                 'Код пары сбросится. Memories останутся локально.',
+                'Отвязать',
               ).then(async (ok) => {
                 if (!ok) return;
                 void juice.miss();
