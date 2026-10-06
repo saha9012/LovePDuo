@@ -173,7 +173,11 @@ export default function TogetherScreen() {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
-        showPeer('Партнёр ушёл с Together');
+        showPeer(
+          candleLitRef.current
+            ? 'Партнёр ушёл · свеча горит у тебя'
+            : 'Партнёр ушёл с Together',
+        );
         void juice.miss();
         return;
       }
@@ -181,7 +185,8 @@ export default function TogetherScreen() {
         const racing =
           peerToastRef.current === 'Партнёр снова рядом' ||
           peerToastRef.current === 'Оба снова вместе' ||
-          peerToastRef.current === 'Партнёр ушёл с Together';
+          peerToastRef.current === 'Партнёр ушёл с Together' ||
+          peerToastRef.current === 'Партнёр ушёл · свеча горит у тебя';
         showPeer(racing ? 'Оба снова вместе' : 'Партнёр снова рядом');
         void juice.warmth();
         lastHelloAt.current = Date.now();
