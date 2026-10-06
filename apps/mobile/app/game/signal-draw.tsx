@@ -449,10 +449,10 @@ export default function SignalDrawScreen() {
   }, [pair?.code, user?.id, peerColor]);
 
   useEffect(() => {
-    if (!pair || !user || params.solo === '1') return;
+    if (!pair || !user || params.solo === '1' || forceSolo) return;
     lastHelloAt.current = Date.now();
     sendGameIfPeerLive('signal-draw', { hello: true, fromId: user.id });
-  }, [pair?.code, user?.id, params.solo]);
+  }, [pair?.code, user?.id, params.solo, forceSolo]);
 
   const start = () => {
     setStrokes([]);

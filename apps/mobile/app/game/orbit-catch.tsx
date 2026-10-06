@@ -362,10 +362,10 @@ export default function OrbitCatchScreen() {
   }, [pair?.code, user?.id, partnerScale, ringPulse]);
 
   useEffect(() => {
-    if (!pair || !user || params.solo === '1') return;
+    if (!pair || !user || params.solo === '1' || forceSolo) return;
     lastHelloAt.current = Date.now();
     sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
-  }, [pair?.code, user?.id, params.solo]);
+  }, [pair?.code, user?.id, params.solo, forceSolo]);
 
   const start = () => {
     caughtRef.current = 0;

@@ -431,10 +431,10 @@ export default function WordVeilScreen() {
   }, [pair?.code, user?.id]);
 
   useEffect(() => {
-    if (!pair || !user || params.solo === '1') return;
+    if (!pair || !user || params.solo === '1' || forceSolo) return;
     lastHelloAt.current = Date.now();
     sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
-  }, [pair?.code, user?.id, params.solo]);
+  }, [pair?.code, user?.id, params.solo, forceSolo]);
 
   useEffect(() => {
     if (params.solo === '1' || forceSolo) return;

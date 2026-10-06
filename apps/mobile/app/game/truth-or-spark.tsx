@@ -466,14 +466,14 @@ export default function TruthOrSparkScreen() {
   }, [pair?.code, user?.id, spicyUnlocked, params.solo]);
 
   useEffect(() => {
-    if (!pair || !user || params.solo === '1') return;
+    if (!pair || !user || params.solo === '1' || forceSolo) return;
     lastHelloAt.current = Date.now();
     sendGameIfPeerLive(GAME_ID, {
       hello: true,
       fromName: user.displayName,
       fromId: user.id,
     });
-  }, [pair?.code, user?.id, user?.displayName, params.solo]);
+  }, [pair?.code, user?.id, user?.displayName, params.solo, forceSolo]);
 
   useEffect(() => {
     if (params.solo === '1' || forceSolo) {
