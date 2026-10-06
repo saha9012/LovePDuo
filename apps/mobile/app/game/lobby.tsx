@@ -54,6 +54,7 @@ export default function GameLobbyScreen() {
   const readyMeRef = useRef(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasWsOnline = useRef(pairRealtime.connected);
+  const roomSizeRef = useRef(pair?.roomSize ?? 0);
   const countScale = useSharedValue(1);
   const countOpacity = useSharedValue(1);
 
@@ -104,15 +105,23 @@ export default function GameLobbyScreen() {
   }, [gameId]);
 
   useEffect(() => {
+    roomSizeRef.current = pair?.roomSize ?? 0;
+  }, [pair?.roomSize]);
+
+  useEffect(() => {
     return pairRealtime.onStatus((online) => {
       setWsOnline(online);
       if (online && !wasWsOnline.current) {
-        showCancelToast(
+        const duoLiveNow = roomSizeRef.current >= 2;
+        const bothToast = 'Оба на WS';
+        const soloToast = 'WS online · ждём 2/2';
+        const racing =
           cancelToastRef.current === 'WS offline…' ||
-            cancelToastRef.current === 'WS online' ||
-            cancelToastRef.current === 'Оба на WS'
-            ? 'Оба на WS'
-            : 'WS online',
+          cancelToastRef.current === 'WS online' ||
+          cancelToastRef.current === bothToast ||
+          cancelToastRef.current === soloToast;
+        showCancelToast(
+          duoLiveNow ? (racing ? bothToast : 'WS online') : soloToast,
         );
         void juice.sync();
         if (readyMeRef.current && user?.id) {

@@ -253,7 +253,11 @@ export default function WelcomeScreen() {
                   ['g', String(pair.gamesStarted ?? 0), 'стартов'],
                   ['s', String(playStats?.totalStarts ?? 0), 'plays'],
                   ['k', String(playStats?.streakDays ?? 0), 'streak'],
-                  ['o', typeof pair.roomSize === 'number' ? String(pair.roomSize) : '—', 'online'],
+                  [
+                    'o',
+                    typeof pair.roomSize === 'number' ? `${pair.roomSize}/2` : '—',
+                    'WS',
+                  ],
                   ['c', pair.code.slice(0, 4), 'код'],
                 ] as const
               ).map(([k, n, l]) => (
@@ -305,10 +309,10 @@ export default function WelcomeScreen() {
           <Text style={styles.foot}>
             {pair
               ? `Код пары ${pair.code} сохранён на устройстве${
-                  typeof pair.roomSize === 'number' ? ` · WS online ${pair.roomSize}` : ''
+                  typeof pair.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''
                 } · ${
                   typeof pair.roomSize === 'number' && pair.roomSize >= 2
-                    ? 'партнёр online'
+                    ? 'партнёр в комнате'
                     : pair.partnerPresence === 'online'
                       ? 'presence ≠ room'
                       : 'партнёр offline'

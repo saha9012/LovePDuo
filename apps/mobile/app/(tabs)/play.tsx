@@ -403,10 +403,18 @@ export default function PlayScreen() {
               body={
                 q.trim()
                   ? 'Поиск ничего не дал — сбрось строку или фильтр.'
-                  : 'Сбрось фильтр — в каталоге семь игр.'
+                  : 'Сбрось фильтр — в каталоге семь игр. Solo / Demo — без WS 2/2.'
               }
               meta={`0 из ${CATALOG.length} · фильтр ${filter}${
                 q.trim() ? ` · «${q.trim()}»` : ''
+              } · ${
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'WS 2/2'
+                  : pair?.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : pair
+                      ? 'партнёр offline'
+                      : 'нет пары'
               }`}
             />
           ) : (
