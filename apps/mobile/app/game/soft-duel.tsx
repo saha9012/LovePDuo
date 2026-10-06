@@ -38,6 +38,11 @@ export default function SoftDuelScreen() {
   const [prompt, setPrompt] = useState(PROMPTS[0]);
   const [myScore, setMyScore] = useState(0);
   const [partnerScore, setPartnerScore] = useState(0);
+  const [perfects, setPerfects] = useState(0);
+  const [goods, setGoods] = useState(0);
+  const [oks, setOks] = useState(0);
+  const [earlies, setEarlies] = useState(0);
+  const [lastMs, setLastMs] = useState<number | null>(null);
   const [partnerLive, setPartnerLive] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [flash, setFlash] = useState('');
@@ -477,6 +482,11 @@ export default function SoftDuelScreen() {
     setFinishDualLabel(null);
     setMyScore(0);
     setPartnerScore(0);
+    setPerfects(0);
+    setGoods(0);
+    setOks(0);
+    setEarlies(0);
+    setLastMs(null);
     setPartnerRound(0);
     partnerRoundRef.current = 0;
     setPhase('playing');
@@ -559,6 +569,8 @@ export default function SoftDuelScreen() {
       const racing = flashRef.current === 'Оба рано' || flashRef.current === 'Оба спешат';
       setFlash(racing ? 'Оба спешат' : peerEarly ? 'Оба рано' : 'Рано');
       setArmed(false);
+      setEarlies((n) => n + 1);
+      setLastMs(-(armAt.current - now));
       void (peerEarly ? juice.sync() : juice.miss());
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
@@ -576,6 +588,10 @@ export default function SoftDuelScreen() {
       partnerRoundRef.current === roundRef.current + 1;
     myScoreRef.current += pts;
     setMyScore(myScoreRef.current);
+    setLastMs(delta);
+    if (pts === 3) setPerfects((n) => n + 1);
+    else if (pts === 2) setGoods((n) => n + 1);
+    else setOks((n) => n + 1);
     setFlash(pts === 3 ? 'PERFECT' : pts === 2 ? 'GOOD' : 'OK');
     setArmed(false);
     flashScale.value = withSpring(1.2, { damping: 10 });
@@ -651,6 +667,10 @@ export default function SoftDuelScreen() {
             Ты {myScore} · Партнёр {partnerScore}
             {partnerLive ? ' · live' : ' · demo'}
           </Text>
+          <Text style={styles.meta}>
+            P{perfects} · G{goods} · Ok{oks} · early {earlies}
+            {lastMs != null ? ` · last ${lastMs}ms` : ''}
+          </Text>
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
             gameId="soft-duel"
@@ -698,7 +718,8 @@ export default function SoftDuelScreen() {
           <>
             <View style={styles.hudRow}>
               <Text style={styles.meta}>
-                Раунд {round + 1}/{ROUNDS} · ты {myScore}
+                r{round + 1}/{ROUNDS} · ты {myScore} · P{perfects}/G{goods}/Ok{oks}/E{earlies}
+                {lastMs != null ? ` · ${lastMs}ms` : ''}
               </Text>
               {partnerLive ? (
                 <Animated.Text

@@ -18,6 +18,22 @@ import { typography } from '../src/theme/typography';
 import { useApp } from '../src/store/AppStore';
 import { juice } from '../src/audio/juice';
 import { googleConfigured, googleStatusLabel, signInWithGoogle } from '../src/auth/googleAuth';
+import { loadPlayStats, type PlayStats } from '../src/stats/playStats';
+import {
+  hydrateMatchSession,
+  peekPairMatchSession,
+  type MatchSession,
+} from '../src/realtime/matchSession';
+
+const GAME_TITLES: Record<string, string> = {
+  'soft-duel': 'Soft Duel',
+  heartbeat: 'Heartbeat',
+  'sky-claim': 'Sky Claim',
+  'orbit-catch': 'Orbit Catch',
+  'signal-draw': 'Signal Draw',
+  'word-veil': 'Word Veil',
+  'truth-or-spark': 'Truth or Spark',
+};
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -25,6 +41,8 @@ export default function WelcomeScreen() {
   const { user, pair, signIn } = useApp();
   const [name, setName] = useState(user?.displayName ?? '');
   const [roomToast, setRoomToast] = useState<string | null>(null);
+  const [playStats, setPlayStats] = useState<PlayStats | null>(null);
+  const [resumeMatch, setResumeMatch] = useState<MatchSession | null>(null);
   const roomSizeSeen = useRef(pair?.roomSize ?? 0);
   const roomToastRef = useRef<string | null>(null);
   const veil = useSharedValue(0);
@@ -73,6 +91,33 @@ export default function WelcomeScreen() {
       false,
     );
   }, [veil, rise, orbit]);
+
+  useEffect(() => {
+    void loadPlayStats().then(setPlayStats);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    if (!pair?.code) {
+      setResumeMatch(null);
+      return;
+    }
+    void hydrateMatchSession().then(() => {
+      if (!alive) return;
+      setResumeMatch(peekPairMatchSession(pair.code));
+    });
+    const t = setInterval(() => {
+      setResumeMatch(peekPairMatchSession(pair.code));
+    }, 2500);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [pair?.code]);
+
+  const daysTogether = pair?.pairedAt
+    ? Math.max(1, Math.floor((Date.now() - pair.pairedAt) / 86_400_000) + 1)
+    : 0;
 
   const contentStyle = useAnimatedStyle(() => ({
     opacity: veil.value,
@@ -163,6 +208,32 @@ export default function WelcomeScreen() {
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
+          {pair ? (
+            <View style={styles.pairStrip}>
+              {(
+                [
+                  ['d', String(daysTogether), 'дней'],
+                  ['g', String(pair.gamesStarted ?? 0), 'стартов'],
+                  ['s', String(playStats?.totalStarts ?? 0), 'plays'],
+                  ['k', String(playStats?.streakDays ?? 0), 'streak'],
+                  ['o', typeof pair.roomSize === 'number' ? String(pair.roomSize) : '—', 'online'],
+                  ['c', pair.code.slice(0, 4), 'код'],
+                ] as const
+              ).map(([k, n, l]) => (
+                <View key={k} style={styles.pairCell}>
+                  <Text style={styles.pairNum}>{n}</Text>
+                  <Text style={styles.pairLabel}>{l}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {pair && resumeMatch ? (
+            <Text style={styles.resumeLine}>
+              Сессия · {GAME_TITLES[resumeMatch.gameId] ?? resumeMatch.gameId} · seed{' '}
+              {resumeMatch.seed} ·{' '}
+              {Math.max(0, Math.round((Date.now() - resumeMatch.startAtMs) / 1000))}с
+            </Text>
+          ) : null}
         </Animated.View>
 
         <Animated.View style={[styles.cta, contentStyle]}>
@@ -192,7 +263,9 @@ export default function WelcomeScreen() {
             {pair
               ? `Код пары ${pair.code} сохранён${
                   typeof pair.roomSize === 'number' ? ` · online ${pair.roomSize}` : ''
-                }. Auth: ${user?.authProvider === 'google' ? 'Google' : 'локальный'}.`
+                } · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'} · Auth: ${
+                  user?.authProvider === 'google' ? 'Google' : 'локальный'
+                }.`
               : 'Создай пару или войди по коду — два телефона, одна пара. Google — опционально.'}
           </Text>
         </Animated.View>
@@ -244,6 +317,40 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: fonts.ui,
     fontSize: 16,
+  },
+  pairStrip: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  pairCell: {
+    minWidth: 52,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.45)',
+    alignItems: 'center',
+  },
+  pairNum: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 14,
+    color: colors.accentAmber,
+  },
+  pairLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  resumeLine: {
+    marginTop: spacing.sm,
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    color: colors.textSecondary,
+    lineHeight: 16,
   },
   cta: {
     gap: spacing.md,

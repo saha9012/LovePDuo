@@ -52,6 +52,9 @@ export default function HeartbeatScreen() {
   const [score, setScore] = useState(0);
   const [syncBonus, setSyncBonus] = useState(0);
   const [last, setLast] = useState<BeatJudgement | null>(null);
+  const [perfects, setPerfects] = useState(0);
+  const [greats, setGreats] = useState(0);
+  const [misses, setMisses] = useState(0);
   const lastRef = useRef<BeatJudgement | null>(null);
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
@@ -363,6 +366,9 @@ export default function HeartbeatScreen() {
     setScore(0);
     setSyncBonus(0);
     setLast(null);
+    setPerfects(0);
+    setGreats(0);
+    setMisses(0);
     setSyncFinish(false);
     setFinishDualLabel(null);
     cursor.current = 0;
@@ -442,6 +448,7 @@ export default function HeartbeatScreen() {
       }
       if (skipped > 0) {
         setLast('miss');
+        setMisses((m) => m + skipped);
       }
       if (t >= heartbeatConfig.durationMs) {
         clearInterval(id);
@@ -501,6 +508,7 @@ export default function HeartbeatScreen() {
     const delta = t - note.atMs;
     if (Math.abs(delta) > heartbeatConfig.windowGreatMs + 40) {
       setLast('miss');
+      setMisses((m) => m + 1);
       void juice.miss();
       pairRealtime.sendGame('heartbeat', { miss: true, judgement: 'miss' });
       return;
@@ -510,6 +518,9 @@ export default function HeartbeatScreen() {
     scoreRef.current += pts;
     setScore(scoreRef.current);
     setLast(j);
+    if (j === 'perfect') setPerfects((n) => n + 1);
+    else if (j === 'great') setGreats((n) => n + 1);
+    else if (j === 'miss') setMisses((n) => n + 1);
     cursor.current += 1;
     pairRealtime.sendGame('heartbeat', {
       tapAt: t,
@@ -607,6 +618,12 @@ export default function HeartbeatScreen() {
             Ты {total} · Партнёр {partnerScore} · sync +{syncBonus}
             {partnerLive ? ' · live' : ' · demo'}
           </Text>
+          <Text style={styles.meta}>
+            P{perfects} · G{greats} · miss {misses}
+            {perfects + greats + misses > 0
+              ? ` · ${Math.round(((perfects + greats) / (perfects + greats + misses)) * 100)}%`
+              : ''}
+          </Text>
           <PostMatchCard
             title={total >= partnerScore ? 'Ритм твой' : 'Партнёр чувствует лучше'}
             gameId="heartbeat"
@@ -662,6 +679,13 @@ export default function HeartbeatScreen() {
                 {Math.max(0, Math.ceil((heartbeatConfig.durationMs - elapsed) / 1000))}s
               </Text>
             </View>
+            <Text style={styles.meta}>
+              P{perfects} · G{greats} · miss {misses}
+              {perfects + greats + misses > 0
+                ? ` · ${Math.round(((perfects + greats) / (perfects + greats + misses)) * 100)}% hit`
+                : ''}
+              {last ? ` · last ${last}` : ''}
+            </Text>
             <View style={styles.stage}>
               <Animated.View style={[styles.syncFlash, syncStyle]} />
               <View
