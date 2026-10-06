@@ -313,6 +313,12 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.hello) {
+        if (peerLeftMatchRef.current) {
+          setPresenceHint('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+          setTimeout(() => setPresenceHint(null), 1600);
+          return;
+        }
         const both = Date.now() - lastHelloAt.current < 2500;
         const late = Date.now() - lateStartAt.current < 2500;
         setPresenceHint(

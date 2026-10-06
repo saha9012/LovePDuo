@@ -213,6 +213,11 @@ export default function SoftDuelScreen() {
       if (payload?.hello) {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        if (peerLeftMatchRef.current) {
+          setFlash('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+          return;
+        }
         const both = Date.now() - lastHelloAt.current < 2500;
         setFlash(
           both

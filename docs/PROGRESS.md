@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Hello after leaveMatch stays соло · lobby leave via sendGameIfPeerLive  
 - [x] Word Veil forceSoloRef guards synced-start timers  
 - [x] ToS presence online skips clear after leaveMatch  
 - [x] Rematch duo/solo from live WS room (not stale partnerLive)  

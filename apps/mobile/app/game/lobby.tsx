@@ -297,9 +297,7 @@ export default function GameLobbyScreen() {
       }
     });
     return () => {
-      if (pairRealtime.connected && getLastRoomSize() >= 2) {
-        pairRealtime.sendGame('play-peek', { leave: true, fromId: user.id });
-      }
+      sendGameIfPeerLive('play-peek', { leave: true, fromId: user.id });
       off();
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
@@ -484,14 +482,12 @@ export default function GameLobbyScreen() {
         if (readyMe) {
           sendGameIfPeerLive(gameId, { ready: false, userId: user.id });
         }
-        if (pairRealtime.connected && getLastRoomSize() >= 2) {
-          pairRealtime.sendGame(gameId, { lobbyLeave: true, userId: user.id });
-          pairRealtime.sendGame('play-peek', {
-            game: gameId,
-            leave: true,
-            fromId: user.id,
-          });
-        }
+        sendGameIfPeerLive(gameId, { lobbyLeave: true, userId: user.id });
+        sendGameIfPeerLive('play-peek', {
+          game: gameId,
+          leave: true,
+          fromId: user.id,
+        });
       }
       setReadyMe(false);
       setCountdown(null);

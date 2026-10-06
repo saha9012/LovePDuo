@@ -256,6 +256,11 @@ export default function SignalDrawScreen() {
       if (payload.hello || payload.phase === 'start') {
         setPeerSeen(true);
         if (payload.hello) {
+          if (peerLeftMatchRef.current) {
+            showToast('Партнёр в комнате · соло до rematch');
+            void juice.hit();
+            return;
+          }
           const both = Date.now() - lastHelloAt.current < 2500;
           showToast(
             both

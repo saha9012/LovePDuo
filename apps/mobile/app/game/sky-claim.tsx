@@ -227,6 +227,11 @@ export default function SkyClaimScreen() {
         if (payload?.hello) {
           setPartnerLive(true);
           partnerLiveRef.current = true;
+          if (peerLeftMatchRef.current) {
+            bumpPeerNote('комната · соло');
+            void juice.hit();
+            return;
+          }
           const both = Date.now() - lastHelloAt.current < 2500;
           bumpPeerNote(
             both

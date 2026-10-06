@@ -317,6 +317,11 @@ export default function TruthOrSparkScreen() {
       }
       if (payload.hello) {
         if (payload.fromName) setPeerName(payload.fromName);
+        if (peerLeftMatchRef.current) {
+          showTurnToast('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+          return;
+        }
         const both = Date.now() - lastHelloAt.current < 2500;
         showTurnToast(
           both
