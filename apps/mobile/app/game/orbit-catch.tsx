@@ -153,6 +153,7 @@ export default function OrbitCatchScreen() {
         bumpPeerNote(
           peerNoteRef.current === 'вышел' ||
             peerNoteRef.current === 'вышел · соло' ||
+            peerNoteRef.current === 'матч·соло' ||
             peerNoteRef.current === 'вернулся' ||
             peerNoteRef.current === 'оба снова здесь'
             ? 'оба снова здесь'
