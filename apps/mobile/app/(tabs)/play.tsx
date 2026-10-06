@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { GameTile } from '../../src/components/GameTile';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
@@ -397,7 +398,17 @@ export default function PlayScreen() {
 
         <View style={styles.list}>
           {games.length === 0 ? (
-            <Text style={styles.empty}>Ничего не нашлось. Сбрось фильтр.</Text>
+            <EmptyState
+              title="Каталог пуст"
+              body={
+                q.trim()
+                  ? 'Поиск ничего не дал — сбрось строку или фильтр.'
+                  : 'Сбрось фильтр — в каталоге семь игр.'
+              }
+              meta={`0 из ${CATALOG.length} · фильтр ${filter}${
+                q.trim() ? ` · «${q.trim()}»` : ''
+              }`}
+            />
           ) : (
             games.map((g) => (
               <GameTile
@@ -553,10 +564,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     color: colors.textMuted,
-  },
-  empty: {
-    fontFamily: fonts.ui,
-    color: colors.textMuted,
-    fontSize: 14,
   },
 });
