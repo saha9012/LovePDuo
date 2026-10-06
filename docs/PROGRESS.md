@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home «Оба на связи» toast requires WS ≥2  
 - [x] Home live chip requires WS room ≥2  
 - [x] Welcome kicker gates «на связи» on WS ≥2  
 - [x] Inbound dual-finish flash gated after forceSolo  

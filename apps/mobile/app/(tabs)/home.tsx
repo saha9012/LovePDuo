@@ -175,12 +175,20 @@ export default function HomeScreen() {
         return () => clearTimeout(t);
       }
       if ((prev === 'away' || prev === 'offline') && cur === 'online') {
+        const duoLive = (pair?.roomSize ?? 0) >= 2;
         const racing =
-          roomToastRef.current === 'Партнёр offline' ||
-          roomToastRef.current === 'Партнёр away' ||
-          roomToastRef.current === 'Партнёр снова рядом' ||
-          roomToastRef.current === 'Оба на связи';
-        setRoomToast(racing ? 'Оба на связи' : 'Партнёр снова рядом');
+          duoLive &&
+          (roomToastRef.current === 'Партнёр offline' ||
+            roomToastRef.current === 'Партнёр away' ||
+            roomToastRef.current === 'Партнёр снова рядом' ||
+            roomToastRef.current === 'Оба на связи');
+        setRoomToast(
+          racing
+            ? 'Оба на связи'
+            : duoLive
+              ? 'Партнёр снова рядом'
+              : 'Партнёр presence · ждём WS 2/2',
+        );
         void juice.hit();
         const t = setTimeout(() => setRoomToast(null), 1600);
         presenceSeen.current = cur;
@@ -188,7 +196,7 @@ export default function HomeScreen() {
       }
       presenceSeen.current = cur;
     }
-  }, [pair?.partnerPresence]);
+  }, [pair?.partnerPresence, pair?.roomSize]);
 
   useEffect(() => {
     const name = pair?.name ?? '';
