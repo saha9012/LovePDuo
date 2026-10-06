@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Rematch duo only if peer did not leaveMatch (Home ≠ match)  
 - [x] Outbox flush marks synced only on live send  
 - [x] Together notes send/flush via sendGameIfPeerLive  
 - [x] Music now-playing + Together candle via sendGameIfPeerLive  

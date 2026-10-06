@@ -644,7 +644,10 @@ export default function TruthOrSparkScreen() {
     setCardsDone(0);
     setSkipsUsed(0);
     finishLogged.current = false;
-    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
+    const peerLive =
+      pairRealtime.connected &&
+      getLastRoomSize() >= 2 &&
+      !peerLeftMatchRef.current;
     const soloAgain = params.solo === '1' || !peerLive;
     peerLeftMatchRef.current = false;
     if (peerLive) setLive(true);

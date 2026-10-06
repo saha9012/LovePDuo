@@ -596,7 +596,10 @@ export default function SoftDuelScreen() {
     seedRef.current = next;
     setSyncFinish(false);
     setFinishDualLabel(null);
-    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
+    const peerLive =
+      pairRealtime.connected &&
+      getLastRoomSize() >= 2 &&
+      !peerLeftMatchRef.current;
     const soloAgain = params.solo === '1' || !peerLive;
     peerLeftMatchRef.current = false;
     if (peerLive) {

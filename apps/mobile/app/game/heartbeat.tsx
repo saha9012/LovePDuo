@@ -457,7 +457,10 @@ export default function HeartbeatScreen() {
     const next = Math.floor(Math.random() * 100000);
     setMatchSeed(next);
     seedRef.current = next;
-    const peerLive = pairRealtime.connected && getLastRoomSize() >= 2;
+    const peerLive =
+      pairRealtime.connected &&
+      getLastRoomSize() >= 2 &&
+      !peerLeftMatchRef.current;
     const soloAgain = params.solo === '1' || !peerLive;
     peerLeftMatchRef.current = false;
     if (peerLive) {
