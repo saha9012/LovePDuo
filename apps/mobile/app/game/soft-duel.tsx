@@ -235,6 +235,8 @@ export default function SoftDuelScreen() {
       if (payload?.rematch && typeof payload.seed === 'number') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setForceSolo(false);
+        forceSoloRef.current = false;
         partnerFinishedRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
@@ -539,6 +541,9 @@ export default function SoftDuelScreen() {
     seedRef.current = next;
     setSyncFinish(false);
     setFinishDualLabel(null);
+    const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    setForceSolo(soloAgain);
+    forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     const racing =
       flashRef.current === 'Оба: ещё раунд' ||
