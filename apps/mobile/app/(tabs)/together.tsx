@@ -15,11 +15,12 @@ import { EmptyState } from '../../src/components/EmptyState';
 import { SectionRule } from '../../src/components/SectionRule';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
-import { sparksRu } from '../../src/content/sparks';
+import { sparksRu, type SparkFilter } from '../../src/content/sparks';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
+import { usePremium } from '../../src/store/PremiumStore';
 import { track } from '../../src/analytics/track';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
 import {
@@ -44,12 +45,17 @@ export default function TogetherScreen() {
     warmthPulse,
   } = useApp();
   const { items: memories, clearMemories, removeMemory, addMemory, receiveMemory } = useMemories();
+  const { spicyUnlocked } = usePremium();
   const [idx, setIdx] = useState(0);
+  const [sparkFilter, setSparkFilter] = useState<SparkFilter>('soft');
   const [candleLeft, setCandleLeft] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
   const [peerToast, setPeerToast] = useState<string | null>(null);
-  const soft = useMemo(() => sparksRu.filter((s) => s.filter === 'soft'), []);
-  const card = soft[idx % soft.length];
+  const deck = useMemo(
+    () => sparksRu.filter((s) => s.filter === sparkFilter),
+    [sparkFilter],
+  );
+  const card = deck[idx % (deck.length || 1)] ?? sparksRu[0];
   const flame = useSharedValue(1);
   const lit = candleLeft != null && candleLeft > 0;
   const candleLogged = useRef(false);
@@ -69,6 +75,13 @@ export default function TogetherScreen() {
   useEffect(() => {
     candleLitRef.current = lit;
   }, [lit]);
+
+  useEffect(() => {
+    if (!spicyUnlocked && sparkFilter === 'spicy') {
+      setSparkFilter('soft');
+      setIdx(0);
+    }
+  }, [spicyUnlocked, sparkFilter]);
 
   const showPeer = (text: string) => {
     peerToastRef.current = text;
@@ -251,7 +264,19 @@ export default function TogetherScreen() {
         }
       }
       if (msg.type === 'game' && msg.gameId === 'spark') {
-        const payload = msg.payload as { idx?: number; from?: string } | undefined;
+        const payload = msg.payload as {
+          idx?: number;
+          from?: string;
+          filter?: SparkFilter;
+        } | undefined;
+        if (payload?.filter === 'spicy' || payload?.filter === 'soft') {
+          if (payload.filter === 'spicy' && !spicyUnlocked) {
+            showPeer('Spicy · Duo Plus — остаёшься soft');
+            void juice.miss();
+          } else {
+            setSparkFilter(payload.filter);
+          }
+        }
         if (typeof payload?.idx === 'number') {
           setIdx(payload.idx);
           const both = Date.now() - lastSparkAt.current < 2200;
@@ -353,6 +378,7 @@ export default function TogetherScreen() {
     pendingNotes,
     markNoteSynced,
     user,
+    spicyUnlocked,
   ]);
 
   useEffect(() => {
@@ -381,12 +407,30 @@ export default function TogetherScreen() {
     void juice.miss();
   };
 
+  const changeSparkFilter = (f: SparkFilter) => {
+    if (f === 'spicy' && !spicyUnlocked) {
+      showPeer('Spicy pack · Duo Plus (Profile → Plus / trial)');
+      void juice.miss();
+      return;
+    }
+    setSparkFilter(f);
+    setIdx(0);
+    lastSparkAt.current = Date.now();
+    pairRealtime.sendGame('spark', {
+      idx: 0,
+      filter: f,
+      from: user?.displayName,
+    });
+    void juice.card();
+  };
+
   const nextSpark = () => {
     setIdx((v) => {
       const next = v + 1;
       lastSparkAt.current = Date.now();
       pairRealtime.sendGame('spark', {
         idx: next,
+        filter: sparkFilter,
         from: user?.displayName,
       });
       return next;
@@ -492,7 +536,8 @@ export default function TogetherScreen() {
         <Text style={styles.kicker}>Together</Text>
         <Text style={typography.headline}>Ритуалы и искры</Text>
         <Text style={typography.body}>
-          {notes.length} заметок · {memories.length} memory · искра {idx + 1}/{soft.length || 1}
+          {notes.length} заметок · {memories.length} memory · искра {idx + 1}/{deck.length || 1}
+          {` · ${sparkFilter}`}
           {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
           {pair
             ? ` · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'}`
@@ -505,6 +550,7 @@ export default function TogetherScreen() {
               ['ch', String(noteChars), 'букв'],
               ['m', String(memories.length), 'memory'],
               ['s', String(idx + 1), 'искра'],
+              ['f', sparkFilter, 'колода'],
               ['c', lit ? `${mins}:${secs.toString().padStart(2, '0')}` : 'off', 'свеча'],
               ['w', String(warmthPulse), 'тепло'],
               [
@@ -528,7 +574,27 @@ export default function TogetherScreen() {
           </Text>
         ) : null}
 
-        <SectionRule label="Искра" right={`${idx + 1}/${soft.length || 1}`} />
+        <SectionRule label="Искра" right={`${idx + 1}/${deck.length || 1} · ${sparkFilter}`} />
+
+        <View style={styles.filterRow}>
+          {(['soft', 'spicy'] as const).map((f) => (
+            <Pressable
+              key={f}
+              onPress={() => changeSparkFilter(f)}
+              style={[
+                styles.filterChip,
+                sparkFilter === f && styles.filterChipOn,
+                f === 'spicy' && !spicyUnlocked && styles.filterChipLocked,
+              ]}
+            >
+              <Text
+                style={[styles.filterChipLabel, sparkFilter === f && styles.filterChipLabelOn]}
+              >
+                {f === 'spicy' && !spicyUnlocked ? 'spicy · plus' : f}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
         <View style={styles.card}>
           <Text style={styles.kind}>{card.kind}</Text>
@@ -757,6 +823,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     color: colors.accentRose,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.4)',
+  },
+  filterChipOn: {
+    borderColor: colors.accentAmber,
+    backgroundColor: 'rgba(232,196,122,0.12)',
+  },
+  filterChipLocked: {
+    opacity: 0.55,
+  },
+  filterChipLabel: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 12,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  filterChipLabelOn: {
+    color: colors.accentAmber,
   },
   card: {
     marginTop: spacing.sm,
