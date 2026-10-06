@@ -52,6 +52,7 @@ export default function SoftDuelScreen() {
   const [partnerLastMs, setPartnerLastMs] = useState<number | null>(null);
   const [partnerLive, setPartnerLive] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
+  const forceSoloRef = useRef(params.solo === '1');
   const [flash, setFlash] = useState('');
   const [armed, setArmed] = useState(false);
   const [partnerFlash, setPartnerFlash] = useState(false);
@@ -90,6 +91,10 @@ export default function SoftDuelScreen() {
   }, [phase]);
 
   useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
+
+  useEffect(() => {
     flashRef.current = flash;
   }, [flash]);
 
@@ -126,6 +131,7 @@ export default function SoftDuelScreen() {
         partnerLiveRef.current = false;
         if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
           setForceSolo(true);
+          forceSoloRef.current = true;
           setFlash('Партнёр вышел · соло');
         } else {
           setFlash('Партнёр вышел');
@@ -137,6 +143,7 @@ export default function SoftDuelScreen() {
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setForceSolo(false);
+        forceSoloRef.current = false;
         const racing =
           flashRef.current === 'Партнёр вышел' ||
           flashRef.current === 'Партнёр вышел · соло' ||
@@ -418,7 +425,7 @@ export default function SoftDuelScreen() {
         title: 'Soft Duel',
         detail: partnerFinishedRef.current
           ? `Оба финиш · ты ${myScoreRef.current}`
-          : params.solo === '1' || forceSolo
+          : params.solo === '1' || forceSoloRef.current
             ? `Solo demo · ты ${myScoreRef.current}`
             : partnerLiveRef.current
               ? `Ты ${myScoreRef.current} · партнёр live`
@@ -434,8 +441,8 @@ export default function SoftDuelScreen() {
         setSyncFinish(true);
         void juice.perfect();
       }
-      // Demo partner score only in solo — never invent while waiting on a live pair.
-      if (!partnerLiveRef.current && (params.solo === '1' || forceSolo)) {
+      // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
+      if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
         setPartnerScore(Math.round(myScoreRef.current * (0.75 + Math.random() * 0.4)));
       }
       return;
