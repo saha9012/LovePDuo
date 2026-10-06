@@ -16,7 +16,6 @@ import { colors, fonts, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { clearMatchSession, peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
@@ -378,13 +377,11 @@ export default function GameLobbyScreen() {
     bothReadyNoted.current = true;
     if (user?.id && (hostStale || !pair?.hostUserId)) {
       setHostUserId(user.id);
-      if (pairRealtime.connected && getLastRoomSize() >= 2) {
-        pairRealtime.sendGame('pair-meta', {
-          hostUserId: user.id,
-          pairName: pair?.name,
-          fromId: user.id,
-        });
-      }
+      sendGameIfPeerLive('pair-meta', {
+        hostUserId: user.id,
+        pairName: pair?.name,
+        fromId: user.id,
+      });
     }
     const seed = Math.floor(Math.random() * 100000);
     const startAt = Date.now() + 2800;

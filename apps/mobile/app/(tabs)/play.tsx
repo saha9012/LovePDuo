@@ -9,7 +9,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { getLastRoomSize } from '../../src/realtime/pairPresence';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { useApp } from '../../src/store/AppStore';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -286,13 +286,11 @@ export default function PlayScreen() {
     void AsyncStorage.setItem(LAST_GAME_KEY, game);
     void juice.hit();
     const title = CATALOG.find((g) => g.game === game)?.title ?? game;
-    if (pairRealtime.connected && getLastRoomSize() >= 2) {
-      pairRealtime.sendGame('play-peek', {
-        game,
-        title,
-        fromId: user?.id,
-      });
-    }
+    sendGameIfPeerLive('play-peek', {
+      game,
+      title,
+      fromId: user?.id,
+    });
     router.push({ pathname: '/game/lobby', params: { game } });
   };
 
@@ -366,13 +364,11 @@ export default function PlayScreen() {
                 );
                 void juice.hit();
                 setTimeout(() => setPeekToast(null), 1200);
-                if (pairRealtime.connected && getLastRoomSize() >= 2) {
-                  pairRealtime.sendGame('play-filter', {
-                    filter: id,
-                    fromId: user?.id,
-                    from: user?.displayName,
-                  });
-                }
+                sendGameIfPeerLive('play-filter', {
+                  filter: id,
+                  fromId: user?.id,
+                  from: user?.displayName,
+                });
               }}
               style={[styles.chip, filter === id && styles.chipOn]}
             >
