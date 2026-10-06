@@ -677,7 +677,11 @@ export default function HomeScreen() {
             </View>
             <View style={styles.ctaGrow}>
               <LpdButton
-                label={`Тепло · ${stats.warmth}`}
+                label={
+                  (pair?.roomSize ?? 0) >= 2
+                    ? `Тепло · ${stats.warmth}`
+                    : `Тепло · ${stats.warmth} · ждёт 2/2`
+                }
                 variant="ghost"
                 onPress={() => {
                   warmthSentAt.current = Date.now();

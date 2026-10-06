@@ -692,10 +692,14 @@ export default function TogetherScreen() {
           <Text style={styles.candleTitle}>Candle Timer</Text>
           <Text style={styles.candleTime}>
             {candleLeft == null
-              ? '2:00'
+              ? peerInWsRoom
+                ? '2:00 · у обоих'
+                : '2:00 · локально · sync ждёт 2/2'
               : candleLeft <= 0
                 ? 'погасла · тепло осталось'
-                : `${mins}:${secs.toString().padStart(2, '0')}`}
+                : `${mins}:${secs.toString().padStart(2, '0')}${
+                    peerInWsRoom ? '' : ' · sync ждёт 2/2'
+                  }`}
           </Text>
           <View style={styles.candleTrack}>
             <View style={[styles.candleFill, { width: `${candleLeft == null ? 100 : candlePct}%` }]} />
@@ -781,15 +785,25 @@ export default function TogetherScreen() {
 
         <View style={styles.actions}>
           <LpdButton
-            label={lit ? 'Свеча горит…' : 'Зажечь свечу (2 мин)'}
+            label={
+              lit
+                ? 'Свеча горит…'
+                : peerInWsRoom
+                  ? 'Зажечь свечу (2 мин)'
+                  : 'Зажечь свечу (sync ждёт WS 2/2)'
+            }
             disabled={lit}
             onPress={startCandle}
           />
           {lit ? (
-            <LpdButton label="Погасить свечу" variant="ghost" onPress={blowCandle} />
+            <LpdButton
+              label={peerInWsRoom ? 'Погасить свечу' : 'Погасить (sync ждёт WS 2/2)'}
+              variant="ghost"
+              onPress={blowCandle}
+            />
           ) : null}
           <LpdButton
-            label="Отправить тепло"
+            label={peerInWsRoom ? 'Отправить тепло' : 'Тепло (дождётся WS 2/2)'}
             variant="ghost"
             onPress={() => {
               warmthSentAt.current = Date.now();
