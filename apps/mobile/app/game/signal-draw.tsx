@@ -193,6 +193,7 @@ export default function SignalDrawScreen() {
         showToast(
           toastRef.current === 'Партнёр вышел' ||
             toastRef.current === 'Партнёр вышел · соло' ||
+            toastRef.current === 'Партнёр вышел из матча · соло' ||
             toastRef.current === 'Партнёр вернулся' ||
             toastRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'
