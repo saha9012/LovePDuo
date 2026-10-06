@@ -217,8 +217,8 @@ export default function ProfileScreen() {
                   fromId: next.id,
                 });
                 if (result === 'queued') {
-                  wsToastRef.current = 'Имя · sync ждёт online';
-                  setWsToast('Имя · sync ждёт online');
+                  wsToastRef.current = 'Имя · sync ждёт WS 2/2';
+                  setWsToast('Имя · sync ждёт WS 2/2');
                   setTimeout(() => setWsToast(null), 1600);
                 }
               }
@@ -254,7 +254,7 @@ export default function ProfileScreen() {
                   ? 'Оба назвали пару'
                   : result === 'sent'
                     ? 'Имя пары сохранено'
-                    : 'Имя пары · sync ждёт online';
+                    : 'Имя пары · sync ждёт WS 2/2';
               wsToastRef.current = toast;
               setWsToast(toast);
               setTimeout(() => setWsToast(null), 1600);
@@ -449,7 +449,7 @@ export default function ProfileScreen() {
                   setWsToast(
                     result === 'sent'
                       ? 'Duo Plus trial 7д · для пары'
-                      : 'Duo Plus trial 7д · sync ждёт online',
+                      : 'Duo Plus trial 7д · sync ждёт WS 2/2',
                   );
                 } else {
                   setWsToast('Trial уже был');
@@ -469,7 +469,7 @@ export default function ProfileScreen() {
                   fromId: user?.id,
                 });
                 setWsToast(
-                  result === 'sent' ? 'Снова Free · у обоих' : 'Free · sync ждёт online',
+                  result === 'sent' ? 'Снова Free · у обоих' : 'Free · sync ждёт WS 2/2',
                 );
                 setTimeout(() => setWsToast(null), 1600);
                 void juice.miss();
@@ -490,7 +490,7 @@ export default function ProfileScreen() {
                 setWsToast(
                   result === 'sent'
                     ? 'Duo Plus unlocked · для пары'
-                    : 'Duo Plus unlocked · sync ждёт online',
+                    : 'Duo Plus unlocked · sync ждёт WS 2/2',
                 );
                 setTimeout(() => setWsToast(null), 1600);
                 void juice.perfect();

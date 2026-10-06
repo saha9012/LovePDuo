@@ -661,7 +661,7 @@ export default function HomeScreen() {
                 onPress={() => {
                   warmthSentAt.current = Date.now();
                   const result = sendWarmthOrQueue();
-                  setWarmthToast(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт online');
+                  setWarmthToast(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт WS 2/2');
                   void juice.warmth();
                   setTimeout(() => setWarmthToast(null), 1400);
                 }}

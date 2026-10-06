@@ -429,7 +429,7 @@ export default function TogetherScreen() {
     candleLogged.current = false;
     setCandleLeft(CANDLE_SEC);
     const result = sendPairMetaOrQueue('candle', { start: true, left: CANDLE_SEC });
-    showPeer(result === 'sent' ? 'Свеча зажжена · у обоих' : 'Свеча · sync ждёт online');
+    showPeer(result === 'sent' ? 'Свеча зажжена · у обоих' : 'Свеча · sync ждёт WS 2/2');
     void juice.warmth();
     track('warmth_sent', { ritual: 'candle' });
   };
@@ -440,7 +440,7 @@ export default function TogetherScreen() {
     lastBlowAt.current = Date.now();
     setCandleLeft(0);
     const result = sendPairMetaOrQueue('candle', { blow: true, left: 0 });
-    showPeer(result === 'sent' ? 'Свеча погашена · у обоих' : 'Погасили · sync ждёт online');
+    showPeer(result === 'sent' ? 'Свеча погашена · у обоих' : 'Погасили · sync ждёт WS 2/2');
     void juice.miss();
   };
 
@@ -464,7 +464,7 @@ export default function TogetherScreen() {
         ? f === 'spicy'
           ? 'Spicy · у обоих · сегодня'
           : 'Soft · у обоих · сегодня'
-        : `${f} · sync ждёт online`,
+        : `${f} · sync ждёт WS 2/2`,
     );
     void juice.card();
   };
@@ -481,7 +481,7 @@ export default function TogetherScreen() {
       markNoteSynced(note.id);
       showPeer('Записка ушла');
     } else {
-      showPeer('Записка ждёт online');
+      showPeer('Записка ждёт WS 2/2');
     }
     setDraft('');
     void juice.card();
@@ -498,7 +498,7 @@ export default function TogetherScreen() {
         from: user?.displayName,
         fromId: user?.id,
       });
-      showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт online');
+      showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт WS 2/2');
       void juice.miss();
     })();
   };
@@ -510,7 +510,7 @@ export default function TogetherScreen() {
       from: user?.displayName,
       fromId: user?.id,
     });
-    showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт online');
+    showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт WS 2/2');
     void juice.miss();
   };
 
@@ -554,7 +554,7 @@ export default function TogetherScreen() {
       removeMemory(id);
       const result = broadcastMemoryRemove(id, user);
       showPeer(
-        result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт online`,
+        result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт WS 2/2`,
       );
       void juice.miss();
     })();
@@ -564,7 +564,7 @@ export default function TogetherScreen() {
     removeMemory(id);
     const result = broadcastMemoryRemove(id, user);
     showPeer(
-      result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт online`,
+      result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт WS 2/2`,
     );
     void juice.miss();
   };
@@ -723,7 +723,7 @@ export default function TogetherScreen() {
           />
           <Text style={styles.draftMeta}>{draft.trim().length}/180</Text>
           <LpdButton
-            label={peerInWsRoom ? 'Отправить заметку' : 'Отправить (дождётся online)'}
+            label={peerInWsRoom ? 'Отправить заметку' : 'Отправить (дождётся WS 2/2)'}
             onPress={sendNote}
           />
           {notes.length === 0 ? (
@@ -791,7 +791,7 @@ export default function TogetherScreen() {
             onPress={() => {
               warmthSentAt.current = Date.now();
               const result = sendWarmthOrQueue();
-              showPeer(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт online');
+              showPeer(result === 'sent' ? 'Тепло ушло' : 'Тепло ждёт WS 2/2');
               void juice.warmth();
               track('warmth_sent');
             }}
@@ -899,7 +899,7 @@ export default function TogetherScreen() {
                     showPeer(
                       result === 'sent'
                         ? 'Memories очищены у обоих'
-                        : 'Очистка · sync ждёт online',
+                        : 'Очистка · sync ждёт WS 2/2',
                     );
                     void juice.miss();
                   });

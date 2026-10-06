@@ -550,7 +550,7 @@ export default function MusicScreen() {
       showNote(
         np === 'sent'
           ? 'Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.'
-          : 'Сейчас играет внутри LovePDuo. Now Playing · ждёт online.',
+          : 'Сейчас играет внутри LovePDuo. Now Playing · ждёт WS 2/2.',
       );
       void juice.hit();
     } catch {
@@ -593,7 +593,7 @@ export default function MusicScreen() {
         showNote(
           clearResult === 'sent'
             ? 'Библиотека очищена.'
-            : 'Библиотека очищена · sync ждёт online',
+            : 'Библиотека очищена · sync ждёт WS 2/2',
         );
         void juice.miss();
         trackEvent('track_removed', { source: 'clear_all' });
@@ -625,7 +625,7 @@ export default function MusicScreen() {
     showNote(
       result === 'sent'
         ? `Удалили «${track.title}»`
-        : `Удалили «${track.title}» · sync ждёт online`,
+        : `Удалили «${track.title}» · sync ждёт WS 2/2`,
     );
     void juice.miss();
     trackEvent('track_removed', { source: track.sourceType });
@@ -689,7 +689,7 @@ export default function MusicScreen() {
     showNote(
       result === 'sent'
         ? `Убрали из «${active.name}»`
-        : `Убрали из «${active.name}» · sync ждёт online`,
+        : `Убрали из «${active.name}» · sync ждёт WS 2/2`,
     );
     void juice.hit();
   };
@@ -727,7 +727,7 @@ export default function MusicScreen() {
     showNote(
       sync === 'sent'
         ? 'Трек сохранён. Партнёр видит карточку (файл — локально у тебя).'
-        : 'Трек сохранён. Карточка · sync ждёт online (файл — локально).',
+        : 'Трек сохранён. Карточка · sync ждёт WS 2/2 (файл — локально).',
     );
     void juice.sync();
   };
@@ -757,10 +757,10 @@ export default function MusicScreen() {
       spotifyConfigured()
         ? sync === 'sent'
           ? 'Spotify: метаданные у обоих. Стрим — OAuth / App Remote.'
-          : 'Spotify: метаданные локально · sync ждёт online. Стрим — OAuth.'
+          : 'Spotify: метаданные локально · sync ждёт WS 2/2. Стрим — OAuth.'
         : sync === 'sent'
           ? `${spotifyStatusLabel()} · stub ушёл партнёру.`
-          : `${spotifyStatusLabel()} · stub · sync ждёт online.`,
+          : `${spotifyStatusLabel()} · stub · sync ждёт WS 2/2.`,
       2800,
     );
     void juice.card();
@@ -791,7 +791,7 @@ export default function MusicScreen() {
     showNote(
       sync === 'sent'
         ? 'VK: metadata + fallback. Stub ушёл партнёру.'
-        : 'VK: metadata локально · sync ждёт online.',
+        : 'VK: metadata локально · sync ждёт WS 2/2.',
     );
     void juice.card();
   };
@@ -809,7 +809,7 @@ export default function MusicScreen() {
         from: user?.displayName,
       });
       if (sync === 'queued') {
-        showNote('Реакция · sync ждёт online');
+        showNote('Реакция · sync ждёт WS 2/2');
       }
     }
     void juice.card();
@@ -849,7 +849,7 @@ export default function MusicScreen() {
       fromId: user?.id,
     });
     showNote(
-      result === 'sent' ? `Полка «${next}» — у обоих` : `Полка «${next}» · sync ждёт online`,
+      result === 'sent' ? `Полка «${next}» — у обоих` : `Полка «${next}» · sync ждёт WS 2/2`,
     );
     void juice.card();
   };
@@ -879,7 +879,7 @@ export default function MusicScreen() {
     showNote(
       created === 'sent'
         ? 'Новая полка у обоих — переименуй и пиши.'
-        : 'Новая полка локально · sync ждёт 2/2 — переименуй.',
+        : 'Новая полка локально · sync ждёт WS 2/2 — переименуй.',
     );
     void juice.hit();
   };
@@ -905,7 +905,7 @@ export default function MusicScreen() {
         showNote(
           result === 'sent'
             ? `Полку «${name}» убрали`
-            : `Полку «${name}» убрали · sync ждёт online`,
+            : `Полку «${name}» убрали · sync ждёт WS 2/2`,
         );
         void juice.miss();
       },
@@ -1110,7 +1110,7 @@ export default function MusicScreen() {
                     showNote(
                       np === 'sent'
                         ? 'Остановили — партнёр видит.'
-                        : 'Остановили · Now Playing ждёт online.',
+                        : 'Остановили · Now Playing ждёт WS 2/2.',
                     );
                     void juice.miss();
                   }}
@@ -1216,7 +1216,7 @@ export default function MusicScreen() {
                       showNote(
                         shelfResult === 'sent'
                           ? `В «${active.name}» — полка у обоих.`
-                          : `В «${active.name}» · sync ждёт online`,
+                          : `В «${active.name}» · sync ждёт WS 2/2`,
                       );
                       void juice.hit();
                     }}
