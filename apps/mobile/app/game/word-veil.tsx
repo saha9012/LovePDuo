@@ -79,6 +79,7 @@ export default function WordVeilScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerLeftMatchRef = useRef(false);
   const prevPresence = useRef(pair?.partnerPresence);
   const [presenceHint, setPresenceHint] = useState<string | null>(null);
   const hintRef = useRef<string | null>(null);
@@ -254,17 +255,22 @@ export default function WordVeilScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setForceSolo(false);
-        setPresenceHint(
-          hintRef.current === 'Партнёр вышел' ||
-            hintRef.current === 'Партнёр вышел · соло' ||
-            hintRef.current === 'Партнёр вышел из матча · соло' ||
-            hintRef.current === 'Партнёр вернулся' ||
-            hintRef.current === 'Оба снова здесь'
-            ? 'Оба снова здесь'
-            : 'Партнёр вернулся',
-        );
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          setPresenceHint('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          setPresenceHint(
+            hintRef.current === 'Партнёр вышел' ||
+              hintRef.current === 'Партнёр вышел · соло' ||
+              hintRef.current === 'Партнёр вышел из матча · соло' ||
+              hintRef.current === 'Партнёр вернулся' ||
+              hintRef.current === 'Оба снова здесь'
+              ? 'Оба снова здесь'
+              : 'Партнёр вернулся',
+          );
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
         setTimeout(() => setPresenceHint(null), 1600);
@@ -286,6 +292,7 @@ export default function WordVeilScreen() {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
         }
+        peerLeftMatchRef.current = true;
         setForceSolo(true);
         setPresenceHint('Партнёр вышел из матча · соло');
         setTimeout(() => setPresenceHint(null), 1600);
@@ -337,6 +344,7 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        peerLeftMatchRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setForceSolo(false);
@@ -498,6 +506,7 @@ export default function WordVeilScreen() {
       params.solo === '1' ||
       pair?.partnerPresence !== 'online' ||
       (pair?.roomSize ?? 0) < 2;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     lastRematchAt.current = Date.now();
     sendGameIfPeerLive('word-veil', { rematch: true, seed: next, hello: true });

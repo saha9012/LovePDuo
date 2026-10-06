@@ -85,6 +85,8 @@ export default function SoftDuelScreen() {
   const armAt = useRef(0);
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
+  /** Intentional leaveMatch — peer_joined must not silently rejoin the round. */
+  const peerLeftMatchRef = useRef(false);
   const prevPresence = useRef(pair?.partnerPresence);
   const padScale = useSharedValue(1);
   const flashScale = useSharedValue(1);
@@ -155,18 +157,23 @@ export default function SoftDuelScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setForceSolo(false);
-        forceSoloRef.current = false;
-        const racing =
-          flashRef.current === 'Партнёр вышел' ||
-          flashRef.current === 'Партнёр вышел · соло' ||
-          flashRef.current === 'Партнёр вышел из матча · соло' ||
-          flashRef.current === 'Партнёр снова в паре' ||
-          flashRef.current === 'Оба снова в паре' ||
-          flashRef.current === 'Партнёр снова в комнате' ||
-          flashRef.current === 'Оба снова в комнате';
-        setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          setFlash('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          forceSoloRef.current = false;
+          const racing =
+            flashRef.current === 'Партнёр вышел' ||
+            flashRef.current === 'Партнёр вышел · соло' ||
+            flashRef.current === 'Партнёр вышел из матча · соло' ||
+            flashRef.current === 'Партнёр снова в паре' ||
+            flashRef.current === 'Оба снова в паре' ||
+            flashRef.current === 'Партнёр снова в комнате' ||
+            flashRef.current === 'Оба снова в комнате';
+          setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('soft-duel', { hello: true, fromId: user.id });
         return;
@@ -190,6 +197,7 @@ export default function SoftDuelScreen() {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
         }
+        peerLeftMatchRef.current = true;
         setPartnerLive(false);
         partnerLiveRef.current = false;
         setForceSolo(true);
@@ -265,6 +273,7 @@ export default function SoftDuelScreen() {
         }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        peerLeftMatchRef.current = false;
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setForceSolo(false);
@@ -574,6 +583,7 @@ export default function SoftDuelScreen() {
     setSyncFinish(false);
     setFinishDualLabel(null);
     const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();

@@ -104,6 +104,7 @@ export default function TruthOrSparkScreen() {
   const lastDeckWrapAt = useRef(0);
   const lastNextAt = useRef(0);
   const seedRef = useRef(matchSeed);
+  const peerLeftMatchRef = useRef(false);
   const prevPresence = useRef(pair?.partnerPresence);
 
   useEffect(() => {
@@ -224,20 +225,26 @@ export default function TruthOrSparkScreen() {
       }
       if (msg.type === 'peer_joined') {
         setLive(true);
-        if (params.solo !== '1') {
+        if (peerLeftMatchRef.current) {
+          showTurnToast('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+        } else if (params.solo !== '1') {
           setForceSolo(false);
           idleForced.current = false;
+          showTurnToast(
+            turnToastRef.current === 'Партнёр вышел' ||
+              turnToastRef.current === 'Партнёр вышел · соло' ||
+              turnToastRef.current === 'Партнёр вышел из матча · соло' ||
+              turnToastRef.current === 'Партнёр вернулся' ||
+              turnToastRef.current === 'Оба снова здесь'
+              ? 'Оба снова здесь'
+              : 'Партнёр вернулся',
+          );
+          void juice.sync();
+        } else {
+          showTurnToast('Партнёр вернулся');
+          void juice.sync();
         }
-        showTurnToast(
-          turnToastRef.current === 'Партнёр вышел' ||
-            turnToastRef.current === 'Партнёр вышел · соло' ||
-            turnToastRef.current === 'Партнёр вышел из матча · соло' ||
-            turnToastRef.current === 'Партнёр вернулся' ||
-            turnToastRef.current === 'Оба снова здесь'
-            ? 'Оба снова здесь'
-            : 'Партнёр вернулся',
-        );
-        void juice.sync();
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive(GAME_ID, {
           hello: true,
@@ -271,6 +278,7 @@ export default function TruthOrSparkScreen() {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
         }
+        peerLeftMatchRef.current = true;
         setLive(false);
         setForceSolo(true);
         idleForced.current = true;
@@ -320,6 +328,7 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.rematch && typeof payload.seed === 'number') {
+        peerLeftMatchRef.current = false;
         setMatchSeed(payload.seed);
         seedRef.current = payload.seed;
         setIndex(0);
@@ -625,6 +634,7 @@ export default function TruthOrSparkScreen() {
     setSkipsUsed(0);
     finishLogged.current = false;
     const soloAgain = params.solo === '1' || !live;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     idleForced.current = soloAgain;
     lastRematchAt.current = Date.now();

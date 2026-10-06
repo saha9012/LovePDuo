@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] peer_joined after leaveMatch stays solo until rematch  
 - [x] leaveMatch carries seed · ignore stale leave after rematch  
 - [x] ToS cancels synced-start timers on forceSolo  
 - [x] Cancel synced-start timers when forceSolo flips  

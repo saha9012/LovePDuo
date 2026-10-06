@@ -115,6 +115,7 @@ export default function SignalDrawScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerLeftMatchRef = useRef(false);
   const brushRef = useRef<'fine' | 'bold'>('fine');
   const toastRef = useRef<string | null>(null);
 
@@ -199,18 +200,23 @@ export default function SignalDrawScreen() {
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
-        setForceSolo(false);
-        forceSoloRef.current = false;
-        showToast(
-          toastRef.current === 'Партнёр вышел' ||
-            toastRef.current === 'Партнёр вышел · соло' ||
-            toastRef.current === 'Партнёр вышел из матча · соло' ||
-            toastRef.current === 'Партнёр вернулся' ||
-            toastRef.current === 'Оба снова здесь'
-            ? 'Оба снова здесь'
-            : 'Партнёр вернулся',
-        );
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          showToast('Партнёр в комнате · соло до rematch');
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          forceSoloRef.current = false;
+          showToast(
+            toastRef.current === 'Партнёр вышел' ||
+              toastRef.current === 'Партнёр вышел · соло' ||
+              toastRef.current === 'Партнёр вышел из матча · соло' ||
+              toastRef.current === 'Партнёр вернулся' ||
+              toastRef.current === 'Оба снова здесь'
+              ? 'Оба снова здесь'
+              : 'Партнёр вернулся',
+          );
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('signal-draw', { hello: true, fromId: user.id });
         return;
@@ -235,6 +241,7 @@ export default function SignalDrawScreen() {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
         }
+        peerLeftMatchRef.current = true;
         setForceSolo(true);
         forceSoloRef.current = true;
         setPeerSeen(false);
@@ -269,6 +276,7 @@ export default function SignalDrawScreen() {
         }
       }
       if (payload.rematch) {
+        peerLeftMatchRef.current = false;
         setPeerSeen(true);
         setForceSolo(false);
         forceSoloRef.current = false;
@@ -463,6 +471,7 @@ export default function SignalDrawScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     const soloAgain = params.solo === '1' || !peerSeen;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     sendGameIfPeerLive('signal-draw', { rematch: true, seed: next, hello: true });

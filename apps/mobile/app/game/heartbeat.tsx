@@ -77,6 +77,7 @@ export default function HeartbeatScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerLeftMatchRef = useRef(false);
   const seedRef = useRef(initialSeed);
   const startRef = useRef<() => void>(() => undefined);
   const phaseRef = useRef<Phase>('ready');
@@ -176,21 +177,30 @@ export default function HeartbeatScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setForceSolo(false);
-        forceSoloRef.current = false;
-        const note =
-          peerNoteRef.current === 'вышел' ||
-          peerNoteRef.current === 'вышел · соло' ||
-          peerNoteRef.current === 'матч·соло' ||
-          peerNoteRef.current === 'вернулся' ||
-          peerNoteRef.current === 'оба снова здесь'
-            ? 'оба снова здесь'
-            : 'вернулся';
-        setPeerNote(note);
-        peerNoteRef.current = note;
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          const note = 'комната · соло';
+          setPeerNote(note);
+          peerNoteRef.current = note;
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          forceSoloRef.current = false;
+          const note =
+            peerNoteRef.current === 'вышел' ||
+            peerNoteRef.current === 'вышел · соло' ||
+            peerNoteRef.current === 'матч·соло' ||
+            peerNoteRef.current === 'вернулся' ||
+            peerNoteRef.current === 'оба снова здесь'
+              ? 'оба снова здесь'
+              : 'вернулся';
+          setPeerNote(note);
+          peerNoteRef.current = note;
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('heartbeat', { hello: true, fromId: user.id });
         return;
@@ -213,6 +223,7 @@ export default function HeartbeatScreen() {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
         }
+        peerLeftMatchRef.current = true;
         setPartnerLive(false);
         partnerLiveRef.current = false;
         setForceSolo(true);
@@ -253,6 +264,7 @@ export default function HeartbeatScreen() {
         }
       }
       if (payload?.rematch && typeof payload.seed === 'number') {
+        peerLeftMatchRef.current = false;
         setPartnerLive(true);
         partnerLiveRef.current = true;
         setForceSolo(false);
@@ -437,6 +449,7 @@ export default function HeartbeatScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();

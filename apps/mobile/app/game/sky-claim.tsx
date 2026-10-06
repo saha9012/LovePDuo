@@ -93,6 +93,7 @@ export default function SkyClaimScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerLeftMatchRef = useRef(false);
   const partnerScale = useSharedValue(1);
 
   useEffect(() => {
@@ -172,18 +173,23 @@ export default function SkyClaimScreen() {
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
-        setForceSolo(false);
-        forceSoloRef.current = false;
-        bumpPeerNote(
-          peerNoteRef.current === 'вышел' ||
-            peerNoteRef.current === 'вышел · соло' ||
-            peerNoteRef.current === 'матч·соло' ||
-            peerNoteRef.current === 'вернулся' ||
-            peerNoteRef.current === 'оба снова здесь'
-            ? 'оба снова здесь'
-            : 'вернулся',
-        );
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          bumpPeerNote('комната · соло');
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          forceSoloRef.current = false;
+          bumpPeerNote(
+            peerNoteRef.current === 'вышел' ||
+              peerNoteRef.current === 'вышел · соло' ||
+              peerNoteRef.current === 'матч·соло' ||
+              peerNoteRef.current === 'вернулся' ||
+              peerNoteRef.current === 'оба снова здесь'
+              ? 'оба снова здесь'
+              : 'вернулся',
+          );
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
         return;
@@ -205,6 +211,7 @@ export default function SkyClaimScreen() {
           if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
             return;
           }
+          peerLeftMatchRef.current = true;
           setPartnerLive(false);
           partnerLiveRef.current = false;
           setForceSolo(true);
@@ -243,6 +250,7 @@ export default function SkyClaimScreen() {
           }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
+          peerLeftMatchRef.current = false;
           setPartnerLive(true);
           partnerLiveRef.current = true;
           setForceSolo(false);
@@ -434,6 +442,7 @@ export default function SkyClaimScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     const soloAgain = params.solo === '1' || !partnerLiveRef.current;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();

@@ -83,6 +83,7 @@ export default function OrbitCatchScreen() {
   const lastRematchAt = useRef(0);
   const lastHelloAt = useRef(0);
   const lateStartAt = useRef(0);
+  const peerLeftMatchRef = useRef(false);
   const peerNoteRef = useRef<string | null>(null);
 
   const speed = useMemo(() => 0.045 + (matchSeed % 7) * 0.004, [matchSeed]);
@@ -154,18 +155,23 @@ export default function OrbitCatchScreen() {
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
-        setForceSolo(false);
-        forceSoloRef.current = false;
-        bumpPeerNote(
-          peerNoteRef.current === 'вышел' ||
-            peerNoteRef.current === 'вышел · соло' ||
-            peerNoteRef.current === 'матч·соло' ||
-            peerNoteRef.current === 'вернулся' ||
-            peerNoteRef.current === 'оба снова здесь'
-            ? 'оба снова здесь'
-            : 'вернулся',
-        );
-        void juice.sync();
+        if (peerLeftMatchRef.current) {
+          bumpPeerNote('комната · соло');
+          void juice.hit();
+        } else {
+          setForceSolo(false);
+          forceSoloRef.current = false;
+          bumpPeerNote(
+            peerNoteRef.current === 'вышел' ||
+              peerNoteRef.current === 'вышел · соло' ||
+              peerNoteRef.current === 'матч·соло' ||
+              peerNoteRef.current === 'вернулся' ||
+              peerNoteRef.current === 'оба снова здесь'
+              ? 'оба снова здесь'
+              : 'вернулся',
+          );
+          void juice.sync();
+        }
         lastHelloAt.current = Date.now();
         sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
         return;
@@ -186,6 +192,7 @@ export default function OrbitCatchScreen() {
           if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
             return;
           }
+          peerLeftMatchRef.current = true;
           setForceSolo(true);
           forceSoloRef.current = true;
           setPeerSeen(false);
@@ -220,6 +227,7 @@ export default function OrbitCatchScreen() {
           }
         }
         if (payload?.rematch && typeof payload.seed === 'number') {
+          peerLeftMatchRef.current = false;
           setPeerSeen(true);
           setForceSolo(false);
           forceSoloRef.current = false;
@@ -377,6 +385,7 @@ export default function OrbitCatchScreen() {
     setMatchSeed(next);
     seedRef.current = next;
     const soloAgain = params.solo === '1' || !peerSeen;
+    peerLeftMatchRef.current = false;
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
