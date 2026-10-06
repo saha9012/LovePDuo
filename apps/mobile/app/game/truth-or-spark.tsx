@@ -664,6 +664,7 @@ export default function TruthOrSparkScreen() {
       fromName: user?.displayName,
       fromId: user?.id,
     });
+    showTurnToast(soloAgain ? 'Новая колода · соло' : 'Новая колода');
     void juice.sync();
   };
 
