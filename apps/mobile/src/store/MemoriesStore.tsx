@@ -32,10 +32,16 @@ const KEY = 'lovepduo.memories.v1';
 const Ctx = createContext<MemoriesApi | null>(null);
 
 let memoryCap = 40;
+let markSyncedHook: ((id: string) => void) | null = null;
 
 /** Called by PairPremiumBinder when Duo Plus changes the cap. */
 export function setMemoryCap(n: number) {
   memoryCap = Math.max(20, Math.min(200, Math.floor(n)));
+}
+
+/** Used by broadcastMemory when peer is already in the WS room. */
+export function markMemorySyncedExternal(id: string) {
+  markSyncedHook?.(id);
 }
 
 function makeId() {
@@ -104,6 +110,13 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
       prev.map((m) => (m.id === id && m.pendingSync ? { ...m, pendingSync: false } : m)),
     );
   }, []);
+
+  useEffect(() => {
+    markSyncedHook = markMemorySynced;
+    return () => {
+      if (markSyncedHook === markMemorySynced) markSyncedHook = null;
+    };
+  }, [markMemorySynced]);
 
   const pendingMemories = useCallback(
     () => items.filter((m) => m.pendingSync),

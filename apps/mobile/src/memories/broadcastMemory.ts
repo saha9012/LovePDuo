@@ -1,5 +1,6 @@
 import { pairRealtime } from '../realtime/PairRealtime';
-import type { MemoryItem } from '../store/MemoriesStore';
+import { getLastRoomSize } from '../realtime/pairPresence';
+import { markMemorySyncedExternal, type MemoryItem } from '../store/MemoriesStore';
 
 type FromUser = { displayName?: string | null; id?: string | null } | null | undefined;
 
@@ -17,6 +18,10 @@ export function broadcastMemory(memory: MemoryItem, from?: FromUser) {
     ...payload,
     ...fromFields(from),
   });
+  // Peer already in room → delivered; else pendingSync stays for RealtimeConnector flush.
+  if (pairRealtime.connected && getLastRoomSize() >= 2) {
+    markMemorySyncedExternal(memory.id);
+  }
 }
 
 export function broadcastMemoryRemove(id: string, from?: FromUser) {

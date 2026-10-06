@@ -3,6 +3,7 @@ import { useApp, TinyNote } from '../store/AppStore';
 import { useMemories, MemoryItem } from '../store/MemoriesStore';
 import { pairRealtime } from './PairRealtime';
 import { setMatchSession } from './matchSession';
+import { setLastRoomSize } from './pairPresence';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -83,6 +84,7 @@ export function RealtimeConnector() {
 
     const off = pairRealtime.onMessage((msg) => {
       if (typeof msg.size === 'number') {
+        setLastRoomSize(msg.size);
         setRoomSize(msg.size);
       }
       if (msg.type === 'warmth') {
