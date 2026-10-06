@@ -17,6 +17,7 @@ import { typography } from '../../src/theme/typography';
 import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendMusicOrQueue } from '../../src/realtime/musicOutbox';
+import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
 import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
@@ -79,6 +80,18 @@ export default function MusicScreen() {
       noteRef.current = '';
       setNote('');
     }, ms);
+  };
+
+  /** Ephemeral — never queue stale now-playing into an empty room. */
+  const sendNowPlaying = (title: string | null) => {
+    if (pairRealtime.connected && getLastRoomSize() >= 2) {
+      pairRealtime.sendGame('now-playing', {
+        title,
+        from: user?.displayName,
+      });
+      return 'sent' as const;
+    }
+    return 'skipped' as const;
   };
 
   const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
@@ -516,21 +529,19 @@ export default function MusicScreen() {
           void playTrackRef.current(nextLocal);
           return;
         }
-        pairRealtime.sendGame('now-playing', {
-          title: null,
-          from: user?.displayName,
-        });
+        sendNowPlaying(null);
         showNote('Трек доиграл.');
         void juice.miss();
       });
       await next.playAsync();
       setSound(next);
       setNowPlaying(track.id);
-      pairRealtime.sendGame('now-playing', {
-        title: track.title,
-        from: user?.displayName,
-      });
-      showNote('Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.');
+      const np = sendNowPlaying(track.title);
+      showNote(
+        np === 'sent'
+          ? 'Сейчас играет внутри LovePDuo. Партнёр видит Now Playing.'
+          : 'Сейчас играет внутри LovePDuo. Now Playing · ждёт online.',
+      );
       void juice.hit();
     } catch {
       showNote('Не удалось воспроизвести файл. Попробуйте другой формат (mp3/m4a).', 2800);
@@ -558,10 +569,7 @@ export default function MusicScreen() {
         setPartnerNowPlaying(null);
         lastStopAt.current = Date.now();
         clearTracks();
-        pairRealtime.sendGame('now-playing', {
-          title: null,
-          from: user?.displayName,
-        });
+        sendNowPlaying(null);
         const clearResult = sendMusicOrQueue('track-clear', {
           from: user?.displayName,
           fromId: user?.id,
@@ -589,10 +597,7 @@ export default function MusicScreen() {
       setNowPlaying(null);
       setProgress(null);
       lastStopAt.current = Date.now();
-      pairRealtime.sendGame('now-playing', {
-        title: null,
-        from: user?.displayName,
-      });
+      sendNowPlaying(null);
     }
     removeTrack(track.id);
     const result = sendMusicOrQueue('track-remove', {
@@ -1037,11 +1042,12 @@ export default function MusicScreen() {
                     setNowPlaying(null);
                     setProgress(null);
                     lastStopAt.current = Date.now();
-                    pairRealtime.sendGame('now-playing', {
-                      title: null,
-                      from: user?.displayName,
-                    });
-                    showNote('Остановили — партнёр видит.');
+                    const np = sendNowPlaying(null);
+                    showNote(
+                      np === 'sent'
+                        ? 'Остановили — партнёр видит.'
+                        : 'Остановили · Now Playing ждёт online.',
+                    );
                     void juice.miss();
                   }}
                 />
