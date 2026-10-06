@@ -170,7 +170,7 @@ export default function SoftDuelScreen() {
         if (peerLeftMatchRef.current) {
           setFlash('Партнёр в комнате · соло до rematch');
           void juice.hit();
-        } else {
+        } else if (params.solo !== '1') {
           setForceSolo(false);
           forceSoloRef.current = false;
           const racing =
@@ -182,6 +182,9 @@ export default function SoftDuelScreen() {
             flashRef.current === 'Партнёр снова в комнате' ||
             flashRef.current === 'Оба снова в комнате';
           setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
+          void juice.sync();
+        } else {
+          setFlash('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();

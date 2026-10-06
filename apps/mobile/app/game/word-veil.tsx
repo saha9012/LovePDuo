@@ -273,7 +273,7 @@ export default function WordVeilScreen() {
         if (peerLeftMatchRef.current) {
           setPresenceHint('Партнёр в комнате · соло до rematch');
           void juice.hit();
-        } else {
+        } else if (params.solo !== '1') {
           setForceSolo(false);
           forceSoloRef.current = false;
           setPresenceHint(
@@ -285,6 +285,9 @@ export default function WordVeilScreen() {
               ? 'Оба снова здесь'
               : 'Партнёр вернулся',
           );
+          void juice.sync();
+        } else {
+          setPresenceHint('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();

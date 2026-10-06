@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] peer_joined keeps intentional Solo (catalog)  
 - [x] Sky/HB/Orbit presence «оба на связи» needs WS ≥2  
 - [x] Catalog «Оба на связи» toasts require WS ≥2  
 - [x] Home «Оба на связи» toast requires WS ≥2  

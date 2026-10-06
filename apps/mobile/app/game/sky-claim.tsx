@@ -184,7 +184,7 @@ export default function SkyClaimScreen() {
         if (peerLeftMatchRef.current) {
           bumpPeerNote('комната · соло');
           void juice.hit();
-        } else {
+        } else if (params.solo !== '1') {
           setForceSolo(false);
           forceSoloRef.current = false;
           bumpPeerNote(
@@ -196,6 +196,9 @@ export default function SkyClaimScreen() {
               ? 'оба снова здесь'
               : 'вернулся',
           );
+          void juice.sync();
+        } else {
+          bumpPeerNote('комната · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();

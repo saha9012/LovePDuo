@@ -256,7 +256,7 @@ export default function TruthOrSparkScreen() {
           );
           void juice.sync();
         } else {
-          showTurnToast('Партнёр вернулся');
+          showTurnToast('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();

@@ -191,7 +191,7 @@ export default function HeartbeatScreen() {
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
           peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
           void juice.hit();
-        } else {
+        } else if (params.solo !== '1') {
           setForceSolo(false);
           forceSoloRef.current = false;
           const note =
@@ -202,6 +202,13 @@ export default function HeartbeatScreen() {
             peerNoteRef.current === 'оба снова здесь'
               ? 'оба снова здесь'
               : 'вернулся';
+          setPeerNote(note);
+          peerNoteRef.current = note;
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+          void juice.sync();
+        } else {
+          const note = 'комната · соло';
           setPeerNote(note);
           peerNoteRef.current = note;
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
