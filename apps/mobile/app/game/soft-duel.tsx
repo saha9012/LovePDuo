@@ -479,13 +479,14 @@ export default function SoftDuelScreen() {
       const mem = addMemory({
         kind: 'duel',
         title: 'Soft Duel',
-        detail: partnerFinishedRef.current
-          ? `Оба финиш · ты ${myScoreRef.current}`
-          : params.solo === '1' || forceSoloRef.current
+        detail:
+          params.solo === '1' || forceSoloRef.current
             ? `Solo demo · ты ${myScoreRef.current}`
-            : partnerLiveRef.current
-              ? `Ты ${myScoreRef.current} · партнёр live`
-              : `Ты ${myScoreRef.current} · ждём партнёра`,
+            : partnerFinishedRef.current
+              ? `Оба финиш · ты ${myScoreRef.current}`
+              : partnerLiveRef.current
+                ? `Ты ${myScoreRef.current} · партнёр live`
+                : `Ты ${myScoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       if (partnerFinishedRef.current) {

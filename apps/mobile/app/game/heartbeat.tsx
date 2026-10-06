@@ -564,13 +564,14 @@ export default function HeartbeatScreen() {
         const mem = addMemory({
           kind: 'heartbeat',
           title: 'Heartbeat Tap',
-          detail: partnerFinishedRef.current
-            ? `Оба финиш · итог ${total}`
-            : params.solo === '1' || forceSoloRef.current
+          detail:
+            params.solo === '1' || forceSoloRef.current
               ? `Solo demo · итог ${total} · sync +${syncRef.current}`
-              : partnerLiveRef.current
-                ? `Итог ${total} · sync +${syncRef.current} · live`
-                : `Итог ${total} · ждём партнёра`,
+              : partnerFinishedRef.current
+                ? `Оба финиш · итог ${total}`
+                : partnerLiveRef.current
+                  ? `Итог ${total} · sync +${syncRef.current} · live`
+                  : `Итог ${total} · ждём партнёра`,
         });
         broadcastMemory(mem, user);
       } else {

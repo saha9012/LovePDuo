@@ -484,13 +484,14 @@ export default function OrbitCatchScreen() {
       const mem = addMemory({
         kind: 'orbit',
         title: 'Orbit Catch',
-        detail: partnerFinishedRef.current
-          ? `Оба финиш · co-op ${coop}`
-          : params.solo === '1' || forceSoloRef.current
+        detail:
+          params.solo === '1' || forceSoloRef.current
             ? `Solo demo · co-op ${coop}`
-            : partnerRef.current > 0
-              ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
-              : `Ты ${caughtRef.current} · ждём партнёра`,
+            : partnerFinishedRef.current
+              ? `Оба финиш · co-op ${coop}`
+              : partnerRef.current > 0
+                ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
+                : `Ты ${caughtRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);

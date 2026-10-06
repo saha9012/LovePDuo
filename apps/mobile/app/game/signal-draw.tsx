@@ -563,13 +563,14 @@ export default function SignalDrawScreen() {
           const mem = addMemory({
             kind: 'draw',
             title: 'Signal Draw',
-            detail: partnerFinishedRef.current
-              ? `Оба финиш · штрихи ${myCount.current}`
-              : params.solo === '1' || forceSoloRef.current
+            detail:
+              params.solo === '1' || forceSoloRef.current
                 ? `Solo demo · штрихи ${myCount.current}`
-                : peerCount.current > 0
-                  ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
-                  : `Штрихи ${myCount.current} · ждём партнёра`,
+                : partnerFinishedRef.current
+                  ? `Оба финиш · штрихи ${myCount.current}`
+                  : peerCount.current > 0
+                    ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
+                    : `Штрихи ${myCount.current} · ждём партнёра`,
           });
           broadcastMemory(mem, user);
           // Demo partner ink only in solo / forceSolo — never backfill while duo is live.

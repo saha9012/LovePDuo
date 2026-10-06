@@ -556,13 +556,14 @@ export default function SkyClaimScreen() {
       const mem = addMemory({
         kind: 'sky',
         title: 'Sky Claim',
-        detail: partnerFinishedRef.current
-          ? `Оба финиш · ты ${scoreRef.current}`
-          : params.solo === '1' || forceSoloRef.current
+        detail:
+          params.solo === '1' || forceSoloRef.current
             ? `Solo demo · ты ${scoreRef.current}`
-            : partnerLiveRef.current
-              ? `Ты ${scoreRef.current} · партнёр live`
-              : `Ты ${scoreRef.current} · ждём партнёра`,
+            : partnerFinishedRef.current
+              ? `Оба финиш · ты ${scoreRef.current}`
+              : partnerLiveRef.current
+                ? `Ты ${scoreRef.current} · партнёр live`
+                : `Ты ${scoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);
