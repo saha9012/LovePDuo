@@ -10,6 +10,8 @@ type Props = {
   line: string;
   winnerLabel?: string;
   gameId?: string;
+  /** When true, rematch CTA admits Solo demo (no live duo). */
+  soloDemo?: boolean;
   onRematch?: () => void;
   onHome?: () => void;
 };
@@ -19,6 +21,7 @@ export function PostMatchCard({
   line,
   winnerLabel,
   gameId,
+  soloDemo,
   onRematch,
   onHome,
 }: Props) {
@@ -35,13 +38,19 @@ export function PostMatchCard({
         {onRematch ? (
           <Pressable
             onPress={() => {
-              track('game_started', { game: gameId ?? title, rematch: true });
+              track('game_started', {
+                game: gameId ?? title,
+                rematch: true,
+                solo: soloDemo ? true : undefined,
+              });
               void juice.sync();
               onRematch();
             }}
             style={styles.primary}
           >
-            <Text style={styles.primaryLabel}>Ещё раунд</Text>
+            <Text style={styles.primaryLabel}>
+              {soloDemo ? 'Ещё раунд · Solo demo' : 'Ещё раунд'}
+            </Text>
           </Pressable>
         ) : null}
         {onHome ? (

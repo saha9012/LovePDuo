@@ -628,7 +628,15 @@ export default function GameLobbyScreen() {
 
         <View style={styles.actions}>
           {!readyMe ? (
-            <LpdButton label={`Ready · ${readyCount}/2`} onPress={onReady} disabled={countdown != null} />
+            <LpdButton
+              label={
+                duoLive
+                  ? `Ready · ${readyCount}/2`
+                  : `Ready · ${readyCount}/2 · ждём WS 2/2`
+              }
+              onPress={onReady}
+              disabled={countdown != null}
+            />
           ) : (
             <LpdButton
               label={countdown != null ? 'Отменить старт' : 'Снять Ready'}
@@ -636,7 +644,11 @@ export default function GameLobbyScreen() {
               onPress={onUnready}
             />
           )}
-          <LpdButton label="Solo / Demo" variant="ghost" onPress={solo} />
+          <LpdButton
+            label={duoLive ? 'Solo / Demo' : 'Solo / Demo · без партнёра в WS'}
+            variant="ghost"
+            onPress={solo}
+          />
           <LpdButton label="Назад" variant="ghost" onPress={leaveLobby} />
         </View>
       </View>

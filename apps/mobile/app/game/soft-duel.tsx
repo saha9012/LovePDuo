@@ -859,6 +859,7 @@ export default function SoftDuelScreen() {
                   : undefined
             }
             line={line.text}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('soft-duel', user, seedRef.current);

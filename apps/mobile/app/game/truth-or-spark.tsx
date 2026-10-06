@@ -739,6 +739,7 @@ export default function TruthOrSparkScreen() {
                     : 'Soft night'
             }
             line={line.text}
+            soloDemo={demo}
             onRematch={reshuffle}
             onHome={() => {
               announceLeaveMatch(GAME_ID, user, seedRef.current);

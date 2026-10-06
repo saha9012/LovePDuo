@@ -787,6 +787,7 @@ export default function HeartbeatScreen() {
                   : undefined
             }
             line={line.text}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('heartbeat', user, seedRef.current);

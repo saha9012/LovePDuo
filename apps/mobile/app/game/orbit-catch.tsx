@@ -659,6 +659,7 @@ export default function OrbitCatchScreen() {
                   : undefined
             }
             line={line.text}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('orbit-catch', user, seedRef.current);

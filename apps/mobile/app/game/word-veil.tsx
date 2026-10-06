@@ -622,6 +622,7 @@ export default function WordVeilScreen() {
             line={line.text}
             gameId="word-veil"
             winnerLabel={soloDemoPartner ? 'Solo demo' : 'Word Veil'}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('word-veil', user, seedRef.current);

@@ -840,6 +840,7 @@ export default function SignalDrawScreen() {
                   : undefined
             }
             line={line.text}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('signal-draw', user, seedRef.current);

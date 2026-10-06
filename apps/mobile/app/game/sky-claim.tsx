@@ -798,6 +798,7 @@ export default function SkyClaimScreen() {
             }
             gameId="sky-claim"
             line={line.text}
+            soloDemo={soloDemoPartner}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('sky-claim', user, seedRef.current);
