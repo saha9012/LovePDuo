@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Lobby ready/start live-only · memory broadcast skips empty room · Together hello gated  
 - [x] Finish + mid-match game signals live-only (all catalog games)  
 - [x] ToS rematch live-only · Word Veil/ToS peer_left → forceSolo · Home mood live-only  
 - [x] Rematch announce live-only (Soft/HB/Sky/Orbit/Draw/Veil)  

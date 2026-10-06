@@ -15,14 +15,13 @@ function fromFields(from: FromUser) {
 /** Push a local memory to the partner over the existing game relay. */
 export function broadcastMemory(memory: MemoryItem, from?: FromUser) {
   const { pendingSync: _p, ...payload } = memory;
+  // Only when peer is live — otherwise leave pendingSync for RealtimeConnector flush.
+  if (!(pairRealtime.connected && getLastRoomSize() >= 2)) return;
   pairRealtime.sendGame('memory-add', {
     ...payload,
     ...fromFields(from),
   });
-  // Peer already in room → delivered; else pendingSync stays for RealtimeConnector flush.
-  if (pairRealtime.connected && getLastRoomSize() >= 2) {
-    markMemorySyncedExternal(memory.id);
-  }
+  markMemorySyncedExternal(memory.id);
 }
 
 export function broadcastMemoryRemove(id: string, from?: FromUser) {

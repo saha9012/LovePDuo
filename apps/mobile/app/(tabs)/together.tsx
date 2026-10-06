@@ -185,7 +185,7 @@ export default function TogetherScreen() {
         showPeer(racing ? 'Оба снова вместе' : 'Партнёр снова рядом');
         void juice.warmth();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame('together-hello', {
+        sendGameIfPeerLive('together-hello', {
           from: user.displayName,
           fromId: user.id,
         });

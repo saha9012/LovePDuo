@@ -17,6 +17,7 @@ import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { peekMatchSession, setMatchSession } from '../../src/realtime/matchSession';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
@@ -113,7 +114,7 @@ export default function GameLobbyScreen() {
         );
         void juice.sync();
         if (readyMeRef.current && user?.id) {
-          pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+          sendGameIfPeerLive(gameId, { ready: true, userId: user.id });
         }
       } else if (!online && wasWsOnline.current) {
         showCancelToast('WS offline…');
@@ -175,9 +176,9 @@ export default function GameLobbyScreen() {
         );
         void juice.sync();
         if (readyMeRef.current && user.id) {
-          pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+          sendGameIfPeerLive(gameId, { ready: true, userId: user.id });
         }
-        pairRealtime.sendGame('play-peek', {
+        sendGameIfPeerLive('play-peek', {
           game: gameId,
           title: titles[gameId] ?? gameId,
           fromId: user.id,
@@ -386,7 +387,7 @@ export default function GameLobbyScreen() {
         pairId: pair.id,
       });
     }
-    pairRealtime.sendGame(gameId, { start: true, seed, startAtMs: startAt });
+    sendGameIfPeerLive(gameId, { start: true, seed, startAtMs: startAt });
     setCountdown(3);
     bumpGamesStarted();
     touchPairActive();
@@ -423,7 +424,7 @@ export default function GameLobbyScreen() {
     if (!user || countdown != null) return;
     setReadyMe(true);
     juice.hit();
-    pairRealtime.sendGame(gameId, { ready: true, userId: user.id });
+    sendGameIfPeerLive(gameId, { ready: true, userId: user.id });
     if (readyPeer) {
       showCancelToast(
         cancelToastRef.current === 'Оба READY' ||
@@ -443,7 +444,7 @@ export default function GameLobbyScreen() {
     setStartAtMs(null);
     startSent.current = false;
     juice.miss();
-    pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
+    sendGameIfPeerLive(gameId, { ready: false, userId: user.id });
   };
 
   const solo = () => {
@@ -462,7 +463,7 @@ export default function GameLobbyScreen() {
     const leave = () => {
       if (user) {
         if (readyMe) {
-          pairRealtime.sendGame(gameId, { ready: false, userId: user.id });
+          sendGameIfPeerLive(gameId, { ready: false, userId: user.id });
         }
         if (pairRealtime.connected && getLastRoomSize() >= 2) {
           pairRealtime.sendGame(gameId, { lobbyLeave: true, userId: user.id });
