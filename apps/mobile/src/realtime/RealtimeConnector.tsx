@@ -9,7 +9,7 @@ import { flushWarmthOutbox } from './warmthOutbox';
 import { flushMusicOutbox } from './musicOutbox';
 import { flushMemoryMutationOutbox } from './memoryMutationOutbox';
 import { flushNoteMutationOutbox } from './noteMutationOutbox';
-import { flushPairMetaOutbox } from './pairMetaOutbox';
+import { flushPairMetaOutbox, sendPairMetaOrQueue } from './pairMetaOutbox';
 import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
@@ -78,7 +78,7 @@ export function RealtimeConnector() {
 
     const announceHost = () => {
       if (pair.hostUserId && pair.hostUserId === user.id) {
-        pairRealtime.sendGame('pair-meta', {
+        sendPairMetaOrQueue('pair-meta', {
           hostUserId: user.id,
           pairName: pair.name,
           fromId: user.id,
@@ -88,7 +88,7 @@ export function RealtimeConnector() {
 
     const announcePlus = () => {
       if (!isPlus) return;
-      pairRealtime.sendGame('duo-plus', {
+      sendPairMetaOrQueue('duo-plus', {
         tier: trialEndsAt && trialEndsAt > Date.now() ? 'free' : 'duo_plus',
         trialEndsAt: trialEndsAt && trialEndsAt > Date.now() ? trialEndsAt : null,
         fromId: user.id,
