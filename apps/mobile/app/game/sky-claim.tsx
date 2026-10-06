@@ -439,7 +439,7 @@ export default function SkyClaimScreen() {
   };
 
   useEffect(() => {
-    if (params.solo === '1') return;
+    if (params.solo === '1' || forceSolo) return;
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
@@ -447,7 +447,10 @@ export default function SkyClaimScreen() {
       lateStartAt.current = Date.now();
       bumpPeerNote('догоняем');
       void juice.hit();
-      const id = setTimeout(() => startRef.current(), delay);
+      const id = setTimeout(() => {
+        if (forceSoloRef.current) return;
+        startRef.current();
+      }, delay);
       return () => clearTimeout(id);
     }
     const ticks: ReturnType<typeof setTimeout>[] = [];
@@ -456,18 +459,22 @@ export default function SkyClaimScreen() {
       if (when > 80) {
         ticks.push(
           setTimeout(() => {
+            if (forceSoloRef.current) return;
             bumpPeerNote(`старт ${sec}`);
             void juice.hit();
           }, when),
         );
       }
     }
-    const id = setTimeout(() => startRef.current(), delay);
+    const id = setTimeout(() => {
+      if (forceSoloRef.current) return;
+      startRef.current();
+    }, delay);
     return () => {
       clearTimeout(id);
       ticks.forEach(clearTimeout);
     };
-  }, [params.startAt, params.solo]);
+  }, [params.startAt, params.solo, forceSolo]);
 
   useEffect(() => {
     if (phase !== 'playing') return;

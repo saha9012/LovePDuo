@@ -403,7 +403,7 @@ export default function WordVeilScreen() {
   }, [pair?.code, user?.id, params.solo]);
 
   useEffect(() => {
-    if (params.solo === '1') return;
+    if (params.solo === '1' || forceSolo) return;
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
@@ -412,7 +412,10 @@ export default function WordVeilScreen() {
       setPresenceHint('Догоняем старт');
       void juice.hit();
       setTimeout(() => setPresenceHint(null), 1400);
-      const id = setTimeout(() => setPhase('playing'), delay);
+      const id = setTimeout(() => {
+        if (phaseRef.current !== 'ready') return;
+        setPhase('playing');
+      }, delay);
       return () => clearTimeout(id);
     }
     const ticks: ReturnType<typeof setTimeout>[] = [];
@@ -421,6 +424,7 @@ export default function WordVeilScreen() {
       if (when > 80) {
         ticks.push(
           setTimeout(() => {
+            if (forceSolo) return;
             setPresenceHint(`Старт ${sec}`);
             void juice.hit();
             setTimeout(() => setPresenceHint(null), 900);
@@ -428,12 +432,15 @@ export default function WordVeilScreen() {
         );
       }
     }
-    const id = setTimeout(() => setPhase('playing'), delay);
+    const id = setTimeout(() => {
+      if (phaseRef.current !== 'ready') return;
+      setPhase('playing');
+    }, delay);
     return () => {
       clearTimeout(id);
       ticks.forEach(clearTimeout);
     };
-  }, [params.startAt, params.solo]);
+  }, [params.startAt, params.solo, forceSolo]);
 
   useEffect(() => {
     if (!locked || phase !== 'playing' || !partnerWord) return;

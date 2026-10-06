@@ -592,14 +592,17 @@ export default function SoftDuelScreen() {
   const waitingSyncedStart = useSyncedStartWaiting(params.solo, params.startAt, forceSolo);
 
   useEffect(() => {
-    if (params.solo === '1') return;
+    if (params.solo === '1' || forceSolo) return;
     const at = Number(params.startAt);
     if (!Number.isFinite(at)) return;
     const delay = Math.max(0, at - Date.now());
     if (delay < 400) {
       setFlash('Догоняем старт');
       void juice.hit();
-      const id = setTimeout(() => startRef.current(), delay);
+      const id = setTimeout(() => {
+        if (forceSoloRef.current) return;
+        startRef.current();
+      }, delay);
       return () => clearTimeout(id);
     }
     const ticks: ReturnType<typeof setTimeout>[] = [];
@@ -608,18 +611,22 @@ export default function SoftDuelScreen() {
       if (when > 80) {
         ticks.push(
           setTimeout(() => {
+            if (forceSoloRef.current) return;
             setFlash(`Старт ${sec}`);
             void juice.hit();
           }, when),
         );
       }
     }
-    const id = setTimeout(() => startRef.current(), delay);
+    const id = setTimeout(() => {
+      if (forceSoloRef.current) return;
+      startRef.current();
+    }, delay);
     return () => {
       clearTimeout(id);
       ticks.forEach(clearTimeout);
     };
-  }, [params.startAt, params.solo]);
+  }, [params.startAt, params.solo, forceSolo]);
 
   const onTap = () => {
     if (phase !== 'playing') return;
