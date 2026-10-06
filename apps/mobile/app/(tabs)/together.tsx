@@ -612,7 +612,7 @@ export default function TogetherScreen() {
                 typeof pair?.roomSize === 'number' ? String(pair.roomSize) : '—',
                 'online',
               ],
-              ['p', pair?.partnerPresence === 'online' ? 'on' : 'off', 'партнёр'],
+              ['p', peerInWsRoom ? 'on' : pair?.partnerPresence === 'online' ? '≠' : 'off', 'партнёр'],
             ] as const
           ).map(([k, n, l]) => (
             <View key={k} style={styles.statPill}>

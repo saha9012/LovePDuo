@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Together partner pill matches WS ≥2 header  
 - [x] ToS memory marks Solo demo evenings  
 - [x] Word Veil memory marks Solo demo associations  
 - [x] Word Veil PostMatch Solo demo title/winner  
