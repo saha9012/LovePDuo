@@ -241,7 +241,7 @@ export function RealtimeConnector() {
           const elected = unique.slice().sort()[0];
           setHostUserId(elected);
           if (elected === user.id) {
-            pairRealtime.sendGame('pair-meta', {
+            sendPairMetaOrQueue('pair-meta', {
               hostUserId: user.id,
               pairName: pair.name,
               fromId: user.id,
@@ -296,7 +296,7 @@ export function RealtimeConnector() {
           const elected = [user.id, peerId].sort()[0];
           setHostUserId(elected);
           if (elected === user.id) {
-            pairRealtime.sendGame('pair-meta', {
+            sendPairMetaOrQueue('pair-meta', {
               hostUserId: user.id,
               pairName: pair.name,
               fromId: user.id,
@@ -310,7 +310,7 @@ export function RealtimeConnector() {
         const leftId = typeof msg.userId === 'string' ? msg.userId : null;
         if (leftId && pair.hostUserId === leftId) {
           setHostUserId(user.id);
-          pairRealtime.sendGame('pair-meta', {
+          sendPairMetaOrQueue('pair-meta', {
             hostUserId: user.id,
             pairName: pair.name,
             fromId: user.id,
