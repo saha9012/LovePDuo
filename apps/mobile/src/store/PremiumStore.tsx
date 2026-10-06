@@ -21,7 +21,7 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
   {
     id: 'shelves',
     label: 'Полки музыки',
-    freeValue: '4',
+    freeValue: '6',
     plusValue: '8',
   },
   {
