@@ -555,10 +555,16 @@ export default function HomeScreen() {
                 : 'Ждём пульс партнёра. Можно греть пару заранее.'}
           </Text>
           <Text style={styles.meta}>
-            Пара {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
-            {typeof pair?.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''}
+            Пара {pair?.code ?? '—'} · {wsOnline ? 'сокет on' : 'сокет…'}
+            {typeof pair?.roomSize === 'number' ? ` · комната ${pair.roomSize}/2` : ''}
             {syncWaiting > 0 ? ` · sync ${syncWaiting}` : ''}
           </Text>
+          {pair && !(typeof pair.roomSize === 'number' && pair.roomSize >= 2) ? (
+            <Text style={styles.offlineBanner}>
+              В комнате один ({typeof pair.roomSize === 'number' ? `${pair.roomSize}/2` : '—'}) —
+              тепло и лента уйдут партнёру после WS 2/2. Presence ≠ комната.
+            </Text>
+          ) : null}
         </View>
 
         <SectionRule label="Пара" right={pair?.code ?? '—'} />
@@ -808,6 +814,12 @@ const styles = StyleSheet.create({
   room: {
     gap: spacing.sm,
     marginTop: spacing.sm,
+  },
+  offlineBanner: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.accentRose,
   },
   roomName: {
     fontFamily: fonts.display,
