@@ -23,6 +23,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -440,7 +441,7 @@ export default function HeartbeatScreen() {
     partnerFinishedRef.current = false;
     lastPartnerTapMs.current = null;
     startAt.current = Date.now();
-    sendGameIfPeerLive('heartbeat', {
+    sendGameIfDuo(forceSoloRef.current, 'heartbeat', {
       phase: 'start',
       total: 0,
       seed: seedRef.current,
@@ -532,7 +533,7 @@ export default function HeartbeatScreen() {
       if (t >= heartbeatConfig.durationMs) {
         clearInterval(id);
         const total = scoreRef.current + syncRef.current;
-        sendGameIfPeerLive('heartbeat', { phase: 'finished', total });
+        sendGameIfDuo(forceSoloRef.current, 'heartbeat', { phase: 'finished', total });
         // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
         if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
           const partner = Math.max(
@@ -570,7 +571,7 @@ export default function HeartbeatScreen() {
         const sec = Math.floor(t / 1000);
         if (sec > 0 && sec % 4 === 0 && sec !== lastBroadcastSec.current) {
           lastBroadcastSec.current = sec;
-          sendGameIfPeerLive('heartbeat', {
+          sendGameIfDuo(forceSoloRef.current, 'heartbeat', {
             phase: 'playing',
             total: scoreRef.current + syncRef.current,
           });
@@ -594,7 +595,7 @@ export default function HeartbeatScreen() {
       setLast('miss');
       setMisses((m) => m + 1);
       void juice.miss();
-      sendGameIfPeerLive('heartbeat', { miss: true, judgement: 'miss' });
+      sendGameIfDuo(forceSoloRef.current, 'heartbeat', { miss: true, judgement: 'miss' });
       return;
     }
     const j = judgeTap(delta);
@@ -606,7 +607,7 @@ export default function HeartbeatScreen() {
     else if (j === 'great') setGreats((n) => n + 1);
     else if (j === 'miss') setMisses((n) => n + 1);
     cursor.current += 1;
-    sendGameIfPeerLive('heartbeat', {
+    sendGameIfDuo(forceSoloRef.current, 'heartbeat', {
       tapAt: t,
       total: scoreRef.current + syncRef.current,
       judgement: j,
@@ -634,7 +635,7 @@ export default function HeartbeatScreen() {
         const racing =
           peerNoteRef.current === 'sync!' || peerNoteRef.current === 'оба sync';
         bumpPeerNote(racing ? 'оба sync' : 'sync!', 900);
-        sendGameIfPeerLive('heartbeat', {
+        sendGameIfDuo(forceSoloRef.current, 'heartbeat', {
           sync: true,
           total: scoreRef.current + syncRef.current,
         });

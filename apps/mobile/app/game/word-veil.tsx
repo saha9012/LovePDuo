@@ -17,6 +17,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -486,7 +487,10 @@ export default function WordVeilScreen() {
     setLocked(true);
     veil.value = withTiming(0.35, { duration: 400 });
     if (typingTimer.current) clearTimeout(typingTimer.current);
-    sendGameIfPeerLive('word-veil', { word: mine.trim(), typing: false });
+    sendGameIfDuo(forceSoloRef.current, 'word-veil', {
+      word: mine.trim(),
+      typing: false,
+    });
     void juice.card();
 
     const useDemo = params.solo === '1' || forceSolo || !pair;
@@ -508,7 +512,7 @@ export default function WordVeilScreen() {
   const finish = () => {
     setPhase('finished');
     void juice.postMatch();
-    sendGameIfPeerLive('word-veil', {
+    sendGameIfDuo(forceSoloRef.current, 'word-veil', {
       phase: 'finished',
       score: myScore,
     });
@@ -639,7 +643,7 @@ export default function WordVeilScreen() {
                 if (locked || phase !== 'playing') return;
                 if (typingTimer.current) clearTimeout(typingTimer.current);
                 typingTimer.current = setTimeout(() => {
-                  sendGameIfPeerLive('word-veil', { typing: true });
+                  sendGameIfDuo(forceSoloRef.current, 'word-veil', { typing: true });
                 }, 280);
               }}
               editable={!locked}

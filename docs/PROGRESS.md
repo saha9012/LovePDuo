@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Mid-match sends skip forceSolo (sendGameIfDuo)  
 - [x] Stale scores/finish ignored after leaveMatch until rematch  
 - [x] Mid-match pings ignored after leaveMatch until rematch  
 - [x] ToS live badge stays solo after leaveMatch hellos  

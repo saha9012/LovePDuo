@@ -16,6 +16,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -468,7 +469,7 @@ export default function SoftDuelScreen() {
       if (r >= ROUNDS) {
       setPhase('finished');
       void juice.postMatch();
-      sendGameIfPeerLive('soft-duel', {
+      sendGameIfDuo(forceSoloRef.current, 'soft-duel', {
         phase: 'finished',
         score: myScoreRef.current,
         round: ROUNDS,
@@ -539,7 +540,10 @@ export default function SoftDuelScreen() {
       setArmed(true);
       flashScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
       void juice.beat();
-      sendGameIfPeerLive('soft-duel', { arm: true, round: roundRef.current });
+      sendGameIfDuo(forceSoloRef.current, 'soft-duel', {
+        arm: true,
+        round: roundRef.current,
+      });
     }, wait);
   };
 
@@ -575,7 +579,7 @@ export default function SoftDuelScreen() {
     setPartnerRound(0);
     partnerRoundRef.current = 0;
     setPhase('playing');
-    sendGameIfPeerLive('soft-duel', {
+    sendGameIfDuo(forceSoloRef.current, 'soft-duel', {
       phase: 'start',
       seed: seedRef.current,
       hello: true,
@@ -677,7 +681,7 @@ export default function SoftDuelScreen() {
       void (peerEarly ? juice.sync() : juice.miss());
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
-      sendGameIfPeerLive('soft-duel', {
+      sendGameIfDuo(forceSoloRef.current, 'soft-duel', {
         early: true,
         score: myScoreRef.current,
         round: roundRef.current,
@@ -699,7 +703,7 @@ export default function SoftDuelScreen() {
     setArmed(false);
     flashScale.value = withSpring(1.2, { damping: 10 });
     void (pts === 3 ? juice.perfect() : juice.hit());
-    sendGameIfPeerLive('soft-duel', {
+    sendGameIfDuo(forceSoloRef.current, 'soft-duel', {
       score: myScoreRef.current,
       tap: delta,
       round: roundRef.current,

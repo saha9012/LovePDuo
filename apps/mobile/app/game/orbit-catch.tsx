@@ -16,6 +16,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -379,7 +380,7 @@ export default function OrbitCatchScreen() {
     setOrbAngle((seedRef.current % 360) * (Math.PI / 180));
     setAligned(false);
     setPhase('playing');
-    sendGameIfPeerLive('orbit-catch', {
+    sendGameIfDuo(forceSoloRef.current, 'orbit-catch', {
       phase: 'start',
       seed: seedRef.current,
       hello: true,
@@ -463,7 +464,7 @@ export default function OrbitCatchScreen() {
       }
       setPhase('finished');
       void juice.postMatch();
-      sendGameIfPeerLive('orbit-catch', {
+      sendGameIfDuo(forceSoloRef.current, 'orbit-catch', {
         phase: 'finished',
         caught: caughtRef.current,
       });
@@ -517,7 +518,7 @@ export default function OrbitCatchScreen() {
       const now = Date.now();
       if (now - lastAlignSend.current > 700) {
         lastAlignSend.current = now;
-        sendGameIfPeerLive('orbit-catch', { align: true });
+        sendGameIfDuo(forceSoloRef.current, 'orbit-catch', { align: true });
       }
     }
   }, [aligned, ringPulse, phase]);
@@ -530,7 +531,7 @@ export default function OrbitCatchScreen() {
       caughtRef.current += 1;
       setCaught(caughtRef.current);
       lastCatchAt.current = Date.now();
-      sendGameIfPeerLive('orbit-catch', { caught: caughtRef.current });
+      sendGameIfDuo(forceSoloRef.current, 'orbit-catch', { caught: caughtRef.current });
       void juice.catch();
       flash.value = withSequence(
         withTiming(1, { duration: 40 }),
@@ -563,7 +564,7 @@ export default function OrbitCatchScreen() {
       setMisses((m) => m + 1);
       lastMissAt.current = Date.now();
       void juice.miss();
-      sendGameIfPeerLive('orbit-catch', { miss: true });
+      sendGameIfDuo(forceSoloRef.current, 'orbit-catch', { miss: true });
       flash.value = withSpring(0);
     }
   };

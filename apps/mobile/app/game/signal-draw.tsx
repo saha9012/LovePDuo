@@ -18,6 +18,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -463,7 +464,7 @@ export default function SignalDrawScreen() {
     setTimeLeft(ROUND_SEC);
     setPhase('playing');
     endWarned.current = false;
-    sendGameIfPeerLive('signal-draw', {
+    sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
       phase: 'start',
       seed,
       hello: true,
@@ -549,7 +550,7 @@ export default function SignalDrawScreen() {
           }
           setPhase('finished');
           void juice.postMatch();
-          sendGameIfPeerLive('signal-draw', {
+          sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
             phase: 'finished',
             count: myCount.current,
           });
@@ -621,7 +622,7 @@ export default function SignalDrawScreen() {
     setStrokes((prev) => prev.filter((s) => s.by !== 'me'));
     myCount.current = 0;
     lastClearAt.current = Date.now();
-    sendGameIfPeerLive('signal-draw', { clear: true });
+    sendGameIfDuo(forceSoloRef.current, 'signal-draw', { clear: true });
     void juice.miss();
   };
 
@@ -632,7 +633,10 @@ export default function SignalDrawScreen() {
       if (last == null) return prev;
       myCount.current = Math.max(0, myCount.current - 1);
       lastUndoAt.current = Date.now();
-      sendGameIfPeerLive('signal-draw', { undo: true, count: myCount.current });
+      sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
+        undo: true,
+        count: myCount.current,
+      });
       void juice.hit();
       return prev.filter((_, i) => i !== last);
     });
@@ -659,7 +663,7 @@ export default function SignalDrawScreen() {
             current.current = stroke;
             setStrokes((prev) => [...prev, stroke]);
             myCount.current += 1;
-            sendGameIfPeerLive('signal-draw', {
+            sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
               stroke: { ...stroke, by: 'peer' },
               count: myCount.current,
             });
@@ -704,7 +708,7 @@ export default function SignalDrawScreen() {
           const now = Date.now();
           if (now - lastSend.current > 32) {
             lastSend.current = now;
-            sendGameIfPeerLive('signal-draw', {
+            sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
               point: { ...p, strokeId: cur.id },
             });
           }
@@ -712,7 +716,7 @@ export default function SignalDrawScreen() {
         onPanResponderRelease: () => {
           const cur = current.current;
           if (cur) {
-            sendGameIfPeerLive('signal-draw', {
+            sendGameIfDuo(forceSoloRef.current, 'signal-draw', {
               point: { ...cur.points[cur.points.length - 1], strokeId: cur.id },
             });
           }
@@ -844,7 +848,7 @@ export default function SignalDrawScreen() {
               <Text
                 onPress={() => {
                   setBrush('fine');
-                  sendGameIfPeerLive('signal-draw', { brush: 'fine' });
+                  sendGameIfDuo(forceSoloRef.current, 'signal-draw', { brush: 'fine' });
                   void juice.hit();
                 }}
                 style={[styles.tool, brush === 'fine' && styles.toolOn]}
@@ -854,7 +858,7 @@ export default function SignalDrawScreen() {
               <Text
                 onPress={() => {
                   setBrush('bold');
-                  sendGameIfPeerLive('signal-draw', { brush: 'bold' });
+                  sendGameIfDuo(forceSoloRef.current, 'signal-draw', { brush: 'bold' });
                   void juice.beat();
                 }}
                 style={[styles.tool, brush === 'bold' && styles.toolOn]}

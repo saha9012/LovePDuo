@@ -29,6 +29,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -434,7 +435,7 @@ export default function SkyClaimScreen() {
     setTimeLeft(skyClaimConfig.durationSec);
     timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
-    sendGameIfPeerLive('sky-claim', {
+    sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
       phase: 'start',
       seed: seedRef.current,
       score: 0,
@@ -523,7 +524,7 @@ export default function SkyClaimScreen() {
       if (finished) return;
       finished = true;
       if (spawnTimer) clearInterval(spawnTimer);
-      sendGameIfPeerLive('sky-claim', {
+      sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
         phase: 'finished',
         score: scoreRef.current,
       });
@@ -588,7 +589,7 @@ export default function SkyClaimScreen() {
         const elapsed = skyClaimConfig.durationSec - remaining;
         if (elapsed > 0 && elapsed % 5 === 0 && elapsed !== lastSyncElapsed) {
           lastSyncElapsed = elapsed;
-          sendGameIfPeerLive('sky-claim', {
+          sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
             phase: 'playing',
             score: scoreRef.current,
           });
@@ -644,7 +645,10 @@ export default function SkyClaimScreen() {
           setMisses((m) => m + 1);
           setFlash('miss');
           void juice.miss();
-          sendGameIfPeerLive('sky-claim', { miss: true, score: scoreRef.current });
+          sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
+            miss: true,
+            score: scoreRef.current,
+          });
           return prev;
         }
         const result = scoreCatch(comboRef.current, hit.points);
@@ -657,16 +661,19 @@ export default function SkyClaimScreen() {
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
         if (hit.type === 'decoy') {
           void juice.decoy();
-          sendGameIfPeerLive('sky-claim', { decoy: true, score: scoreRef.current });
+          sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
+            decoy: true,
+            score: scoreRef.current,
+          });
         } else if (result.combo > 0 && result.combo % 5 === 0) {
           void juice.perfect();
-          sendGameIfPeerLive('sky-claim', {
+          sendGameIfDuo(forceSoloRef.current, 'sky-claim', {
             score: scoreRef.current,
             combo: result.combo,
           });
         } else {
           void juice.catch();
-          sendGameIfPeerLive('sky-claim', { score: scoreRef.current });
+          sendGameIfDuo(forceSoloRef.current, 'sky-claim', { score: scoreRef.current });
         }
         if (
           hit.type !== 'decoy' &&

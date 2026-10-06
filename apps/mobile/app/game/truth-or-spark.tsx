@@ -18,6 +18,7 @@ import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
+import { sendGameIfDuo } from '../../src/realtime/sendGameIfDuo';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { announceLeaveMatch } from '../../src/realtime/leaveMatch';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
@@ -541,7 +542,7 @@ export default function TruthOrSparkScreen() {
     nextSkips: number,
     opts?: { skipped?: boolean; filterChange?: boolean; deckWrap?: boolean },
   ) => {
-    sendGameIfPeerLive(GAME_ID, {
+    sendGameIfDuo(forceSolo, GAME_ID, {
       index: nextIndex,
       filter: nextFilter,
       skips: nextSkips,
@@ -567,7 +568,7 @@ export default function TruthOrSparkScreen() {
       detail: `${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`,
     });
     broadcastMemory(mem, user);
-    sendGameIfPeerLive(GAME_ID, {
+    sendGameIfDuo(forceSolo, GAME_ID, {
       phase: 'finished',
       cards,
       skipsUsed: usedSkips,
