@@ -489,7 +489,7 @@ export default function SoftDuelScreen() {
                 : `Ты ${myScoreRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
-      if (partnerFinishedRef.current) {
+      if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
         const racing =
           flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
         const dual = racing ? 'Оба на финише' : 'Оба финиш';

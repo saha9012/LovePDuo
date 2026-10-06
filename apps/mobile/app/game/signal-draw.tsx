@@ -545,7 +545,7 @@ export default function SignalDrawScreen() {
         }
         if (t <= 1) {
           clearInterval(id);
-          if (partnerFinishedRef.current) {
+          if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
             const racing =
               toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише';
             const dual = racing ? 'Оба на финише' : 'Оба финиш';

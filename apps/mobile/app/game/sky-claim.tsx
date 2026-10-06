@@ -542,7 +542,7 @@ export default function SkyClaimScreen() {
         );
         setPartnerScore(partner);
       }
-      if (partnerFinishedRef.current) {
+      if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
         setSyncFinish(true);
         const racing =
           peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';

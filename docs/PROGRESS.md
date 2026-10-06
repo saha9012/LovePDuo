@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Dual-finish flash skipped after forceSolo  
 - [x] Memory detail Solo demo over partnerFinished-before-forceSolo
 - [x] Catalog finish winnerLabel Solo demo over Оба финиш  
 - [x] ToS/Orbit finish prefer demo over stale ·live  

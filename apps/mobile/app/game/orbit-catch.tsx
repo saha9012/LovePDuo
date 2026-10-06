@@ -459,7 +459,7 @@ export default function OrbitCatchScreen() {
     const finishRound = () => {
       if (finished) return;
       finished = true;
-      if (partnerFinishedRef.current) {
+      if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
         const racing =
           peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
         const dual = racing ? 'Оба на финише' : 'Оба финиш';

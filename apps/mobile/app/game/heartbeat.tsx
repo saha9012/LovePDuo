@@ -548,7 +548,7 @@ export default function HeartbeatScreen() {
           );
           setPartnerScore(partner);
         }
-        if (partnerFinishedRef.current) {
+        if (partnerFinishedRef.current && params.solo !== '1' && !forceSoloRef.current) {
           const racing =
             peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
           const dual = racing ? 'Оба на финише' : 'Оба финиш';
