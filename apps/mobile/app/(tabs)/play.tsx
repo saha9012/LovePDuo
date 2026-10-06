@@ -165,6 +165,10 @@ export default function PlayScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
+      if (msg.type === 'peer_left') {
+        setPeerLobby(null);
+        return;
+      }
       if (msg.type === 'game' && msg.gameId === 'play-filter') {
         const payload = msg.payload as {
           filter?: Filter;
