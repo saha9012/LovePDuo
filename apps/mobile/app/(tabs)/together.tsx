@@ -889,7 +889,9 @@ export default function TogetherScreen() {
                 onPress={() => {
                   void confirmDestructive(
                     'Очистить все memories?',
-                    'История у тебя и у партнёра.',
+                    peerInWsRoom
+                      ? 'История у тебя и у партнёра.'
+                      : 'Очистим локально; sync уйдёт партнёру, когда комната станет 2/2.',
                   ).then((ok) => {
                     if (!ok) return;
                     clearMemories();

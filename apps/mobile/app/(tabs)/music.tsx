@@ -553,11 +553,17 @@ export default function MusicScreen() {
   };
   playTrackRef.current = playTrack;
 
+  /** Same rule as sendGameIfPeerLive — presence alone can lie when room is 1. */
+  const peerInWsRoom =
+    Boolean(pair) && typeof pair?.roomSize === 'number' && pair.roomSize >= 2;
+
   const clearLibrary = () => {
     if (tracks.length === 0) return;
     void confirmDestructive(
       'Очистить библиотеку?',
-      `Удалить все ${tracks.length} трек(ов) у тебя и у партнёра? Полки тоже опустеют.`,
+      peerInWsRoom
+        ? `Удалить все ${tracks.length} трек(ов) у тебя и у партнёра? Полки тоже опустеют.`
+        : `Удалить все ${tracks.length} трек(ов) локально? Sync удаления уйдёт, когда комната станет 2/2. Полки тоже опустеют.`,
     ).then((ok) => {
       if (!ok) return;
       void (async () => {
@@ -869,7 +875,12 @@ export default function MusicScreen() {
   };
 
   const deleteShelf = (id: string, name: string) => {
-    void confirmDestructive('Удалить полку?', `«${name}» исчезнет у обоих. Треки в библиотеке останутся.`).then(
+    void confirmDestructive(
+      'Удалить полку?',
+      peerInWsRoom
+        ? `«${name}» исчезнет у обоих. Треки в библиотеке останутся.`
+        : `«${name}» исчезнет локально; sync уйдёт, когда комната станет 2/2. Треки в библиотеке останутся.`,
+    ).then(
       (ok) => {
         if (!ok) return;
         if (!removePlaylist(id)) {
@@ -890,10 +901,6 @@ export default function MusicScreen() {
       },
     );
   };
-
-  /** Same rule as sendGameIfPeerLive — presence alone can lie when room is 1. */
-  const peerInWsRoom =
-    Boolean(pair) && typeof pair?.roomSize === 'number' && pair.roomSize >= 2;
 
   return (
     <LpdBackground mood={active?.mood === 'pulse' ? 'warm' : active?.mood ?? 'warm'}>

@@ -731,7 +731,11 @@ export default function HomeScreen() {
           {recentFeed.length === 0 ? (
             <EmptyState
               title="Лента пока пуста"
-              body="Сыграйте раунд, киньте заметку или трек — события пары появятся здесь."
+              body={
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'Сыграйте раунд, киньте заметку или трек — события пары появятся здесь у обоих.'
+                  : 'Сыграйте раунд или киньте заметку — события пишутся локально; партнёр увидит, когда комната станет 2/2.'
+              }
               meta={`0 событий · ${
                 typeof pair?.roomSize === 'number' && pair.roomSize >= 2
                   ? 'WS 2/2'
