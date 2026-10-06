@@ -488,7 +488,7 @@ export default function HomeScreen() {
           <Text style={typography.body}>
             {pair?.partnerPresence === 'online'
               ? 'Партнёр рядом. LPD online. Ваш ход.'
-              : 'Ждём пульс партнёра. Можно греть комнату заранее.'}
+              : 'Ждём пульс партнёра. Можно греть пару заранее.'}
           </Text>
           <Text style={styles.meta}>
             Код {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}

@@ -138,9 +138,11 @@ export default function SoftDuelScreen() {
         const racing =
           flashRef.current === 'Партнёр вышел' ||
           flashRef.current === 'Партнёр вышел · соло' ||
+          flashRef.current === 'Партнёр снова в паре' ||
+          flashRef.current === 'Оба снова в паре' ||
           flashRef.current === 'Партнёр снова в комнате' ||
           flashRef.current === 'Оба снова в комнате';
-        setFlash(racing ? 'Оба снова в комнате' : 'Партнёр снова в комнате');
+        setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
         void juice.sync();
         lastHelloAt.current = Date.now();
         pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
