@@ -182,8 +182,6 @@ export default function HeartbeatScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPartnerLive(true);
-        partnerLiveRef.current = true;
         if (peerLeftMatchRef.current) {
           const note = 'комната · соло';
           setPeerNote(note);
@@ -191,7 +189,16 @@ export default function HeartbeatScreen() {
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
           peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          const note = 'комната · соло';
+          setPeerNote(note);
+          peerNoteRef.current = note;
+          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
+          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+          void juice.sync();
+        } else {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
           setForceSolo(false);
           forceSoloRef.current = false;
           const note =
@@ -202,13 +209,6 @@ export default function HeartbeatScreen() {
             peerNoteRef.current === 'оба снова здесь'
               ? 'оба снова здесь'
               : 'вернулся';
-          setPeerNote(note);
-          peerNoteRef.current = note;
-          if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-          peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
-          void juice.sync();
-        } else {
-          const note = 'комната · соло';
           setPeerNote(note);
           peerNoteRef.current = note;
           if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
@@ -252,8 +252,6 @@ export default function HeartbeatScreen() {
         return;
       }
       if (payload?.hello) {
-        setPartnerLive(true);
-        partnerLiveRef.current = true;
         if (peerLeftMatchRef.current) {
           bumpPeerNote('комната · соло', 1200);
           void juice.hit();
@@ -264,6 +262,8 @@ export default function HeartbeatScreen() {
           void juice.sync();
           return;
         }
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
         const both = Date.now() - lastHelloAt.current < 2500;
         bumpPeerNote(
           both
@@ -277,7 +277,7 @@ export default function HeartbeatScreen() {
         return;
       }
       if (payload?.phase === 'start') {
-        if (peerLeftMatchRef.current) return;
+        if (peerLeftMatchRef.current || params.solo === '1') return;
         setPartnerLive(true);
         partnerLiveRef.current = true;
         if (Date.now() - lateStartAt.current < 2500) {

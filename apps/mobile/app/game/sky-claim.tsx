@@ -179,12 +179,15 @@ export default function SkyClaimScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPartnerLive(true);
-        partnerLiveRef.current = true;
         if (peerLeftMatchRef.current) {
           bumpPeerNote('комната · соло');
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          bumpPeerNote('комната · соло');
+          void juice.sync();
+        } else {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
           setForceSolo(false);
           forceSoloRef.current = false;
           bumpPeerNote(
@@ -196,9 +199,6 @@ export default function SkyClaimScreen() {
               ? 'оба снова здесь'
               : 'вернулся',
           );
-          void juice.sync();
-        } else {
-          bumpPeerNote('комната · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
@@ -237,8 +237,6 @@ export default function SkyClaimScreen() {
           return;
         }
         if (payload?.hello) {
-          setPartnerLive(true);
-          partnerLiveRef.current = true;
           if (peerLeftMatchRef.current) {
             bumpPeerNote('комната · соло');
             void juice.hit();
@@ -249,6 +247,8 @@ export default function SkyClaimScreen() {
             void juice.sync();
             return;
           }
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
           const both = Date.now() - lastHelloAt.current < 2500;
           bumpPeerNote(
             both
@@ -261,7 +261,7 @@ export default function SkyClaimScreen() {
           return;
         }
         if (payload?.phase === 'start') {
-          if (peerLeftMatchRef.current) return;
+          if (peerLeftMatchRef.current || params.solo === '1') return;
           setPartnerLive(true);
           partnerLiveRef.current = true;
           if (Date.now() - lateStartAt.current < 2500) {

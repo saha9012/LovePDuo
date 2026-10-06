@@ -165,12 +165,15 @@ export default function SoftDuelScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPartnerLive(true);
-        partnerLiveRef.current = true;
         if (peerLeftMatchRef.current) {
           setFlash('Партнёр в комнате · соло до rematch');
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          setFlash('Партнёр в комнате · соло');
+          void juice.sync();
+        } else {
+          setPartnerLive(true);
+          partnerLiveRef.current = true;
           setForceSolo(false);
           forceSoloRef.current = false;
           const racing =
@@ -182,9 +185,6 @@ export default function SoftDuelScreen() {
             flashRef.current === 'Партнёр снова в комнате' ||
             flashRef.current === 'Оба снова в комнате';
           setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
-          void juice.sync();
-        } else {
-          setFlash('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
@@ -225,8 +225,6 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.hello) {
-        setPartnerLive(true);
-        partnerLiveRef.current = true;
         if (peerLeftMatchRef.current) {
           setFlash('Партнёр в комнате · соло до rematch');
           void juice.hit();
@@ -237,6 +235,8 @@ export default function SoftDuelScreen() {
           void juice.sync();
           return;
         }
+        setPartnerLive(true);
+        partnerLiveRef.current = true;
         const both = Date.now() - lastHelloAt.current < 2500;
         setFlash(
           both
