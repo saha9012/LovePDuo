@@ -474,32 +474,29 @@ export default function HomeScreen() {
   const syncWaiting = feedPending + outboxPending;
 
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
+    const duoLive = (pair?.roomSize ?? 0) >= 2;
     const same = pair?.mood === m;
     const again =
       same && lastMoodMatch.current === m && Date.now() - lastMoodMatchAt.current < 3200;
     setMood(m);
     // Ephemeral room vibe — never spray mood into an empty WS room.
-    sendGameIfPeerLive('mood', { mood: m });
-    if (same) {
+    const sent = sendGameIfPeerLive('mood', { mood: m });
+    if (duoLive && same) {
       lastMoodMatchAt.current = Date.now();
       lastMoodMatch.current = m;
     }
+    const label =
+      m === 'night' ? 'Ночь' : m === 'warm' ? 'Тёплый свет' : 'Дождь';
     setRoomToast(
-      again
+      duoLive && again
         ? 'Оба в настроении'
-        : same
-          ? m === 'night'
-            ? 'Оба: Ночь'
-            : m === 'warm'
-              ? 'Оба: Тёплый свет'
-              : 'Оба: Дождь'
-          : m === 'night'
-            ? 'Настроение: Ночь'
-            : m === 'warm'
-              ? 'Настроение: Тёплый свет'
-              : 'Настроение: Дождь',
+        : duoLive && same
+          ? `Оба: ${label}`
+          : duoLive && sent
+            ? `Настроение: ${label}`
+            : `Настроение: ${label} · локально · sync ждёт WS 2/2`,
     );
-    void (again || same ? juice.perfect() : juice.hit());
+    void (duoLive && (again || same) ? juice.perfect() : juice.hit());
     setTimeout(() => setRoomToast(null), 1400);
   };
 
@@ -746,6 +743,9 @@ export default function HomeScreen() {
               </Text>
             ))}
           </View>
+          {(pair?.roomSize ?? 0) < 2 ? (
+            <Text style={styles.moodHint}>Настроение локально · уйдёт при WS 2/2</Text>
+          ) : null}
         </Animated.View>
 
         <View style={styles.section}>
@@ -998,6 +998,11 @@ const styles = StyleSheet.create({
     color: colors.accentAmber,
     borderColor: 'rgba(226,176,122,0.45)',
     backgroundColor: 'rgba(226,176,122,0.1)',
+  },
+  moodHint: {
+    fontFamily: fonts.ui,
+    fontSize: 11,
+    color: colors.textMuted,
   },
   meta: {
     fontFamily: fonts.mono,

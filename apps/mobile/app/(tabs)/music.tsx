@@ -825,7 +825,10 @@ export default function MusicScreen() {
     }
     setActivePlaylist(id);
     if (mood !== 'pulse') setMood(mood);
-    sendMusicOrQueue('playlist', { playlistId: id, mood, fromId: user?.id });
+    const sync = sendMusicOrQueue('playlist', { playlistId: id, mood, fromId: user?.id });
+    if (sync === 'queued') {
+      showNote('Полка локально · sync ждёт WS 2/2');
+    }
     void juice.card();
   };
 

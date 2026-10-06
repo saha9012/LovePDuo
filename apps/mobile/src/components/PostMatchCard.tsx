@@ -55,7 +55,9 @@ export function PostMatchCard({
         ) : null}
         {onHome ? (
           <Pressable onPress={onHome} style={styles.ghost}>
-            <Text style={styles.ghostLabel}>В лобби</Text>
+            <Text style={styles.ghostLabel}>
+              {soloDemo ? 'В лобби · Solo/Demo' : 'В лобби'}
+            </Text>
           </Pressable>
         ) : null}
       </View>
