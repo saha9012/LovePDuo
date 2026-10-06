@@ -497,8 +497,11 @@ export default function HomeScreen() {
         <View style={styles.topRow}>
           <BrandMark size="nav" />
           <Text style={styles.liveDot}>
-            {wsOnline ? '· live' : '· …'}
-            {stats.room >= 2 ? ` · ${stats.room}` : ''}
+            {stats.room >= 2
+              ? `· live · ${stats.room}`
+              : wsOnline
+                ? '· WS solo'
+                : '· …'}
           </Text>
         </View>
 
