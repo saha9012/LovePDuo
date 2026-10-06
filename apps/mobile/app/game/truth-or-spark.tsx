@@ -274,7 +274,6 @@ export default function TruthOrSparkScreen() {
         leaveMatch?: boolean;
       } | undefined;
       if (!payload) return;
-      setLive(true);
       if (payload.leaveMatch && payload.fromId !== user.id) {
         if (typeof payload.seed === 'number' && payload.seed !== seedRef.current) {
           return;
@@ -288,6 +287,8 @@ export default function TruthOrSparkScreen() {
         void juice.miss();
         return;
       }
+      // Rematch clears peerLeftMatch; until then stay ·solo even if peer pings hello.
+      if (!peerLeftMatchRef.current) setLive(true);
       if (payload.phase === 'finished' && payload.fromId !== user.id) {
         finishLogged.current = true;
         setSyncFinish(true);

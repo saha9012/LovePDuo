@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS live badge stays solo after leaveMatch hellos  
 - [x] Hello after leaveMatch stays соло · lobby leave via sendGameIfPeerLive  
 - [x] Word Veil forceSoloRef guards synced-start timers  
 - [x] ToS presence online skips clear after leaveMatch  
