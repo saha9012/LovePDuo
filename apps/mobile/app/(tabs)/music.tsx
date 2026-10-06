@@ -927,6 +927,13 @@ export default function MusicScreen() {
           {playlists.reduce((n, p) => n + p.trackIds.length, 0)} на полках ·{' '}
           {tracks.filter((t) => t.reaction).length} реакций
           {nowPlayingId ? ' · играет' : ''}
+          {pair
+            ? peerInWsRoom
+              ? ' · партнёр в комнате'
+              : pair.partnerPresence === 'online'
+                ? ' · presence ≠ room'
+                : ' · партнёр offline'
+            : ' · нет пары'}
           {isPlus ? ' · Plus' : ' · Free'}
           {(() => {
             void outboxTick;
@@ -943,6 +950,16 @@ export default function MusicScreen() {
               ['vk', String(tracks.filter((t) => t.sourceType === 'vk').length), 'vk'],
               ['rx', String(tracks.filter((t) => t.reaction).length), '♥✦≈'],
               ['pl', String(active?.trackIds.length ?? 0), active?.name ?? 'полка'],
+              [
+                'ws',
+                typeof pair?.roomSize === 'number' ? `${pair.roomSize}/2` : '—',
+                'WS',
+              ],
+              [
+                'pr',
+                peerInWsRoom ? 'on' : pair?.partnerPresence === 'online' ? '≠' : 'off',
+                'партнёр',
+              ],
             ] as const
           ).map(([k, n, l]) => (
             <View key={k} style={styles.statPill}>

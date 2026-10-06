@@ -160,7 +160,7 @@ export default function PairSuccessScreen() {
             ) : null}
           </View>
           <Text style={styles.hint}>
-            Пара = код {code}. WS online — отдельно. QR и deep link ведут на join.
+            Пара = код {code}. WS комната — отдельно от кода. QR и deep link ведут на join.
           </Text>
         </Animated.View>
         <View style={styles.actions}>

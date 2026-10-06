@@ -315,7 +315,7 @@ export default function PlayScreen() {
                 typeof pair.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''
               } · ${
                 typeof pair.roomSize === 'number' && pair.roomSize >= 2
-                  ? 'партнёр online'
+                  ? 'партнёр в комнате'
                   : pair.partnerPresence === 'online'
                     ? 'presence ≠ room'
                     : 'партнёр offline'

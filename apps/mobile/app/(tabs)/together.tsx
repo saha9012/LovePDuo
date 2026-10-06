@@ -606,7 +606,7 @@ export default function TogetherScreen() {
           {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
           {pair
             ? peerInWsRoom
-              ? ' · партнёр online'
+              ? ' · партнёр в комнате'
               : pair.partnerPresence === 'online'
                 ? ' · presence ≠ room'
                 : ' · партнёр offline'
@@ -635,8 +635,8 @@ export default function TogetherScreen() {
               ['w', String(warmthPulse), 'тепло'],
               [
                 'o',
-                typeof pair?.roomSize === 'number' ? String(pair.roomSize) : '—',
-                'online',
+                typeof pair?.roomSize === 'number' ? `${pair.roomSize}/2` : '—',
+                'WS',
               ],
               ['p', peerInWsRoom ? 'on' : pair?.partnerPresence === 'online' ? '≠' : 'off', 'партнёр'],
             ] as const
