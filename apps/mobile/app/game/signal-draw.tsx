@@ -301,6 +301,7 @@ export default function SignalDrawScreen() {
         setTimeout(() => startRef.current(), 0);
         return;
       }
+      if (peerLeftMatchRef.current) return;
       if (payload.phase === 'finished') {
         partnerFinishedRef.current = true;
         if (typeof payload.count === 'number') {

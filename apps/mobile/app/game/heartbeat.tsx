@@ -288,6 +288,7 @@ export default function HeartbeatScreen() {
         setTimeout(() => startRef.current(), 0);
         return;
       }
+      if (peerLeftMatchRef.current) return;
       if (payload?.sync) {
         setPartnerLive(true);
         partnerLiveRef.current = true;

@@ -300,6 +300,8 @@ export default function SoftDuelScreen() {
         setTimeout(() => startRef.current(), 0);
         return;
       }
+      // Abandoned match — ignore stale taps/scores until rematch.
+      if (peerLeftMatchRef.current) return;
       if (payload?.early) {
         setPartnerEarlies((n) => n + 1);
         setPartnerLastMs(null);

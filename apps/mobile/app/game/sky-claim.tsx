@@ -273,6 +273,7 @@ export default function SkyClaimScreen() {
           setTimeout(() => startRef.current(), 0);
           return;
         }
+        if (peerLeftMatchRef.current) return;
         if (payload?.miss || payload?.decoy) {
           const kind = payload.decoy ? 'decoy' : 'miss';
           const both =

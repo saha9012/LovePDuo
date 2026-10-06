@@ -290,6 +290,7 @@ export default function TruthOrSparkScreen() {
       // Rematch clears peerLeftMatch; until then stay ·solo even if peer pings hello.
       if (!peerLeftMatchRef.current) setLive(true);
       if (payload.phase === 'finished' && payload.fromId !== user.id) {
+        if (peerLeftMatchRef.current) return;
         finishLogged.current = true;
         setSyncFinish(true);
         setFinished(true);
@@ -304,6 +305,7 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (payload.soloEscape && payload.fromId !== user.id) {
+        if (peerLeftMatchRef.current) return;
         setForceSolo(true);
         idleForced.current = true;
         setTurnMine(true);
@@ -364,6 +366,7 @@ export default function TruthOrSparkScreen() {
         void (both ? juice.perfect() : juice.sync());
         return;
       }
+      if (peerLeftMatchRef.current) return;
       if (payload.filterChange && (payload.filter === 'soft' || payload.filter === 'spicy')) {
         if (payload.filter === 'spicy' && !spicyUnlocked) {
           if (typeof payload.index === 'number') setIndex(payload.index);

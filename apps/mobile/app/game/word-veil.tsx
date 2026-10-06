@@ -337,6 +337,7 @@ export default function WordVeilScreen() {
         return;
       }
       if (payload?.phase === 'finished') {
+        if (peerLeftMatchRef.current) return;
         const peerPts = typeof payload.score === 'number' ? payload.score : 0;
         setTheirScore(peerPts);
         setPresenceHint('Партнёр закрыл раунд');
@@ -376,6 +377,7 @@ export default function WordVeilScreen() {
         void (both ? juice.perfect() : juice.sync());
         return;
       }
+      if (peerLeftMatchRef.current) return;
       if (typeof payload?.typing === 'boolean') {
         if (payload.typing) {
           setPeerTyping((was) => {
