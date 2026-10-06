@@ -154,7 +154,7 @@ export default function SoftDuelScreen() {
         setFlash(racing ? 'Оба снова в паре' : 'Партнёр снова в паре');
         void juice.sync();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame('soft-duel', { hello: true, fromId: user.id });
+        sendGameIfPeerLive('soft-duel', { hello: true, fromId: user.id });
         return;
       }
       if (msg.type !== 'game' || msg.gameId !== 'soft-duel') return;
@@ -417,7 +417,7 @@ export default function SoftDuelScreen() {
       if (r >= ROUNDS) {
       setPhase('finished');
       void juice.postMatch();
-      pairRealtime.sendGame('soft-duel', {
+      sendGameIfPeerLive('soft-duel', {
         phase: 'finished',
         score: myScoreRef.current,
         round: ROUNDS,
@@ -488,7 +488,7 @@ export default function SoftDuelScreen() {
       setArmed(true);
       flashScale.value = withSpring(1.12, { damping: 8, stiffness: 200 });
       void juice.beat();
-      pairRealtime.sendGame('soft-duel', { arm: true, round: roundRef.current });
+      sendGameIfPeerLive('soft-duel', { arm: true, round: roundRef.current });
     }, wait);
   };
 
@@ -524,7 +524,7 @@ export default function SoftDuelScreen() {
     setPartnerRound(0);
     partnerRoundRef.current = 0;
     setPhase('playing');
-    pairRealtime.sendGame('soft-duel', {
+    sendGameIfPeerLive('soft-duel', {
       phase: 'start',
       seed: seedRef.current,
       hello: true,
@@ -613,7 +613,7 @@ export default function SoftDuelScreen() {
       void (peerEarly ? juice.sync() : juice.miss());
       myScoreRef.current = Math.max(0, myScoreRef.current - 1);
       setMyScore(myScoreRef.current);
-      pairRealtime.sendGame('soft-duel', {
+      sendGameIfPeerLive('soft-duel', {
         early: true,
         score: myScoreRef.current,
         round: roundRef.current,
@@ -635,7 +635,7 @@ export default function SoftDuelScreen() {
     setArmed(false);
     flashScale.value = withSpring(1.2, { damping: 10 });
     void (pts === 3 ? juice.perfect() : juice.hit());
-    pairRealtime.sendGame('soft-duel', {
+    sendGameIfPeerLive('soft-duel', {
       score: myScoreRef.current,
       tap: delta,
       round: roundRef.current,

@@ -177,7 +177,7 @@ export default function SkyClaimScreen() {
         );
         void juice.sync();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame('sky-claim', { hello: true, fromId: user.id });
+        sendGameIfPeerLive('sky-claim', { hello: true, fromId: user.id });
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'sky-claim') {
@@ -393,7 +393,7 @@ export default function SkyClaimScreen() {
     setTimeLeft(skyClaimConfig.durationSec);
     timeLeftRef.current = skyClaimConfig.durationSec;
     setFlash(null);
-    pairRealtime.sendGame('sky-claim', {
+    sendGameIfPeerLive('sky-claim', {
       phase: 'start',
       seed: seedRef.current,
       score: 0,
@@ -469,7 +469,7 @@ export default function SkyClaimScreen() {
       if (finished) return;
       finished = true;
       if (spawnTimer) clearInterval(spawnTimer);
-      pairRealtime.sendGame('sky-claim', {
+      sendGameIfPeerLive('sky-claim', {
         phase: 'finished',
         score: scoreRef.current,
       });
@@ -534,7 +534,7 @@ export default function SkyClaimScreen() {
         const elapsed = skyClaimConfig.durationSec - remaining;
         if (elapsed > 0 && elapsed % 5 === 0 && elapsed !== lastSyncElapsed) {
           lastSyncElapsed = elapsed;
-          pairRealtime.sendGame('sky-claim', {
+          sendGameIfPeerLive('sky-claim', {
             phase: 'playing',
             score: scoreRef.current,
           });
@@ -590,7 +590,7 @@ export default function SkyClaimScreen() {
           setMisses((m) => m + 1);
           setFlash('miss');
           void juice.miss();
-          pairRealtime.sendGame('sky-claim', { miss: true, score: scoreRef.current });
+          sendGameIfPeerLive('sky-claim', { miss: true, score: scoreRef.current });
           return prev;
         }
         const result = scoreCatch(comboRef.current, hit.points);
@@ -603,16 +603,16 @@ export default function SkyClaimScreen() {
         setFlash(hit.type === 'decoy' ? 'decoy' : 'catch');
         if (hit.type === 'decoy') {
           void juice.decoy();
-          pairRealtime.sendGame('sky-claim', { decoy: true, score: scoreRef.current });
+          sendGameIfPeerLive('sky-claim', { decoy: true, score: scoreRef.current });
         } else if (result.combo > 0 && result.combo % 5 === 0) {
           void juice.perfect();
-          pairRealtime.sendGame('sky-claim', {
+          sendGameIfPeerLive('sky-claim', {
             score: scoreRef.current,
             combo: result.combo,
           });
         } else {
           void juice.catch();
-          pairRealtime.sendGame('sky-claim', { score: scoreRef.current });
+          sendGameIfPeerLive('sky-claim', { score: scoreRef.current });
         }
         if (
           hit.type !== 'decoy' &&

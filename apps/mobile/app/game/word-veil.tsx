@@ -421,7 +421,7 @@ export default function WordVeilScreen() {
     setLocked(true);
     veil.value = withTiming(0.35, { duration: 400 });
     if (typingTimer.current) clearTimeout(typingTimer.current);
-    pairRealtime.sendGame('word-veil', { word: mine.trim(), typing: false });
+    sendGameIfPeerLive('word-veil', { word: mine.trim(), typing: false });
     void juice.card();
 
     const useDemo = params.solo === '1' || forceSolo || !pair;
@@ -443,7 +443,7 @@ export default function WordVeilScreen() {
   const finish = () => {
     setPhase('finished');
     void juice.postMatch();
-    pairRealtime.sendGame('word-veil', {
+    sendGameIfPeerLive('word-veil', {
       phase: 'finished',
       score: myScore,
     });
@@ -552,7 +552,7 @@ export default function WordVeilScreen() {
                 onPress={() => {
                   setPhase('playing');
                   if (pair && user && params.solo !== '1') {
-                    pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+                    sendGameIfPeerLive('word-veil', { hello: true, fromId: user.id });
                   }
                   void juice.beat();
                 }}
@@ -569,7 +569,7 @@ export default function WordVeilScreen() {
                 if (locked || phase !== 'playing') return;
                 if (typingTimer.current) clearTimeout(typingTimer.current);
                 typingTimer.current = setTimeout(() => {
-                  pairRealtime.sendGame('word-veil', { typing: true });
+                  sendGameIfPeerLive('word-veil', { typing: true });
                 }, 280);
               }}
               editable={!locked}

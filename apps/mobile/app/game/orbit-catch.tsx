@@ -153,7 +153,7 @@ export default function OrbitCatchScreen() {
         );
         void juice.sync();
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame('orbit-catch', { hello: true, fromId: user.id });
+        sendGameIfPeerLive('orbit-catch', { hello: true, fromId: user.id });
         return;
       }
       if (msg.type === 'game' && msg.gameId === 'orbit-catch') {
@@ -332,7 +332,7 @@ export default function OrbitCatchScreen() {
     setOrbAngle((seedRef.current % 360) * (Math.PI / 180));
     setAligned(false);
     setPhase('playing');
-    pairRealtime.sendGame('orbit-catch', {
+    sendGameIfPeerLive('orbit-catch', {
       phase: 'start',
       seed: seedRef.current,
       hello: true,
@@ -406,7 +406,7 @@ export default function OrbitCatchScreen() {
       }
       setPhase('finished');
       void juice.postMatch();
-      pairRealtime.sendGame('orbit-catch', {
+      sendGameIfPeerLive('orbit-catch', {
         phase: 'finished',
         caught: caughtRef.current,
       });
@@ -460,7 +460,7 @@ export default function OrbitCatchScreen() {
       const now = Date.now();
       if (now - lastAlignSend.current > 700) {
         lastAlignSend.current = now;
-        pairRealtime.sendGame('orbit-catch', { align: true });
+        sendGameIfPeerLive('orbit-catch', { align: true });
       }
     }
   }, [aligned, ringPulse, phase]);
@@ -473,7 +473,7 @@ export default function OrbitCatchScreen() {
       caughtRef.current += 1;
       setCaught(caughtRef.current);
       lastCatchAt.current = Date.now();
-      pairRealtime.sendGame('orbit-catch', { caught: caughtRef.current });
+      sendGameIfPeerLive('orbit-catch', { caught: caughtRef.current });
       void juice.catch();
       flash.value = withSequence(
         withTiming(1, { duration: 40 }),
@@ -506,7 +506,7 @@ export default function OrbitCatchScreen() {
       setMisses((m) => m + 1);
       lastMissAt.current = Date.now();
       void juice.miss();
-      pairRealtime.sendGame('orbit-catch', { miss: true });
+      sendGameIfPeerLive('orbit-catch', { miss: true });
       flash.value = withSpring(0);
     }
   };

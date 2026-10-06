@@ -164,7 +164,7 @@ export default function TruthOrSparkScreen() {
         setForceSolo(true);
         showTurnToast('Партнёр молчит · соло 35с');
         void juice.miss();
-        pairRealtime.sendGame(GAME_ID, {
+        sendGameIfPeerLive(GAME_ID, {
           soloEscape: true,
           fromId: user?.id,
           from: user?.displayName,
@@ -447,7 +447,7 @@ export default function TruthOrSparkScreen() {
         setSessionStarted(true);
         if (pair && user) {
           lastHelloAt.current = Date.now();
-          pairRealtime.sendGame(GAME_ID, {
+          sendGameIfPeerLive(GAME_ID, {
             hello: true,
             sessionStart: true,
             seed: matchSeed,
@@ -477,7 +477,7 @@ export default function TruthOrSparkScreen() {
       void juice.sync();
       if (pair && user) {
         lastHelloAt.current = Date.now();
-        pairRealtime.sendGame(GAME_ID, {
+        sendGameIfPeerLive(GAME_ID, {
           hello: true,
           sessionStart: true,
           seed: matchSeed,
@@ -498,7 +498,7 @@ export default function TruthOrSparkScreen() {
     nextSkips: number,
     opts?: { skipped?: boolean; filterChange?: boolean; deckWrap?: boolean },
   ) => {
-    pairRealtime.sendGame(GAME_ID, {
+    sendGameIfPeerLive(GAME_ID, {
       index: nextIndex,
       filter: nextFilter,
       skips: nextSkips,
@@ -524,7 +524,7 @@ export default function TruthOrSparkScreen() {
       detail: `${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`,
     });
     broadcastMemory(mem, user);
-    pairRealtime.sendGame(GAME_ID, {
+    sendGameIfPeerLive(GAME_ID, {
       phase: 'finished',
       cards,
       skipsUsed: usedSkips,
@@ -763,7 +763,7 @@ export default function TruthOrSparkScreen() {
                 idleForced.current = true;
                 showTurnToast('Соло — можно листать');
                 void juice.hit();
-                pairRealtime.sendGame(GAME_ID, {
+                sendGameIfPeerLive(GAME_ID, {
                   soloEscape: true,
                   fromId: user?.id,
                   from: user?.displayName,
