@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Ready-screen exit announces leaveMatch · PostMatch Home leaveMatch  
 - [x] PostMatch Home announces leaveMatch · leaveMatch rejoin races  
 - [x] leaveMatch toast ≠ peer_left · Home/Play drop lobby chip on disconnect  
 - [x] Play clears peer-lobby on peer_left · scrapbook shows лимит  
