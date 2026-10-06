@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Music now-playing + Together candle via sendGameIfPeerLive  
 - [x] Play peek/filter + lobby host via sendGameIfPeerLive  
 - [x] Mid-match sends skip forceSolo (sendGameIfDuo)  
 - [x] Stale scores/finish ignored after leaveMatch until rematch  

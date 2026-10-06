@@ -17,7 +17,6 @@ import { typography } from '../../src/theme/typography';
 import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendMusicOrQueue } from '../../src/realtime/musicOutbox';
-import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
@@ -84,16 +83,13 @@ export default function MusicScreen() {
   };
 
   /** Ephemeral — never queue stale now-playing into an empty room. */
-  const sendNowPlaying = (title: string | null) => {
-    if (pairRealtime.connected && getLastRoomSize() >= 2) {
-      pairRealtime.sendGame('now-playing', {
-        title,
-        from: user?.displayName,
-      });
-      return 'sent' as const;
-    }
-    return 'skipped' as const;
-  };
+  const sendNowPlaying = (title: string | null) =>
+    sendGameIfPeerLive('now-playing', {
+      title,
+      from: user?.displayName,
+    })
+      ? ('sent' as const)
+      : ('skipped' as const);
 
   const active = playlists.find((p) => p.id === activePlaylistId) ?? playlists[0];
   const visibleTracks = useMemo(() => {

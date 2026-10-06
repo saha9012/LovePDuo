@@ -148,9 +148,7 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (candleLeft == null || candleLeft <= 0) return;
     if (candleLeft % 15 === 0 && candleLeft < CANDLE_SEC) {
-      if (pairRealtime.connected && getLastRoomSize() >= 2) {
-        pairRealtime.sendGame('candle', { left: candleLeft });
-      }
+      sendGameIfPeerLive('candle', { left: candleLeft });
     }
   }, [candleLeft]);
 
