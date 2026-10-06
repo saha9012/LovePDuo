@@ -230,6 +230,7 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.arm) {
+        if (peerLeftMatchRef.current) return;
         setPartnerFlash(true);
         const bothPress =
           flashRef.current === 'ЖМИ' ||
@@ -263,6 +264,7 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.phase === 'start') {
+        if (peerLeftMatchRef.current) return;
         setPartnerLive(true);
         partnerLiveRef.current = true;
         const late =

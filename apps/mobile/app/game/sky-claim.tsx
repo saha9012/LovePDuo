@@ -244,6 +244,7 @@ export default function SkyClaimScreen() {
           return;
         }
         if (payload?.phase === 'start') {
+          if (peerLeftMatchRef.current) return;
           setPartnerLive(true);
           partnerLiveRef.current = true;
           if (Date.now() - lateStartAt.current < 2500) {

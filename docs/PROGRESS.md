@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Mid-match pings ignored after leaveMatch until rematch  
 - [x] ToS live badge stays solo after leaveMatch hellos  
 - [x] Hello after leaveMatch stays соло · lobby leave via sendGameIfPeerLive  
 - [x] Word Veil forceSoloRef guards synced-start timers  

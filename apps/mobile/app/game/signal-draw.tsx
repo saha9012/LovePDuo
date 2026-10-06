@@ -254,13 +254,15 @@ export default function SignalDrawScreen() {
         return;
       }
       if (payload.hello || payload.phase === 'start') {
-        setPeerSeen(true);
-        if (payload.hello) {
-          if (peerLeftMatchRef.current) {
+        if (peerLeftMatchRef.current) {
+          if (payload.hello) {
             showToast('Партнёр в комнате · соло до rematch');
             void juice.hit();
-            return;
           }
+          return;
+        }
+        setPeerSeen(true);
+        if (payload.hello) {
           const both = Date.now() - lastHelloAt.current < 2500;
           showToast(
             both
