@@ -11,16 +11,21 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
+import { PostMatchCard } from '../../src/components/PostMatchCard';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { SparkFilter, sparksRu } from '../../src/content/sparks';
+import { pickPostMatchLine } from '../../src/content/postMatch';
 import { useApp } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { consumeMatchSession } from '../../src/realtime/matchSession';
 import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { usePremium } from '../../src/store/PremiumStore';
+import { useMemories } from '../../src/store/MemoriesStore';
+import { broadcastMemory } from '../../src/memories/broadcastMemory';
 
 const SKIP_LIMIT = 3;
+const EVENING_CARDS = 8;
 const GAME_ID = 'truth-or-spark';
 
 function mulberry32(seed: number) {
@@ -48,6 +53,7 @@ export default function TruthOrSparkScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair } = useApp();
   const { spicyUnlocked, isPlus } = usePremium();
+  const { addMemory } = useMemories();
   const params = useLocalSearchParams<{ seed?: string; solo?: string; startAt?: string }>();
 
   const [matchSeed, setMatchSeed] = useState(() => {
@@ -74,10 +80,15 @@ export default function TruthOrSparkScreen() {
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [peerIdleSec, setPeerIdleSec] = useState(0);
   const [turnToast, setTurnToast] = useState<string | null>(null);
+  const [finished, setFinished] = useState(false);
+  const [syncFinish, setSyncFinish] = useState(false);
+  const [cardsDone, setCardsDone] = useState(0);
+  const [skipsUsed, setSkipsUsed] = useState(0);
   const turnToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const turnToastRef = useRef<string | null>(null);
   const turnWaitSince = useRef<number | null>(null);
   const idleForced = useRef(false);
+  const finishLogged = useRef(false);
   const lastSkipAt = useRef(0);
   const lastFilterAt = useRef(0);
   const lastFilterChoice = useRef<SparkFilter>('soft');
@@ -227,9 +238,26 @@ export default function TruthOrSparkScreen() {
         hello?: boolean;
         deckWrap?: boolean;
         soloEscape?: boolean;
+        phase?: string;
+        cards?: number;
+        skipsUsed?: number;
       } | undefined;
       if (!payload) return;
       setLive(true);
+      if (payload.phase === 'finished' && payload.fromId !== user.id) {
+        finishLogged.current = true;
+        setSyncFinish(true);
+        setFinished(true);
+        if (typeof payload.cards === 'number') setCardsDone(payload.cards);
+        if (typeof payload.skipsUsed === 'number') setSkipsUsed(payload.skipsUsed);
+        showTurnToast(
+          turnToastRef.current === 'Оба закрыли вечер' || turnToastRef.current === 'Оба финиш'
+            ? 'Оба закрыли вечер'
+            : 'Партнёр закрыл вечер',
+        );
+        void juice.perfect();
+        return;
+      }
       if (payload.soloEscape && payload.fromId !== user.id) {
         showTurnToast(
           turnToastRef.current === 'Партнёр ушёл в соло' ||
@@ -258,6 +286,11 @@ export default function TruthOrSparkScreen() {
         setIndex(0);
         setSkips(SKIP_LIMIT);
         setTurnMine(true);
+        setFinished(false);
+        setSyncFinish(false);
+        setCardsDone(0);
+        setSkipsUsed(0);
+        finishLogged.current = false;
         const both = Date.now() - lastRematchAt.current < 2500;
         const racing =
           both &&
@@ -447,8 +480,33 @@ export default function TruthOrSparkScreen() {
     });
   };
 
+  const finishEvening = (cards: number, usedSkips: number, dual?: boolean) => {
+    if (finishLogged.current) return;
+    finishLogged.current = true;
+    setCardsDone(cards);
+    setSkipsUsed(usedSkips);
+    setFinished(true);
+    if (dual) setSyncFinish(true);
+    const mem = addMemory({
+      kind: 'spark',
+      title: 'Truth Or Spark',
+      detail: `${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`,
+    });
+    broadcastMemory(mem, user);
+    pairRealtime.sendGame(GAME_ID, {
+      phase: 'finished',
+      cards,
+      skipsUsed: usedSkips,
+      filter,
+      seed: matchSeed,
+      fromId: user?.id,
+      fromName: user?.displayName,
+    });
+    void juice.postMatch();
+  };
+
   const next = () => {
-    if (!sessionStarted) return;
+    if (!sessionStarted || finished) return;
     const ni = index + 1;
     const wrapped = ni > 0 && ni % deck.length === 0;
     if (wrapped) {
@@ -461,10 +519,13 @@ export default function TruthOrSparkScreen() {
     setTurnMine(false);
     broadcast(ni, filter, skips, wrapped ? { deckWrap: true } : undefined);
     void juice.card();
+    if (ni >= EVENING_CARDS) {
+      finishEvening(ni, SKIP_LIMIT - skips);
+    }
   };
 
   const skip = () => {
-    if (!sessionStarted || skips <= 0) return;
+    if (!sessionStarted || finished || skips <= 0) return;
     const ns = skips - 1;
     const ni = index + 1;
     lastSkipAt.current = Date.now();
@@ -473,6 +534,9 @@ export default function TruthOrSparkScreen() {
     setTurnMine(false);
     broadcast(ni, filter, ns, { skipped: true });
     void juice.miss();
+    if (ni >= EVENING_CARDS) {
+      finishEvening(ni, SKIP_LIMIT - ns);
+    }
   };
 
   const changeFilter = (f: SparkFilter) => {
@@ -494,15 +558,20 @@ export default function TruthOrSparkScreen() {
 
   const reshuffle = () => {
     if (!sessionStarted) return;
-    const next = Math.floor(Math.random() * 100000);
-    setMatchSeed(next);
+    const nextSeed = Math.floor(Math.random() * 100000);
+    setMatchSeed(nextSeed);
     setIndex(0);
     setSkips(SKIP_LIMIT);
     setTurnMine(true);
+    setFinished(false);
+    setSyncFinish(false);
+    setCardsDone(0);
+    setSkipsUsed(0);
+    finishLogged.current = false;
     lastRematchAt.current = Date.now();
     pairRealtime.sendGame(GAME_ID, {
       rematch: true,
-      seed: next,
+      seed: nextSeed,
       index: 0,
       filter,
       skips: SKIP_LIMIT,
@@ -514,6 +583,7 @@ export default function TruthOrSparkScreen() {
   };
 
   const progress = deck.length > 0 ? ((index % deck.length) + 1) / deck.length : 0;
+  const eveningProgress = Math.min(1, index / EVENING_CARDS);
 
   const cardStyle = useAnimatedStyle(() => ({
     opacity: cardOpacity.value,
@@ -522,6 +592,32 @@ export default function TruthOrSparkScreen() {
       { rotateZ: `${cardTilt.value}deg` },
     ],
   }));
+
+  if (finished) {
+    const line = pickPostMatchLine(cardsDone, cardsDone, matchSeed + cardsDone);
+    return (
+      <LpdBackground mood={filter === 'spicy' ? 'warm' : 'night'}>
+        <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+          <Text style={styles.title}>Truth Or Spark</Text>
+          <Text style={styles.syncMeta}>
+            {filter} · карт {cardsDone}/{EVENING_CARDS} · skip {skipsUsed}/{SKIP_LIMIT} · seed{' '}
+            {matchSeed}
+            {live ? ' · live' : params.solo === '1' || forceSolo ? ' · solo' : ''}
+          </Text>
+          <PostMatchCard
+            title={syncFinish ? 'Вечер закрыт вдвоём' : 'Вечер закрыт'}
+            gameId={GAME_ID}
+            winnerLabel={syncFinish ? 'Оба финиш' : filter === 'spicy' ? 'Spicy night' : 'Soft night'}
+            line={line.text}
+            onRematch={reshuffle}
+            onHome={() =>
+              router.replace({ pathname: '/game/lobby', params: { game: GAME_ID } })
+            }
+          />
+        </View>
+      </LpdBackground>
+    );
+  }
 
   return (
     <LpdBackground mood={filter === 'spicy' ? 'warm' : 'night'}>
@@ -567,8 +663,12 @@ export default function TruthOrSparkScreen() {
         ) : null}
 
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
+          <View style={[styles.progressFill, { width: `${Math.min(100, eveningProgress * 100)}%` }]} />
         </View>
+        <Text style={styles.syncMeta}>
+          вечер {Math.min(index, EVENING_CARDS)}/{EVENING_CARDS} · колода{' '}
+          {Math.round(progress * 100)}% · skip {skips}/{SKIP_LIMIT}
+        </Text>
 
         <View style={styles.filters}>
           {(['soft', 'spicy'] as const).map((f) => (
@@ -641,6 +741,13 @@ export default function TruthOrSparkScreen() {
               variant="ghost"
               onPress={reshuffle}
               disabled={!sessionStarted}
+            />
+          ) : null}
+          {sessionStarted && index >= 3 ? (
+            <LpdButton
+              label={`Завершить вечер · ${index}/${EVENING_CARDS}`}
+              variant="ghost"
+              onPress={() => finishEvening(index, SKIP_LIMIT - skips)}
             />
           ) : null}
         </View>

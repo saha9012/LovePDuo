@@ -43,6 +43,11 @@ export default function SoftDuelScreen() {
   const [oks, setOks] = useState(0);
   const [earlies, setEarlies] = useState(0);
   const [lastMs, setLastMs] = useState<number | null>(null);
+  const [partnerPerfects, setPartnerPerfects] = useState(0);
+  const [partnerGoods, setPartnerGoods] = useState(0);
+  const [partnerOks, setPartnerOks] = useState(0);
+  const [partnerEarlies, setPartnerEarlies] = useState(0);
+  const [partnerLastMs, setPartnerLastMs] = useState<number | null>(null);
   const [partnerLive, setPartnerLive] = useState(false);
   const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [flash, setFlash] = useState('');
@@ -234,6 +239,8 @@ export default function SoftDuelScreen() {
         return;
       }
       if (payload?.early) {
+        setPartnerEarlies((n) => n + 1);
+        setPartnerLastMs(null);
         const both =
           flashRef.current === 'Рано' ||
           flashRef.current === 'Оба рано' ||
@@ -284,6 +291,10 @@ export default function SoftDuelScreen() {
         } else if (typeof payload.tap === 'number') {
           const grade =
             payload.tap < 180 ? 'PERFECT' : payload.tap < 420 ? 'GOOD' : 'OK';
+          setPartnerLastMs(payload.tap);
+          if (grade === 'PERFECT') setPartnerPerfects((n) => n + 1);
+          else if (grade === 'GOOD') setPartnerGoods((n) => n + 1);
+          else setPartnerOks((n) => n + 1);
           const label =
             grade === 'PERFECT'
               ? 'Партнёр PERFECT'
@@ -487,6 +498,11 @@ export default function SoftDuelScreen() {
     setOks(0);
     setEarlies(0);
     setLastMs(null);
+    setPartnerPerfects(0);
+    setPartnerGoods(0);
+    setPartnerOks(0);
+    setPartnerEarlies(0);
+    setPartnerLastMs(null);
     setPartnerRound(0);
     partnerRoundRef.current = 0;
     setPhase('playing');
@@ -668,8 +684,13 @@ export default function SoftDuelScreen() {
             {partnerLive ? ' · live' : ' · demo'}
           </Text>
           <Text style={styles.meta}>
-            P{perfects} · G{goods} · Ok{oks} · early {earlies}
-            {lastMs != null ? ` · last ${lastMs}ms` : ''}
+            ты P{perfects}/G{goods}/Ok{oks}/E{earlies}
+            {lastMs != null ? ` · ${lastMs}ms` : ''}
+          </Text>
+          <Text style={styles.meta}>
+            партнёр P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E{partnerEarlies}
+            {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''}
+            {partnerLive ? ' · live' : ' · demo'}
           </Text>
           <PostMatchCard
             title={myScore >= partnerScore ? 'Реакция твоя' : 'Партнёр быстрее'}
@@ -725,7 +746,10 @@ export default function SoftDuelScreen() {
                 <Animated.Text
                   style={[styles.partnerHud, partnerFlash && styles.partnerHudHot, partnerStyle]}
                 >
-                  партнёр {partnerScore} · r{Math.min(ROUNDS, partnerRound + 1)} · live
+                  партнёр {partnerScore} · P{partnerPerfects}/G{partnerGoods}/Ok{partnerOks}/E
+                  {partnerEarlies}
+                  {partnerLastMs != null ? ` · ${partnerLastMs}ms` : ''} · r
+                  {Math.min(ROUNDS, partnerRound + 1)} · live
                 </Animated.Text>
               ) : (
                 <Text style={styles.meta}>

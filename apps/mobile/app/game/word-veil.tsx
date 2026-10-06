@@ -469,9 +469,22 @@ export default function WordVeilScreen() {
   }));
 
   if (phase === 'finished') {
+    const pct =
+      myScore >= 5 ? '100%' : myScore >= 3 ? '60%' : myScore >= 1 ? '30%' : '0%';
     return (
       <LpdBackground mood="warm">
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+          <Text style={styles.title}>Word Veil</Text>
+          <Text style={styles.revealLine}>
+            Ты: «{mine.trim() || '—'}» · {mine.trim().length} букв
+          </Text>
+          <Text style={styles.revealLine}>
+            Партнёр: «{(partnerWord || '').trim() || '—'}» · {(partnerWord || '').trim().length}{' '}
+            букв
+          </Text>
+          <Text style={styles.revealMeta}>
+            prompt «{prompt}» · связь {myScore}/5 · {pct} · seed {matchSeed}
+          </Text>
           <PostMatchCard
             title={matchLabel}
             line={line.text}
