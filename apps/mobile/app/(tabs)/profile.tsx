@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -18,6 +19,8 @@ import { confirmDestructive } from '../../src/utils/confirmDestructive';
 import { usePremium } from '../../src/store/PremiumStore';
 import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
 
+const AGE_OK_KEY = 'lovepduo.age_ok_16';
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -26,6 +29,7 @@ export default function ProfileScreen() {
   const { clearMemories, items: memories } = useMemories();
   const premium = usePremium();
   const [playStats, setPlayStats] = useState<PlayStats | null>(null);
+  const [ageOk16, setAgeOk16] = useState(false);
   const [sfxMuted, setSfxMuted] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.displayName ?? '');
   const [roomDraft, setRoomDraft] = useState(pair?.name ?? '');
@@ -112,8 +116,9 @@ export default function ProfileScreen() {
           })()}
         </Text>
         <Text style={typography.caption}>
-          Пара живёт по коду и WS-комнате. Локальный вход — не облачный аккаунт; Duo Plus
-          entitlement синкается по WS, не через магазин (пока).
+          {ageOk16 ? '16+ подтверждён' : '16+ не подтверждён'} · пара живёт по коду и WS-комнате.
+          Локальный вход — не облачный аккаунт; Duo Plus entitlement синкается по WS, не через магазин
+          (пока).
         </Text>
         <View style={styles.statStrip}>
           {(

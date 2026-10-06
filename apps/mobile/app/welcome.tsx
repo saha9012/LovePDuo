@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import Animated, {
   Easing,
@@ -25,6 +26,8 @@ import {
   type MatchSession,
 } from '../src/realtime/matchSession';
 
+const AGE_OK_KEY = 'lovepduo.age_ok_16';
+
 const GAME_TITLES: Record<string, string> = {
   'soft-duel': 'Soft Duel',
   heartbeat: 'Heartbeat',
@@ -40,6 +43,7 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { user, pair, signIn } = useApp();
   const [name, setName] = useState(user?.displayName ?? '');
+  const [ageOk, setAgeOk] = useState(false);
   const [roomToast, setRoomToast] = useState<string | null>(null);
   const [playStats, setPlayStats] = useState<PlayStats | null>(null);
   const [resumeMatch, setResumeMatch] = useState<MatchSession | null>(null);
@@ -93,6 +97,12 @@ export default function WelcomeScreen() {
   }, [veil, rise, orbit]);
 
   useEffect(() => {
+    void AsyncStorage.getItem(AGE_OK_KEY).then((v) => {
+      if (v === '1') setAgeOk(true);
+    });
+  }, []);
+
+  useEffect(() => {
     void loadPlayStats().then(setPlayStats);
   }, []);
 
@@ -129,6 +139,23 @@ export default function WelcomeScreen() {
     transform: [{ rotate: `${orbit.value * 360}deg` }, { scale: 0.92 + veil.value * 0.08 }],
   }));
 
+  const requireAgeOk = () => {
+    if (ageOk) return true;
+    setRoomToast('Нужно подтвердить 16+');
+    setTimeout(() => setRoomToast(null), 2200);
+    void juice.miss();
+    return false;
+  };
+
+  const toggleAgeOk = () => {
+    setAgeOk((prev) => {
+      const next = !prev;
+      void AsyncStorage.setItem(AGE_OK_KEY, next ? '1' : '');
+      if (next) void juice.hit();
+      return next;
+    });
+  };
+
   const ensureUser = async () => {
     if (!user || (name.trim() && name.trim() !== user.displayName)) {
       await signIn(name.trim() || 'Ты');
@@ -136,6 +163,7 @@ export default function WelcomeScreen() {
   };
 
   const enter = async () => {
+    if (!requireAgeOk()) return;
     void juice.warmth();
     await ensureUser();
     if (pair) {
@@ -147,6 +175,7 @@ export default function WelcomeScreen() {
   };
 
   const goPlay = async () => {
+    if (!requireAgeOk()) return;
     void juice.hit();
     await ensureUser();
     if (pair) void juice.sync();
@@ -154,12 +183,14 @@ export default function WelcomeScreen() {
   };
 
   const goJoin = async () => {
+    if (!requireAgeOk()) return;
     void juice.card();
     await ensureUser();
     router.push('/pair/join');
   };
 
   const tryGoogle = async () => {
+    if (!requireAgeOk()) return;
     void juice.hit();
     if (!googleConfigured()) {
       setRoomToast(googleStatusLabel());
@@ -243,6 +274,12 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.cta, contentStyle]}>
+          <Pressable onPress={toggleAgeOk} style={styles.ageRow} accessibilityRole="checkbox" accessibilityState={{ checked: ageOk }}>
+            <View style={[styles.ageBox, ageOk && styles.ageBoxOn]}>
+              {ageOk ? <Text style={styles.ageCheck}>✓</Text> : null}
+            </View>
+            <Text style={styles.ageLabel}>Мне есть 16+</Text>
+          </Pressable>
           <LpdButton
             label={pair ? `В пару «${pair.name}»` : 'Создать пару'}
             onPress={() => void enter()}
@@ -368,6 +405,36 @@ const styles = StyleSheet.create({
   },
   cta: {
     gap: spacing.md,
+  },
+  ageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  ageBox: {
+    width: 22,
+    height: 22,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ageBoxOn: {
+    borderColor: colors.accentAmber,
+    backgroundColor: 'rgba(232,196,122,0.18)',
+  },
+  ageCheck: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  ageLabel: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 15,
+    color: colors.textPrimary,
   },
   foot: {
     marginTop: spacing.sm,
