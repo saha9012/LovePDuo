@@ -445,7 +445,7 @@ export default function TruthOrSparkScreen() {
   }, [pair?.code, user?.id, user?.displayName, params.solo]);
 
   useEffect(() => {
-    if (params.solo === '1') {
+    if (params.solo === '1' || forceSolo) {
       setSessionStarted(true);
       return;
     }
@@ -505,7 +505,7 @@ export default function TruthOrSparkScreen() {
       clearTimeout(id);
       ticks.forEach(clearTimeout);
     };
-  }, [params.startAt, params.solo, pair?.code, user?.id, user?.displayName, matchSeed]);
+  }, [params.startAt, params.solo, forceSolo, pair?.code, user?.id, user?.displayName, matchSeed]);
 
   const broadcast = (
     nextIndex: number,

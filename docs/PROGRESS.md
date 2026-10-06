@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Cancel synced-start timers when forceSolo flips  
 - [x] peer_left on ready auto-starts · leaveMatch ready auto-start  
 - [x] leaveMatch on ready auto-starts remaining player  
 - [x] forceSolo skips synced-start wait after leaveMatch  
