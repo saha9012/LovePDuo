@@ -220,15 +220,13 @@ export default function ProfileScreen() {
               const next = await updateDisplayName(nameDraft);
               setNameDraft(next.displayName);
               setNameSaved(true);
-              const racing =
-                wsToastRef.current === 'Имя сохранено' ||
-                wsToastRef.current === 'Оба назвались' ||
-                wsToastRef.current === 'Оба обновили имена';
-              const toast = racing ? 'Оба назвались' : 'Имя сохранено';
-              wsToastRef.current = toast;
-              setWsToast(toast);
-              setTimeout(() => setWsToast(null), 1600);
               void juice.hit();
+              const duoLive = (pair?.roomSize ?? 0) >= 2;
+              const racing =
+                duoLive &&
+                (wsToastRef.current === 'Имя сохранено' ||
+                  wsToastRef.current === 'Оба назвались' ||
+                  wsToastRef.current === 'Оба обновили имена');
               if (pair) {
                 pairRealtime.connect(pair.code, next.id, next.displayName);
                 pairRealtime.send({
@@ -240,12 +238,19 @@ export default function ProfileScreen() {
                   name: next.displayName,
                   fromId: next.id,
                 });
-                if (result === 'queued') {
-                  wsToastRef.current = 'Имя · sync ждёт WS 2/2';
-                  setWsToast('Имя · sync ждёт WS 2/2');
-                  setTimeout(() => setWsToast(null), 1600);
-                }
+                const toast =
+                  result === 'queued'
+                    ? 'Имя · sync ждёт WS 2/2'
+                    : racing
+                      ? 'Оба назвались'
+                      : 'Имя сохранено';
+                wsToastRef.current = toast;
+                setWsToast(toast);
+              } else {
+                wsToastRef.current = 'Имя сохранено';
+                setWsToast('Имя сохранено');
               }
+              setTimeout(() => setWsToast(null), 1600);
             }}
           />
           <Text style={styles.wsLabel}>Имя пары</Text>
@@ -264,7 +269,8 @@ export default function ProfileScreen() {
             variant="ghost"
             onPress={() => {
               const next = roomDraft.trim() || 'Наша пара';
-              const both = pair?.name === next;
+              const duoLive = (pair?.roomSize ?? 0) >= 2;
+              const both = duoLive && pair?.name === next;
               const racing =
                 both &&
                 (wsToastRef.current === 'Оба назвали пару' ||

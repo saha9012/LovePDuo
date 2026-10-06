@@ -520,8 +520,12 @@ export default function GameLobbyScreen() {
       void confirmDestructive(
         countdown != null ? 'Уйти из старта?' : 'Снять Ready и выйти?',
         countdown != null
-          ? 'Countdown уже идёт — партнёр останется один в лобби.'
-          : 'Ты в Ready. Выход снимет готовность.',
+          ? duoLive
+            ? 'Countdown уже идёт — партнёр в WS 2/2 останется один в лобби.'
+            : 'Countdown уже идёт. Партнёра в WS нет — Solo/Demo доступен.'
+          : duoLive
+            ? 'Ты в Ready. Выход снимет готовность у партнёра в комнате.'
+            : 'Ты в Ready. Партнёра в WS нет — Ready локальный.',
       ).then((ok) => {
         if (ok) leave();
       });
