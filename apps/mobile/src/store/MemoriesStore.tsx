@@ -33,6 +33,7 @@ const Ctx = createContext<MemoriesApi | null>(null);
 
 let memoryCap = 40;
 let markSyncedHook: ((id: string) => void) | null = null;
+let dropPendingHook: (() => void) | null = null;
 
 /** Called by PairPremiumBinder when Duo Plus changes the cap. */
 export function setMemoryCap(n: number) {
@@ -42,6 +43,11 @@ export function setMemoryCap(n: number) {
 /** Used by broadcastMemory when peer is already in the WS room. */
 export function markMemorySyncedExternal(id: string) {
   markSyncedHook?.(id);
+}
+
+/** Drop pending flags so old-pair memories never flush into a new invite. */
+export function dropAllPendingMemorySyncExternal() {
+  dropPendingHook?.();
 }
 
 function makeId() {
@@ -111,12 +117,22 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const dropAllPendingSync = useCallback(() => {
+    setItems((prev) =>
+      prev.some((m) => m.pendingSync)
+        ? prev.map((m) => (m.pendingSync ? { ...m, pendingSync: false } : m))
+        : prev,
+    );
+  }, []);
+
   useEffect(() => {
     markSyncedHook = markMemorySynced;
+    dropPendingHook = dropAllPendingSync;
     return () => {
       if (markSyncedHook === markMemorySynced) markSyncedHook = null;
+      if (dropPendingHook === dropAllPendingSync) dropPendingHook = null;
     };
-  }, [markMemorySynced]);
+  }, [markMemorySynced, dropAllPendingSync]);
 
   const pendingMemories = useCallback(
     () => items.filter((m) => m.pendingSync),

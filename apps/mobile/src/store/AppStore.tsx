@@ -279,8 +279,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     const { clearMatchSession } = await import('../realtime/matchSession');
     const { clearAllSyncOutboxes } = await import('../realtime/clearSyncOutboxes');
+    const { dropAllPendingMemorySyncExternal } = await import('./MemoriesStore');
     clearMatchSession();
     clearAllSyncOutboxes();
+    dropAllPendingMemorySyncExternal();
     setUser(null);
     setPair(null);
     setTracks([]);
@@ -343,8 +345,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const unlinkPair = useCallback(async () => {
     const { clearMatchSession } = await import('../realtime/matchSession');
     const { clearAllSyncOutboxes } = await import('../realtime/clearSyncOutboxes');
+    const { dropAllPendingMemorySyncExternal } = await import('./MemoriesStore');
     clearMatchSession();
     clearAllSyncOutboxes();
+    dropAllPendingMemorySyncExternal();
+    setNotes((prev) =>
+      prev.map((n) => (n.pendingSync ? { ...n, pendingSync: false } : n)),
+    );
     setPair(null);
   }, []);
 
