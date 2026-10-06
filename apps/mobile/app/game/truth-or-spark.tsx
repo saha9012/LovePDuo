@@ -745,13 +745,13 @@ export default function TruthOrSparkScreen() {
           seed {matchSeed} ·{' '}
           {!sessionStarted
             ? syncedStartCountdownLabel(params.startAt, turnToast)
-            : live
-              ? `live с ${peerName ?? 'партнёром'}`
-              : params.solo === '1'
-                ? 'solo'
+            : forceSolo || params.solo === '1'
+              ? 'solo'
+              : live
+                ? `live с ${peerName ?? 'партнёром'}`
                 : 'ожидаем партнёра'}
           {isHost ? ' · host' : ''} · ход:{' '}
-          {turnMine || params.solo === '1' ? 'твой' : 'партнёра'}
+          {turnMine || forceSolo || params.solo === '1' ? 'твой' : 'партнёра'}
         </Text>
         {turnToast && sessionStarted ? <Text style={styles.turnToast}>{turnToast}</Text> : null}
         {!sessionStarted ? (

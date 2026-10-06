@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS syncMeta prefers solo after forceSolo  
 - [x] ToS advance CTA says соло on Solo/Demo  
 - [x] ToS post-match Solo demo title + lines  
 - [x] Post-match demo lines skip fake win/lose tease  
