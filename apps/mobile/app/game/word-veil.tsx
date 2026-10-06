@@ -619,7 +619,10 @@ export default function WordVeilScreen() {
               Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.
               {waitingSyncedStart
                 ? ' Синхронный старт с лобби — не жми раньше партнёра.'
-                : params.solo !== '1' && !presenceHint && pair?.partnerPresence !== 'online'
+                : params.solo !== '1' &&
+                    !forceSolo &&
+                    !presenceHint &&
+                    (pair?.roomSize ?? 0) < 2
                   ? ' Ждём партнёра за вуалью…'
                   : ''}
             </Text>

@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Word Veil ready wait gates on WS room ≥2  
 - [x] ToS clears idle forceSolo only when WS ≥2  
 - [x] Home hero gates live copy on WS room ≥2  
 - [x] Warmth pulse does not fake partnerPresence  
