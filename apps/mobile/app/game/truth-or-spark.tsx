@@ -688,7 +688,8 @@ export default function TruthOrSparkScreen() {
   }));
 
   if (finished) {
-    const line = pickPostMatchLine(cardsDone, cardsDone, matchSeed + cardsDone);
+    const demo = params.solo === '1' || forceSolo;
+    const line = pickPostMatchLine(cardsDone, cardsDone, matchSeed + cardsDone, demo);
     return (
       <LpdBackground mood={filter === 'spicy' ? 'warm' : 'night'}>
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
@@ -696,12 +697,20 @@ export default function TruthOrSparkScreen() {
           <Text style={styles.syncMeta}>
             {filter} · карт {cardsDone}/{EVENING_CARDS} · skip {skipsUsed}/{SKIP_LIMIT} · seed{' '}
             {matchSeed}
-            {live ? ' · live' : params.solo === '1' || forceSolo ? ' · solo' : ''}
+            {live ? ' · live' : demo ? ' · solo demo' : ''}
           </Text>
           <PostMatchCard
-            title={syncFinish ? 'Вечер закрыт вдвоём' : 'Вечер закрыт'}
+            title={demo ? 'Solo demo' : syncFinish ? 'Вечер закрыт вдвоём' : 'Вечер закрыт'}
             gameId={GAME_ID}
-            winnerLabel={syncFinish ? 'Оба финиш' : filter === 'spicy' ? 'Spicy night' : 'Soft night'}
+            winnerLabel={
+              demo
+                ? 'Solo demo'
+                : syncFinish
+                  ? 'Оба финиш'
+                  : filter === 'spicy'
+                    ? 'Spicy night'
+                    : 'Soft night'
+            }
             line={line.text}
             onRematch={reshuffle}
             onHome={() => {

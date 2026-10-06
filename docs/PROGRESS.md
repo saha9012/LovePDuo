@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS post-match Solo demo title + lines  
 - [x] Post-match demo lines skip fake win/lose tease  
 - [x] Post-match Solo demo titles (no fake duel win)  
 - [x] Solo/forceSolo HUDs mark partner score as demo  
