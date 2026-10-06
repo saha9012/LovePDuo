@@ -238,11 +238,14 @@ export default function TruthOrSparkScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setLive(true);
         if (peerLeftMatchRef.current) {
           showTurnToast('Партнёр в комнате · соло до rematch');
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          showTurnToast('Партнёр в комнате · соло');
+          void juice.sync();
+        } else {
+          setLive(true);
           setForceSolo(false);
           idleForced.current = false;
           showTurnToast(
@@ -254,9 +257,6 @@ export default function TruthOrSparkScreen() {
               ? 'Оба снова здесь'
               : 'Партнёр вернулся',
           );
-          void juice.sync();
-        } else {
-          showTurnToast('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
@@ -303,7 +303,8 @@ export default function TruthOrSparkScreen() {
         return;
       }
       // Rematch clears peerLeftMatch; until then stay ·solo even if peer pings hello.
-      if (!peerLeftMatchRef.current) setLive(true);
+      // Intentional Solo never upgrades «Дальше» to обоим from room presence alone.
+      if (!peerLeftMatchRef.current && params.solo !== '1') setLive(true);
       if (payload.phase === 'finished' && payload.fromId !== user.id) {
         if (peerLeftMatchRef.current) return;
         if (params.solo === '1') {

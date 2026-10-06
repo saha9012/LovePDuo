@@ -208,11 +208,14 @@ export default function SignalDrawScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPeerSeen(true);
         if (peerLeftMatchRef.current) {
           showToast('Партнёр в комнате · соло до rematch');
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          showToast('Партнёр в комнате · соло');
+          void juice.sync();
+        } else {
+          setPeerSeen(true);
           setForceSolo(false);
           forceSoloRef.current = false;
           showToast(
@@ -224,9 +227,6 @@ export default function SignalDrawScreen() {
               ? 'Оба снова здесь'
               : 'Партнёр вернулся',
           );
-          void juice.sync();
-        } else {
-          showToast('Партнёр в комнате · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();

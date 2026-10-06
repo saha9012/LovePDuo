@@ -163,11 +163,14 @@ export default function OrbitCatchScreen() {
         return;
       }
       if (msg.type === 'peer_joined') {
-        setPeerSeen(true);
         if (peerLeftMatchRef.current) {
           bumpPeerNote('комната · соло');
           void juice.hit();
-        } else if (params.solo !== '1') {
+        } else if (params.solo === '1') {
+          bumpPeerNote('комната · соло');
+          void juice.sync();
+        } else {
+          setPeerSeen(true);
           setForceSolo(false);
           forceSoloRef.current = false;
           bumpPeerNote(
@@ -179,9 +182,6 @@ export default function OrbitCatchScreen() {
               ? 'оба снова здесь'
               : 'вернулся',
           );
-          void juice.sync();
-        } else {
-          bumpPeerNote('комната · соло');
           void juice.sync();
         }
         lastHelloAt.current = Date.now();
