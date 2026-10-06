@@ -734,6 +734,8 @@ export default function TogetherScreen() {
         <SectionRule
           label="Скрапбук"
           right={`${memories.length}/${maxMemories}${isPlus ? ' · Plus' : ' · Free'}${
+            memories.length >= maxMemories ? ' · лимит' : ''
+          }${
             memories.some((m) => m.pendingSync)
               ? ` · ${memories.filter((m) => m.pendingSync).length} ждут`
               : ''
