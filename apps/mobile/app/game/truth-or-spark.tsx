@@ -697,7 +697,7 @@ export default function TruthOrSparkScreen() {
           <Text style={styles.syncMeta}>
             {filter} · карт {cardsDone}/{EVENING_CARDS} · skip {skipsUsed}/{SKIP_LIMIT} · seed{' '}
             {matchSeed}
-            {live ? ' · live' : demo ? ' · solo demo' : ''}
+            {demo ? ' · solo demo' : live ? ' · live' : ''}
           </Text>
           <PostMatchCard
             title={demo ? 'Solo demo' : syncFinish ? 'Вечер закрыт вдвоём' : 'Вечер закрыт'}

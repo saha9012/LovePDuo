@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS/Orbit finish prefer demo over stale ·live  
 - [x] Soft HUD prefers forceSolo demo over stale live  
 - [x] ToS Дальше (обоим) only when peer live  
 - [x] Sky Claim ready gates соло demo  

@@ -608,9 +608,8 @@ export default function OrbitCatchScreen() {
             {params.solo === '1' || forceSolo
               ? ' · demo'
               : partnerCaught > 0
-                ? ` · вместе ${team}`
+                ? ` · вместе ${team}${peerSeen ? ' · live' : ''}`
                 : ' · ждём партнёра'}
-            {peerSeen ? ' · live' : ''}
           </Text>
           <PostMatchCard
             title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Орбита закрыта'}
