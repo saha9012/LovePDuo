@@ -141,6 +141,11 @@ export default function SoftDuelScreen() {
           setForceSolo(true);
           forceSoloRef.current = true;
           setFlash('Партнёр вышел · соло');
+        } else if (phaseRef.current === 'ready') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          setFlash('Партнёр вышел · соло');
+          setTimeout(() => startRef.current(), 0);
         } else {
           setFlash('Партнёр вышел');
         }

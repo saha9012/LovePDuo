@@ -181,6 +181,11 @@ export default function SignalDrawScreen() {
           setForceSolo(true);
           forceSoloRef.current = true;
           showToast('Партнёр вышел · соло');
+        } else if (phaseRef.current === 'ready') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          showToast('Партнёр вышел · соло');
+          setTimeout(() => startRef.current(), 0);
         } else {
           showToast('Партнёр вышел');
         }

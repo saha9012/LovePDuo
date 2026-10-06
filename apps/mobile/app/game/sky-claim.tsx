@@ -158,6 +158,11 @@ export default function SkyClaimScreen() {
           setForceSolo(true);
           forceSoloRef.current = true;
           bumpPeerNote('вышел · соло');
+        } else if (phaseRef.current === 'ready') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          bumpPeerNote('вышел · соло');
+          setTimeout(() => startRef.current(), 0);
         } else {
           bumpPeerNote('вышел');
         }

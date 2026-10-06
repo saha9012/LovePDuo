@@ -246,6 +246,9 @@ export default function WordVeilScreen() {
           setPresenceHint('Партнёр вышел · соло');
         } else {
           setPresenceHint('Партнёр вышел · соло');
+          if (phaseRef.current === 'ready') {
+            setPhase('playing');
+          }
         }
         setTimeout(() => setPresenceHint(null), 1600);
         return;
