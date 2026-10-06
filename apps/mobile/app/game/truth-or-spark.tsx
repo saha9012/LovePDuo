@@ -811,7 +811,7 @@ export default function TruthOrSparkScreen() {
 
         <View style={styles.actions}>
           <LpdButton
-            label={forceSolo && params.solo !== '1' ? 'Дальше (соло)' : 'Дальше (обоим)'}
+            label={params.solo === '1' || forceSolo ? 'Дальше (соло)' : 'Дальше (обоим)'}
             onPress={next}
             disabled={!canAct}
           />
