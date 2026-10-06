@@ -16,7 +16,7 @@ import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { sendMusicOrQueue } from '../../src/realtime/musicOutbox';
+import { sendMusicOrQueue, pendingMusicCount } from '../../src/realtime/musicOutbox';
 import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
@@ -53,6 +53,7 @@ export default function MusicScreen() {
   } = useApp();
   const { maxShelves, isPlus } = usePremium();
   const [note, setNote] = useState('');
+  const [outboxTick, setOutboxTick] = useState(0);
   const [renameId, setRenameId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -116,6 +117,12 @@ export default function MusicScreen() {
       void sound?.unloadAsync();
     };
   }, [sound]);
+
+  useEffect(() => {
+    if (!pair) return;
+    const id = setInterval(() => setOutboxTick((n) => n + 1), 2000);
+    return () => clearInterval(id);
+  }, [pair?.code]);
 
   useEffect(() => {
     if (!partnerNowPlaying) return;
@@ -866,6 +873,12 @@ export default function MusicScreen() {
           {playlists.reduce((n, p) => n + p.trackIds.length, 0)} на полках ·{' '}
           {tracks.filter((t) => t.reaction).length} реакций
           {nowPlayingId ? ' · играет' : ''}
+          {isPlus ? ' · Plus' : ' · Free'}
+          {(() => {
+            void outboxTick;
+            const pending = pendingMusicCount();
+            return pending > 0 ? ` · sync ${pending}` : '';
+          })()}
         </Text>
         <View style={styles.statStrip}>
           {(
