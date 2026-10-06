@@ -184,7 +184,7 @@ export default function SoftDuelScreen() {
         partnerLiveRef.current = false;
         setForceSolo(true);
         forceSoloRef.current = true;
-        setFlash('Партнёр вышел · соло');
+        setFlash('Партнёр вышел из матча · соло');
         void juice.miss();
         return;
       }
