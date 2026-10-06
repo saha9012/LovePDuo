@@ -1,36 +1,74 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
-import { colors, fonts, spacing } from '../../src/theme/tokens';
+import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
 import { track } from '../../src/analytics/track';
+import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
+import { getWsUrl } from '../../src/realtime/wsConfig';
 
 export default function DeepJoinScreen() {
   const { code } = useLocalSearchParams<{ code?: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { hydrated, user, pair, signIn, joinPair } = useApp();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('Готовим вход…');
-  const tried = useRef(false);
-  const clean = String(code ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  const [status, setStatus] = useState('Проверь имя и войди');
+  const [playStats, setPlayStats] = useState<PlayStats | null>(null);
+  const clean = String(code ?? '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 6);
+  const wsHint = getWsUrl().replace(/^wss?:\/\//, '').slice(0, 28);
+
+  useEffect(() => {
+    void loadPlayStats().then(setPlayStats);
+  }, []);
+
+  useEffect(() => {
+    setDisplayName(user?.displayName ?? '');
+  }, [user?.displayName]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (pair?.code === clean && clean.length === 6) {
+      void juice.sync();
+      setStatus('Уже в этой паре');
+      router.replace('/(tabs)/home');
+      return;
+    }
+    if (clean.length === 6) {
+      setStatus('Код из ссылки готов — укажи имя');
+      void juice.hit();
+    } else {
+      setStatus('Код битый — войди вручную');
+      void juice.miss();
+    }
+  }, [hydrated, clean, pair?.code, router]);
 
   const go = async () => {
     if (clean.length !== 6) {
       setError('В ссылке нет кода из 6 символов');
       return;
     }
+    const name = displayName.trim() || user?.displayName?.trim();
+    if (!name) {
+      setError('Как тебя зовут?');
+      void juice.miss();
+      return;
+    }
     setLoading(true);
     setError('');
     setStatus('Входим в пару…');
     try {
-      if (!user) await signIn('Партнёр');
+      await signIn(name);
       await joinPair(clean);
       track('pair_joined', { via: 'deep_link' });
       void juice.postMatch();
@@ -44,53 +82,66 @@ export default function DeepJoinScreen() {
     }
   };
 
-  useEffect(() => {
-    if (!hydrated || tried.current) return;
-    if (pair?.code === clean && clean.length === 6) {
-      void juice.sync();
-      setStatus('Уже в этой паре');
-      router.replace('/(tabs)/home');
-      return;
-    }
-    if (clean.length === 6) {
-      tried.current = true;
-      void juice.hit();
-      void go();
-    } else {
-      setStatus('Код битый — войди вручную');
-      void juice.miss();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, clean, pair?.code]);
-
   return (
     <LpdBackground mood="rain">
-      <View style={[styles.root, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 28 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.kicker}>Deep link</Text>
         <Text style={typography.headline}>Вход по коду</Text>
         <Text style={typography.code}>{clean || '------'}</Text>
+        <View style={styles.statStrip}>
+          {(
+            [
+              ['c', `${clean.length}/6`, 'код'],
+              ['p', String(playStats?.totalStarts ?? 0), 'plays'],
+              ['k', String(playStats?.streakDays ?? 0), 'streak'],
+              ['w', wsHint || '—', 'ws'],
+            ] as const
+          ).map(([k, n, l]) => (
+            <View key={k} style={styles.statCell}>
+              <Text style={styles.statNum} numberOfLines={1}>
+                {n}
+              </Text>
+              <Text style={styles.statLabel}>{l}</Text>
+            </View>
+          ))}
+        </View>
         <Text style={styles.status}>{status}</Text>
+        <Text style={styles.label}>Твоё имя</Text>
+        <TextInput
+          value={displayName}
+          onChangeText={setDisplayName}
+          placeholder="Как тебя зовут"
+          placeholderTextColor={colors.textMuted}
+          style={styles.input}
+          editable={!loading}
+        />
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        <Text style={styles.foot}>
+          Не входим молча как «Партнёр» — имя нужно до join. Пара = код, не ephemeral room.
+        </Text>
         <View style={styles.actions}>
           <LpdButton
-            label={loading ? 'Входим…' : 'Войти снова'}
+            label={loading ? 'Входим…' : 'Войти в пару'}
             loading={loading}
             disabled={clean.length < 6}
-            onPress={() => {
-              tried.current = true;
-              void go();
-            }}
+            onPress={() => void go()}
           />
           <LpdButton label="Вручную" variant="ghost" onPress={() => router.replace('/pair/join')} />
         </View>
-      </View>
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
   },
@@ -101,17 +152,67 @@ const styles = StyleSheet.create({
     color: colors.accentAmber,
     fontSize: 12,
   },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  statCell: {
+    minWidth: 52,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.45)',
+    alignItems: 'center',
+  },
+  statNum: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+    maxWidth: 72,
+  },
+  statLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
   status: {
     fontFamily: fonts.ui,
     color: colors.textSecondary,
     fontSize: 14,
   },
+  label: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 13,
+    color: colors.accentAmber,
+  },
+  input: {
+    minHeight: 52,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    backgroundColor: 'rgba(36,28,49,0.7)',
+    paddingHorizontal: spacing.lg,
+    color: colors.textPrimary,
+    fontFamily: fonts.ui,
+    fontSize: 16,
+  },
   error: {
     fontFamily: fonts.ui,
     color: colors.danger,
   },
+  foot: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textMuted,
+  },
   actions: {
     marginTop: 'auto',
     gap: spacing.sm,
+    paddingTop: spacing.lg,
   },
 });

@@ -2,10 +2,13 @@
 
 **Repo:** `https://github.com/saha9012/LovePDuo.git`  
 **Test:** http://localhost:8081 · WS `:8787`  
-**Updated:** 2026-10-05
+**Updated:** 2026-10-06
 
 ## Latest
 
+- [x] Orbit: no fake partner score in live duo · playlist cap Free 6 / Plus 8 wired  
+- [x] Pair create/join/deep-link densify + deep link asks name (no silent «Партнёр»)  
+- [x] Soft/Heartbeat reaction HUDs · Welcome pair stats + session strip  
 - [x] Orbit/Draw accuracy HUDs · Music now-playing index/%/−time  
 - [x] Sky Claim layout-safe hits + accuracy HUD · Lobby meta strip · GameTile plays  
 - [x] Word Veil fair scores · Together scrapbook density · Heartbeat miss batch  

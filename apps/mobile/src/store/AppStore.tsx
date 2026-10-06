@@ -47,6 +47,13 @@ export function pairIdFromCode(code: string) {
   return `pair_${code.trim().toUpperCase()}`;
 }
 
+/** Free 6 / Plus 8 — PairPremiumBinder updates this when Duo Plus changes. */
+let playlistCap = 6;
+
+export function setPlaylistCap(n: number) {
+  playlistCap = Math.max(4, Math.min(16, Math.floor(n)));
+}
+
 function normalizePair(p: PairState): PairState {
   const code = (p.code || '').trim().toUpperCase();
   return {
@@ -509,7 +516,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     let accepted = false;
     setPlaylists((prev) => {
-      if (prev.length >= 8) return prev;
+      if (prev.length >= playlistCap) return prev;
       accepted = true;
       return [...prev, created];
     });
@@ -526,7 +533,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             : p,
         );
       }
-      if (prev.length >= 8) return prev;
+      if (prev.length >= playlistCap) return prev;
       return [
         ...prev,
         {

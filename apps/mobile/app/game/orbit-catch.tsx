@@ -387,15 +387,23 @@ export default function OrbitCatchScreen() {
         phase: 'finished',
         caught: caughtRef.current,
       });
-      if (partnerRef.current === 0) {
-        setPartnerCaught(Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3)));
+      // Demo scores only in solo — never invent partner catches while duo is live.
+      if (partnerRef.current === 0 && params.solo === '1') {
+        const demo = Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3));
+        partnerRef.current = demo;
+        setPartnerCaught(demo);
       }
+      const coop = caughtRef.current + partnerRef.current;
       const mem = addMemory({
         kind: 'orbit',
         title: 'Orbit Catch',
         detail: partnerFinishedRef.current
-          ? `Оба финиш · co-op ${caughtRef.current + partnerRef.current}`
-          : `Co-op ${caughtRef.current + partnerRef.current} catches`,
+          ? `Оба финиш · co-op ${coop}`
+          : params.solo === '1'
+            ? `Solo demo · co-op ${coop}`
+            : partnerRef.current > 0
+              ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
+              : `Ты ${caughtRef.current} · ждём партнёра`,
       });
       broadcastMemory(mem, user);
       setTimeLeft(0);
@@ -413,7 +421,7 @@ export default function OrbitCatchScreen() {
       }
     }, 50);
     return () => clearInterval(tick);
-  }, [phase, speed, addMemory, user]);
+  }, [phase, speed, addMemory, user, params.solo]);
 
   useEffect(() => {
     if (phase !== 'playing') return;
@@ -504,7 +512,13 @@ export default function OrbitCatchScreen() {
         <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
           <Text style={styles.title}>Orbit Catch</Text>
           <Text style={styles.meta}>
-            Ты {caught} · Партнёр {partnerCaught} · вместе {team}
+            Ты {caught} · Партнёр {partnerCaught}
+            {params.solo === '1'
+              ? ' · demo'
+              : partnerCaught > 0
+                ? ` · вместе ${team}`
+                : ' · ждём партнёра'}
+            {peerSeen ? ' · live' : ''}
           </Text>
           <PostMatchCard
             title="Орбита закрыта"

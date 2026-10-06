@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { useApp } from './AppStore';
+import { useApp, setPlaylistCap } from './AppStore';
 import { usePremium } from './PremiumStore';
 import { setMemoryCap } from './MemoriesStore';
 
 /** Keeps Duo Plus entitlements tied to the active pair code. */
 export function PairPremiumBinder() {
   const { pair } = useApp();
-  const { bindPair, maxMemories, isPlus } = usePremium();
+  const { bindPair, maxMemories, maxShelves, isPlus } = usePremium();
 
   useEffect(() => {
     bindPair(pair?.code ?? null);
@@ -14,7 +14,8 @@ export function PairPremiumBinder() {
 
   useEffect(() => {
     setMemoryCap(maxMemories);
-  }, [maxMemories, isPlus]);
+    setPlaylistCap(maxShelves);
+  }, [maxMemories, maxShelves, isPlus]);
 
   return null;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -10,6 +10,8 @@ import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { track } from '../../src/analytics/track';
 import { juice } from '../../src/audio/juice';
+import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
+import { getWsUrl } from '../../src/realtime/wsConfig';
 
 export default function CreatePairScreen() {
   const router = useRouter();
@@ -18,6 +20,12 @@ export default function CreatePairScreen() {
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [loading, setLoading] = useState(false);
+  const [playStats, setPlayStats] = useState<PlayStats | null>(null);
+  const wsHint = getWsUrl().replace(/^wss?:\/\//, '').slice(0, 28);
+
+  useEffect(() => {
+    void loadPlayStats().then(setPlayStats);
+  }, []);
 
   useEffect(() => {
     if (pair?.code) {
@@ -41,13 +49,39 @@ export default function CreatePairScreen() {
 
   return (
     <LpdBackground mood="warm">
-      <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 28 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <BrandMark size="compact" />
         <View style={styles.block}>
           <Text style={typography.headline}>Собери пару</Text>
           <Text style={typography.body}>
-            Создай код пары. Второй телефон входит по нему — и вы на связи вдвоём.
+            Создай код пары. Второй телефон входит по нему — и вы на связи вдвоём. Пара ≠ комната:
+            код — ваша связка, realtime только живой канал.
           </Text>
+          <View style={styles.statStrip}>
+            {(
+              [
+                ['1', 'имя', 'шаг'],
+                ['2', 'код', 'шаг'],
+                ['3', 'invite', 'шаг'],
+                ['p', String(playStats?.totalStarts ?? 0), 'plays'],
+                ['k', String(playStats?.streakDays ?? 0), 'streak'],
+                ['w', wsHint || '—', 'ws'],
+              ] as const
+            ).map(([k, n, l]) => (
+              <View key={`${k}-${l}`} style={styles.statCell}>
+                <Text style={styles.statNum} numberOfLines={1}>
+                  {n}
+                </Text>
+                <Text style={styles.statLabel}>{l}</Text>
+              </View>
+            ))}
+          </View>
           {pair ? (
             <Text style={styles.linked}>
               Уже есть пара {pair.code}. Открой Home или отвяжи в Profile.
@@ -69,6 +103,10 @@ export default function CreatePairScreen() {
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
+          <Text style={styles.foot}>
+            После создания — код из 6 символов и deep link для партнёра. Auth пока локальный
+            (Google — опционально на Welcome).
+          </Text>
         </View>
         <View style={styles.actions}>
           {pair ? (
@@ -88,19 +126,47 @@ export default function CreatePairScreen() {
             onPress={() => router.push('/pair/join')}
           />
         </View>
-      </View>
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: spacing.xl,
     justifyContent: 'space-between',
+    gap: spacing.xl,
   },
   block: {
     gap: spacing.md,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  statCell: {
+    minWidth: 52,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.45)',
+    alignItems: 'center',
+  },
+  statNum: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+    maxWidth: 72,
+  },
+  statLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   linked: {
     fontFamily: fonts.uiMedium,
@@ -124,6 +190,12 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontFamily: fonts.ui,
     fontSize: 16,
+  },
+  foot: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textMuted,
   },
   actions: {
     gap: spacing.sm,

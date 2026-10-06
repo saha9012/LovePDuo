@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LpdBackground } from '../../src/components/LpdBackground';
@@ -11,6 +11,8 @@ import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
 import { track } from '../../src/analytics/track';
+import { loadPlayStats, type PlayStats } from '../../src/stats/playStats';
+import { getWsUrl } from '../../src/realtime/wsConfig';
 
 export default function JoinPairScreen() {
   const router = useRouter();
@@ -20,7 +22,13 @@ export default function JoinPairScreen() {
   const [displayName, setDisplayName] = useState(user?.displayName ?? '');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [playStats, setPlayStats] = useState<PlayStats | null>(null);
   const autoTried = useRef('');
+  const wsHint = getWsUrl().replace(/^wss?:\/\//, '').slice(0, 28);
+
+  useEffect(() => {
+    void loadPlayStats().then(setPlayStats);
+  }, []);
 
   useEffect(() => {
     setDisplayName(user?.displayName ?? '');
@@ -58,11 +66,40 @@ export default function JoinPairScreen() {
 
   return (
     <LpdBackground mood="rain">
-      <View style={[styles.root, { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 20 }]}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.root,
+          { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 28 },
+        ]}
+        keyboardShouldPersistTaps="handled"
+      >
         <BrandMark size="compact" />
         <View style={styles.block}>
           <Text style={typography.headline}>Код пары</Text>
-          <Text style={typography.body}>Шесть символов — и вы в одной паре LovePDuo.</Text>
+          <Text style={typography.body}>
+            Шесть символов — и вы в одной паре LovePDuo. Код = identity пары; realtime-канал
+            подключается отдельно.
+          </Text>
+          <View style={styles.statStrip}>
+            {(
+              [
+                ['1', 'имя', 'шаг'],
+                ['2', 'код', 'шаг'],
+                ['3', 'связь', 'шаг'],
+                ['p', String(playStats?.totalStarts ?? 0), 'plays'],
+                ['k', String(playStats?.streakDays ?? 0), 'streak'],
+                ['c', `${code.length}/6`, 'симв'],
+                ['w', wsHint || '—', 'ws'],
+              ] as const
+            ).map(([k, n, l]) => (
+              <View key={`${k}-${l}`} style={styles.statCell}>
+                <Text style={styles.statNum} numberOfLines={1}>
+                  {n}
+                </Text>
+                <Text style={styles.statLabel}>{l}</Text>
+              </View>
+            ))}
+          </View>
           {pair?.code ? (
             <Text style={styles.linked}>
               Уже в паре {pair.code}. Можно сменить код или вернуться в Home.
@@ -80,6 +117,9 @@ export default function JoinPairScreen() {
           <CodeInput value={code} onChange={setCode} />
           {loading ? <Text style={styles.hint}>Входим…</Text> : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Text style={styles.foot}>
+            Auto-join сработает на 6 символах. Deep link lovepduo://join/CODE тоже спросит имя.
+          </Text>
         </View>
         <View style={styles.actions}>
           {pair?.code ? (
@@ -103,19 +143,47 @@ export default function JoinPairScreen() {
             onPress={() => router.replace('/pair/create')}
           />
         </View>
-      </View>
+      </ScrollView>
     </LpdBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flexGrow: 1,
     paddingHorizontal: spacing.xl,
     justifyContent: 'space-between',
+    gap: spacing.xl,
   },
   block: {
     gap: spacing.md,
+  },
+  statStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  statCell: {
+    minWidth: 52,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.45)',
+    alignItems: 'center',
+  },
+  statNum: {
+    fontFamily: fonts.uiSemi,
+    fontSize: 13,
+    color: colors.accentAmber,
+    maxWidth: 72,
+  },
+  statLabel: {
+    fontFamily: fonts.ui,
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   linked: {
     fontFamily: fonts.uiMedium,
@@ -149,6 +217,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     color: colors.danger,
     fontSize: 14,
+  },
+  foot: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textMuted,
   },
   actions: {
     gap: spacing.sm,
