@@ -290,7 +290,9 @@ export default function GameLobbyScreen() {
       }
     });
     return () => {
-      pairRealtime.sendGame('play-peek', { leave: true, fromId: user.id });
+      if (pairRealtime.connected && getLastRoomSize() >= 2) {
+        pairRealtime.sendGame('play-peek', { leave: true, fromId: user.id });
+      }
       off();
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
