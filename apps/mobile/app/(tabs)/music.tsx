@@ -662,7 +662,7 @@ export default function MusicScreen() {
       addedBy: user?.displayName ?? 'Ты',
       uri: asset.uri,
     });
-    pairRealtime.sendGame('track-meta', {
+    const sync = sendMusicOrQueue('track-meta', {
       title,
       artist,
       sourceType: 'upload',
@@ -670,7 +670,11 @@ export default function MusicScreen() {
       fromId: user?.id,
     });
     trackEvent('track_uploaded', { source: 'upload' });
-    showNote('Трек сохранён. Партнёр видит карточку (файл — локально у тебя).');
+    showNote(
+      sync === 'sent'
+        ? 'Трек сохранён. Партнёр видит карточку (файл — локально у тебя).'
+        : 'Трек сохранён. Карточка · sync ждёт online (файл — локально).',
+    );
     void juice.sync();
   };
   const addSpotifyStub = () => {
@@ -688,7 +692,7 @@ export default function MusicScreen() {
       playbackMode: 'spotify',
       addedBy: user?.displayName ?? 'Ты',
     });
-    pairRealtime.sendGame('track-meta', {
+    const sync = sendMusicOrQueue('track-meta', {
       title,
       artist,
       sourceType: 'spotify',
@@ -697,8 +701,12 @@ export default function MusicScreen() {
     });
     showNote(
       spotifyConfigured()
-        ? 'Spotify: метаданные сохранены и отправлены партнёру. Стрим — OAuth / App Remote.'
-        : `${spotifyStatusLabel()} · stub ушёл партнёру.`,
+        ? sync === 'sent'
+          ? 'Spotify: метаданные у обоих. Стрим — OAuth / App Remote.'
+          : 'Spotify: метаданные локально · sync ждёт online. Стрим — OAuth.'
+        : sync === 'sent'
+          ? `${spotifyStatusLabel()} · stub ушёл партнёру.`
+          : `${spotifyStatusLabel()} · stub · sync ждёт online.`,
       2800,
     );
     void juice.card();
@@ -719,14 +727,18 @@ export default function MusicScreen() {
       playbackMode: 'link',
       addedBy: user?.displayName ?? 'Ты',
     });
-    pairRealtime.sendGame('track-meta', {
+    const sync = sendMusicOrQueue('track-meta', {
       title,
       artist,
       sourceType: 'vk',
       from: user?.displayName,
       fromId: user?.id,
     });
-    showNote('VK: metadata + fallback. Stub ушёл партнёру.');
+    showNote(
+      sync === 'sent'
+        ? 'VK: metadata + fallback. Stub ушёл партнёру.'
+        : 'VK: metadata локально · sync ждёт online.',
+    );
     void juice.card();
   };
 
@@ -736,12 +748,15 @@ export default function MusicScreen() {
     if (t) {
       lastReactChoice.current = `${t.title}|${reaction}`;
       lastReactMatchAt.current = Date.now();
-      pairRealtime.sendGame('track-react', {
+      const sync = sendMusicOrQueue('track-react', {
         title: t.title,
         artist: t.artist,
         reaction,
         from: user?.displayName,
       });
+      if (sync === 'queued') {
+        showNote('Реакция · sync ждёт online');
+      }
     }
     void juice.card();
   };
