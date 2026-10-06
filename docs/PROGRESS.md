@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] PostMatch Home announces leaveMatch · leaveMatch rejoin races  
 - [x] leaveMatch toast ≠ peer_left · Home/Play drop lobby chip on disconnect  
 - [x] Play clears peer-lobby on peer_left · scrapbook shows лимит  
 - [x] Together candle continues solo on peer_left · lobby pair≠WS  
