@@ -21,6 +21,7 @@ import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
 import { sendNoteMutationOrQueue } from '../../src/realtime/noteMutationOutbox';
+import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -146,7 +147,9 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (candleLeft == null || candleLeft <= 0) return;
     if (candleLeft % 15 === 0 && candleLeft < CANDLE_SEC) {
-      pairRealtime.sendGame('candle', { left: candleLeft });
+      if (pairRealtime.connected && getLastRoomSize() >= 2) {
+        pairRealtime.sendGame('candle', { left: candleLeft });
+      }
     }
   }, [candleLeft]);
 
@@ -155,7 +158,7 @@ export default function TogetherScreen() {
     candleLogged.current = true;
     lastCandleEndAt.current = Date.now();
     void juice.postMatch();
-    pairRealtime.sendGame('candle', { end: true, left: 0 });
+    sendPairMetaOrQueue('candle', { end: true, left: 0 });
     showPeer('Свеча догорела');
     const mem = addMemory({
       kind: 'candle',
@@ -396,7 +399,8 @@ export default function TogetherScreen() {
   const startCandle = () => {
     candleLogged.current = false;
     setCandleLeft(CANDLE_SEC);
-    pairRealtime.sendGame('candle', { start: true, left: CANDLE_SEC });
+    const result = sendPairMetaOrQueue('candle', { start: true, left: CANDLE_SEC });
+    showPeer(result === 'sent' ? 'Свеча зажжена · у обоих' : 'Свеча · sync ждёт online');
     void juice.warmth();
     track('warmth_sent', { ritual: 'candle' });
   };
@@ -406,7 +410,8 @@ export default function TogetherScreen() {
     candleLogged.current = true;
     lastBlowAt.current = Date.now();
     setCandleLeft(0);
-    pairRealtime.sendGame('candle', { blow: true, left: 0 });
+    const result = sendPairMetaOrQueue('candle', { blow: true, left: 0 });
+    showPeer(result === 'sent' ? 'Свеча погашена · у обоих' : 'Погасили · sync ждёт online');
     void juice.miss();
   };
 
@@ -419,11 +424,18 @@ export default function TogetherScreen() {
     setSparkFilter(f);
     setIdx(0);
     lastSparkAt.current = Date.now();
-    pairRealtime.sendGame('spark', {
+    const result = sendPairMetaOrQueue('spark', {
       idx: 0,
       filter: f,
       from: user?.displayName,
     });
+    showPeer(
+      result === 'sent'
+        ? f === 'spicy'
+          ? 'Spicy · у обоих'
+          : 'Soft · у обоих'
+        : `${f} · sync ждёт online`,
+    );
     void juice.card();
   };
 
@@ -431,7 +443,7 @@ export default function TogetherScreen() {
     setIdx((v) => {
       const next = v + 1;
       lastSparkAt.current = Date.now();
-      pairRealtime.sendGame('spark', {
+      sendPairMetaOrQueue('spark', {
         idx: next,
         filter: sparkFilter,
         from: user?.displayName,
