@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] ToS memory marks Solo demo evenings  
 - [x] Word Veil memory marks Solo demo associations  
 - [x] Word Veil PostMatch Solo demo title/winner  
 - [x] Welcome footer partner online gates on WS ≥2  

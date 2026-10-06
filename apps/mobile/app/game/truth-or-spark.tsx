@@ -584,7 +584,10 @@ export default function TruthOrSparkScreen() {
     const mem = addMemory({
       kind: 'spark',
       title: 'Truth Or Spark',
-      detail: `${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`,
+      detail:
+        params.solo === '1' || forceSolo
+          ? `Solo demo · ${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`
+          : `${filter} · ${cards} карт · skip ${usedSkips} · seed ${matchSeed}`,
     });
     broadcastMemory(mem, user);
     sendGameIfDuo(forceSolo, GAME_ID, {
