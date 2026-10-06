@@ -499,10 +499,14 @@ export default function GameLobbyScreen() {
           {canStart
             ? isHost
               ? 'Ты host — стартуешь раунд для обоих.'
-              : 'Ты стартуешь (lex host — host не записан).'
-            : pair?.hostUserId
-              ? 'Жди host (кто создал пару).'
-              : 'Ждём партнёра READY — стартует один из двоих.'}
+              : hostStale
+                ? 'Ты стартуешь (host offline — lex).'
+                : 'Ты стартуешь (lex host — host не записан).'
+            : hostStale
+              ? 'Жди lex-host (записанный host offline).'
+              : pair?.hostUserId
+                ? 'Жди host (кто создал пару).'
+                : 'Ждём партнёра READY — стартует один из двоих.'}
           {matchSeed != null ? ` · seed ${matchSeed}` : ''}
         </Text>
         {pair?.partnerPresence !== 'online' && (pair?.roomSize ?? 0) < 2 ? (

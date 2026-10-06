@@ -60,8 +60,10 @@ export default function SkyClaimScreen() {
   const [hits, setHits] = useState(0);
   const [misses, setMisses] = useState(0);
   const [layoutReady, setLayoutReady] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);  const [partnerScore, setPartnerScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(skyClaimConfig.durationSec);
+  const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [flash, setFlash] = useState<string | null>(null);
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
@@ -76,6 +78,7 @@ export default function SkyClaimScreen() {
   const scoreRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerScoreRef = useRef(0);
+  const forceSoloRef = useRef(params.solo === '1');
   const partnerFinishedRef = useRef(false);
   const flashRef = useRef<string | null>(null);
   const peerNoteRef = useRef<string | null>(null);
@@ -103,6 +106,10 @@ export default function SkyClaimScreen() {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
 
   const bumpPeerNote = (text: string) => {
     peerNoteRef.current = text;
@@ -143,15 +150,24 @@ export default function SkyClaimScreen() {
       if (msg.type === 'peer_left') {
         setPartnerLive(false);
         partnerLiveRef.current = false;
-        bumpPeerNote('вышел');
+        if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          bumpPeerNote('вышел · соло');
+        } else {
+          bumpPeerNote('вышел');
+        }
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setForceSolo(false);
+        forceSoloRef.current = false;
         bumpPeerNote(
           peerNoteRef.current === 'вышел' ||
+            peerNoteRef.current === 'вышел · соло' ||
             peerNoteRef.current === 'вернулся' ||
             peerNoteRef.current === 'оба снова здесь'
             ? 'оба снова здесь'
@@ -450,8 +466,8 @@ export default function SkyClaimScreen() {
         phase: 'finished',
         score: scoreRef.current,
       });
-      // Demo partner score only in solo — never invent while waiting on a live pair.
-      if (!partnerLiveRef.current && params.solo === '1') {
+      // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
+      if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
         const partner = Math.max(
           0,
           Math.round(scoreRef.current * (0.72 + Math.random() * 0.5)),
@@ -474,7 +490,7 @@ export default function SkyClaimScreen() {
         title: 'Sky Claim',
         detail: partnerFinishedRef.current
           ? `Оба финиш · ты ${scoreRef.current}`
-          : params.solo === '1'
+          : params.solo === '1' || forceSoloRef.current
             ? `Solo demo · ты ${scoreRef.current}`
             : partnerLiveRef.current
               ? `Ты ${scoreRef.current} · партнёр live`
@@ -643,7 +659,7 @@ export default function SkyClaimScreen() {
           <Text style={styles.hud}>Sky Claim</Text>
           <Text style={styles.scoreline}>
             Ты {score}
-            {params.solo === '1'
+            {params.solo === '1' || forceSolo
               ? ` · Партнёр ${partnerScore} · demo`
               : partnerLive
                 ? ` · Партнёр ${partnerScore} · live`
@@ -653,7 +669,7 @@ export default function SkyClaimScreen() {
           </Text>
           <PostMatchCard
             title={
-              params.solo !== '1' && !partnerLive && partnerScore === 0
+              params.solo !== '1' && !forceSolo && !partnerLive && partnerScore === 0
                 ? 'Ждём счёт партнёра'
                 : score > partnerScore
                   ? 'Ты ведёшь'

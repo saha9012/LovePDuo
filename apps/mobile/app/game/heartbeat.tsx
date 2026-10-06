@@ -59,12 +59,14 @@ export default function HeartbeatScreen() {
   const lastRef = useRef<BeatJudgement | null>(null);
   const [partnerScore, setPartnerScore] = useState(0);
   const [partnerLive, setPartnerLive] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const startAt = useRef(0);
   const cursor = useRef(0);
   const scoreRef = useRef(0);
   const syncRef = useRef(0);
   const partnerLiveRef = useRef(false);
   const partnerScoreRef = useRef(0);
+  const forceSoloRef = useRef(params.solo === '1');
   const lastBroadcastSec = useRef(-1);
   const partnerFinishedRef = useRef(false);
   const lastPartnerTapMs = useRef<number | null>(null);
@@ -114,6 +116,10 @@ export default function HeartbeatScreen() {
   }, [phase]);
 
   useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
+
+  useEffect(() => {
     if (phase !== 'playing') {
       prevPresence.current = pair?.partnerPresence;
       return;
@@ -148,17 +154,24 @@ export default function HeartbeatScreen() {
       if (msg.type === 'peer_left') {
         setPartnerLive(false);
         partnerLiveRef.current = false;
-        setPeerNote('вышел');
-        if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
-        peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1400);
+        if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          bumpPeerNote('вышел · соло');
+        } else {
+          bumpPeerNote('вышел');
+        }
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setPartnerLive(true);
         partnerLiveRef.current = true;
+        setForceSolo(false);
+        forceSoloRef.current = false;
         const note =
           peerNoteRef.current === 'вышел' ||
+          peerNoteRef.current === 'вышел · соло' ||
           peerNoteRef.current === 'вернулся' ||
           peerNoteRef.current === 'оба снова здесь'
             ? 'оба снова здесь'
@@ -455,8 +468,8 @@ export default function HeartbeatScreen() {
         clearInterval(id);
         const total = scoreRef.current + syncRef.current;
         pairRealtime.sendGame('heartbeat', { phase: 'finished', total });
-        // Demo partner score only in solo — never invent while waiting on a live pair.
-        if (!partnerLiveRef.current && params.solo === '1') {
+        // Demo partner score only in solo / forceSolo — never invent while waiting on a live pair.
+        if (!partnerLiveRef.current && (params.solo === '1' || forceSoloRef.current)) {
           const partner = Math.max(
             0,
             Math.round(total * (0.8 + Math.random() * 0.35)),
@@ -481,7 +494,7 @@ export default function HeartbeatScreen() {
           title: 'Heartbeat Tap',
           detail: partnerFinishedRef.current
             ? `Оба финиш · итог ${total}`
-            : params.solo === '1'
+            : params.solo === '1' || forceSoloRef.current
               ? `Solo demo · итог ${total} · sync +${syncRef.current}`
               : partnerLiveRef.current
                 ? `Итог ${total} · sync +${syncRef.current} · live`
@@ -538,7 +551,7 @@ export default function HeartbeatScreen() {
     const realSync =
       partnerTap != null && Math.abs(partnerTap - t) <= 120 && j !== 'miss';
     const demoSync =
-      params.solo === '1' &&
+      (params.solo === '1' || forceSoloRef.current) &&
       !partnerLiveRef.current &&
       j !== 'miss' &&
       Math.abs(delta) < 90 &&
@@ -623,7 +636,7 @@ export default function HeartbeatScreen() {
           <Text style={styles.title}>Heartbeat Tap</Text>
           <Text style={styles.meta}>
             Ты {total} · sync +{syncBonus}
-            {params.solo === '1'
+            {params.solo === '1' || forceSolo
               ? ` · Партнёр ${partnerScore} · demo`
               : partnerLive
                 ? ` · Партнёр ${partnerScore} · live`
@@ -639,7 +652,7 @@ export default function HeartbeatScreen() {
           </Text>
           <PostMatchCard
             title={
-              !partnerLive && partnerScore === 0 && params.solo !== '1'
+              !partnerLive && partnerScore === 0 && params.solo !== '1' && !forceSolo
                 ? 'Ждём счёт партнёра'
                 : total >= partnerScore
                   ? 'Ритм твой'

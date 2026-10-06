@@ -305,6 +305,15 @@ export function RealtimeConnector() {
       }
       if (msg.type === 'peer_left') {
         setPartnerInfo(pair.partnerName || 'Партнёр', 'away');
+        const leftId = typeof msg.userId === 'string' ? msg.userId : null;
+        if (leftId && pair.hostUserId === leftId) {
+          setHostUserId(user.id);
+          pairRealtime.sendGame('pair-meta', {
+            hostUserId: user.id,
+            pairName: pair.name,
+            fromId: user.id,
+          });
+        }
         void juice.miss();
       }
     });

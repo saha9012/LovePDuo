@@ -79,6 +79,7 @@ export default function SignalDrawScreen() {
   const [peerPulse, setPeerPulse] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
     null,
@@ -91,6 +92,7 @@ export default function SignalDrawScreen() {
   const myCount = useRef(0);
   const peerCount = useRef(0);
   const partnerFinishedRef = useRef(false);
+  const forceSoloRef = useRef(params.solo === '1');
   const phaseRef = useRef<Phase>('ready');
   const lastSend = useRef(0);
   const startRef = useRef<() => void>(() => undefined);
@@ -113,6 +115,10 @@ export default function SignalDrawScreen() {
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
+
+  useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
 
   useEffect(() => {
     brushRef.current = brush;
@@ -162,14 +168,23 @@ export default function SignalDrawScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         setPeerSeen(false);
-        showToast('Партнёр вышел');
+        if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          showToast('Партнёр вышел · соло');
+        } else {
+          showToast('Партнёр вышел');
+        }
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
+        setForceSolo(false);
+        forceSoloRef.current = false;
         showToast(
           toastRef.current === 'Партнёр вышел' ||
+            toastRef.current === 'Партнёр вышел · соло' ||
             toastRef.current === 'Партнёр вернулся' ||
             toastRef.current === 'Оба снова здесь'
             ? 'Оба снова здесь'
@@ -471,15 +486,15 @@ export default function SignalDrawScreen() {
             title: 'Signal Draw',
             detail: partnerFinishedRef.current
               ? `Оба финиш · штрихи ${myCount.current}`
-              : params.solo === '1'
+              : params.solo === '1' || forceSoloRef.current
                 ? `Solo demo · штрихи ${myCount.current}`
                 : peerCount.current > 0
                   ? `Штрихи ${myCount.current} · партнёр ${peerCount.current}`
                   : `Штрихи ${myCount.current} · ждём партнёра`,
           });
           broadcastMemory(mem, user);
-          // Demo partner ink only in solo — never backfill while duo is live.
-          if (peerCount.current === 0 && params.solo === '1') {
+          // Demo partner ink only in solo / forceSolo — never backfill while duo is live.
+          if (peerCount.current === 0 && (params.solo === '1' || forceSoloRef.current)) {
             setPartnerStrokes(Math.max(1, Math.round(myCount.current * 0.85)));
           }
           return 0;
@@ -681,7 +696,7 @@ export default function SignalDrawScreen() {
           <Text style={styles.title}>Signal Draw</Text>
           <Text style={styles.meta}>
             Твои линии {myCount.current}
-            {params.solo === '1'
+            {params.solo === '1' || forceSolo
               ? ` · партнёр demo ${partnerStrokes || peerCount.current}`
               : peerCount.current > 0 || partnerStrokes > 0
                 ? ` · партнёр ${partnerStrokes || peerCount.current}`

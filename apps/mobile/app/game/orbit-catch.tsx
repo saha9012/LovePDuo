@@ -48,6 +48,7 @@ export default function OrbitCatchScreen() {
   const [partnerFlash, setPartnerFlash] = useState(false);
   const [peerNote, setPeerNote] = useState<string | null>(null);
   const [peerSeen, setPeerSeen] = useState(false);
+  const [forceSolo, setForceSolo] = useState(params.solo === '1');
   const [matchSeed, setMatchSeed] = useState(seed);
   const [syncFinish, setSyncFinish] = useState(false);
   const [finishDualLabel, setFinishDualLabel] = useState<'Оба финиш' | 'Оба на финише' | null>(
@@ -56,6 +57,7 @@ export default function OrbitCatchScreen() {
   const caughtRef = useRef(0);
   const partnerRef = useRef(0);
   const partnerFinishedRef = useRef(false);
+  const forceSoloRef = useRef(params.solo === '1');
   const phaseRef = useRef<Phase>('ready');
   const seedRef = useRef(seed);
   const startRef = useRef<() => void>(() => undefined);
@@ -94,6 +96,10 @@ export default function OrbitCatchScreen() {
   }, [phase]);
 
   useEffect(() => {
+    forceSoloRef.current = forceSolo;
+  }, [forceSolo]);
+
+  useEffect(() => {
     if (phase !== 'playing') {
       prevPresence.current = pair?.partnerPresence;
       return;
@@ -121,14 +127,23 @@ export default function OrbitCatchScreen() {
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
         setPeerSeen(false);
-        bumpPeerNote('вышел');
+        if (phaseRef.current === 'playing' || phaseRef.current === 'finished') {
+          setForceSolo(true);
+          forceSoloRef.current = true;
+          bumpPeerNote('вышел · соло');
+        } else {
+          bumpPeerNote('вышел');
+        }
         void juice.miss();
         return;
       }
       if (msg.type === 'peer_joined') {
         setPeerSeen(true);
+        setForceSolo(false);
+        forceSoloRef.current = false;
         bumpPeerNote(
           peerNoteRef.current === 'вышел' ||
+            peerNoteRef.current === 'вышел · соло' ||
             peerNoteRef.current === 'вернулся' ||
             peerNoteRef.current === 'оба снова здесь'
             ? 'оба снова здесь'
@@ -388,8 +403,8 @@ export default function OrbitCatchScreen() {
         phase: 'finished',
         caught: caughtRef.current,
       });
-      // Demo scores only in solo — never invent partner catches while duo is live.
-      if (partnerRef.current === 0 && params.solo === '1') {
+      // Demo scores only in solo / forceSolo — never invent partner catches while duo is live.
+      if (partnerRef.current === 0 && (params.solo === '1' || forceSoloRef.current)) {
         const demo = Math.max(0, caughtRef.current - 1 + Math.floor(Math.random() * 3));
         partnerRef.current = demo;
         setPartnerCaught(demo);
@@ -400,7 +415,7 @@ export default function OrbitCatchScreen() {
         title: 'Orbit Catch',
         detail: partnerFinishedRef.current
           ? `Оба финиш · co-op ${coop}`
-          : params.solo === '1'
+          : params.solo === '1' || forceSoloRef.current
             ? `Solo demo · co-op ${coop}`
             : partnerRef.current > 0
               ? `Ты ${caughtRef.current} · партнёр ${partnerRef.current}`
@@ -514,7 +529,7 @@ export default function OrbitCatchScreen() {
           <Text style={styles.title}>Orbit Catch</Text>
           <Text style={styles.meta}>
             Ты {caught} · Партнёр {partnerCaught}
-            {params.solo === '1'
+            {params.solo === '1' || forceSolo
               ? ' · demo'
               : partnerCaught > 0
                 ? ` · вместе ${team}`
