@@ -124,7 +124,15 @@ export default function PairSuccessScreen() {
                   typeof pair?.roomSize === 'number' ? `${pair.roomSize}/2` : '—',
                   'WS',
                 ],
-                ['p', pair?.partnerPresence === 'online' ? 'on' : 'off', 'партнёр'],
+                [
+                  'p',
+                  typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                    ? 'on'
+                    : pair?.partnerPresence === 'online'
+                      ? '≠'
+                      : 'off',
+                  'партнёр',
+                ],
                 ['g', String(pair?.gamesStarted ?? 0), 'стартов'],
                 ['d', String(daysTogether), 'дней'],
               ] as const

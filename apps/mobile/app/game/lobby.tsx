@@ -541,7 +541,11 @@ export default function GameLobbyScreen() {
               ['n', String(typeof pair?.roomSize === 'number' ? pair.roomSize : '—'), 'WS'],
               [
                 'pr',
-                pair?.partnerPresence === 'online' ? 'on' : 'off',
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'on'
+                  : pair?.partnerPresence === 'online'
+                    ? '≠'
+                    : 'off',
                 'партнёр',
               ],
             ] as const
