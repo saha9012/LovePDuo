@@ -223,7 +223,7 @@ export default function SignalDrawScreen() {
         setForceSolo(true);
         forceSoloRef.current = true;
         setPeerSeen(false);
-        showToast('Партнёр вышел · соло');
+        showToast('Партнёр вышел из матча · соло');
         void juice.miss();
         return;
       }

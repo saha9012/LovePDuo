@@ -263,7 +263,7 @@ export default function TruthOrSparkScreen() {
         setForceSolo(true);
         idleForced.current = true;
         setTurnMine(true);
-        showTurnToast('Партнёр вышел · соло');
+        showTurnToast('Партнёр вышел из матча · соло');
         void juice.miss();
         return;
       }

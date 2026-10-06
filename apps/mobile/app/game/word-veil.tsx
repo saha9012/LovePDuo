@@ -279,7 +279,7 @@ export default function WordVeilScreen() {
       } | undefined;
       if (payload?.leaveMatch && payload.fromId !== user.id) {
         setForceSolo(true);
-        setPresenceHint('Партнёр вышел · соло');
+        setPresenceHint('Партнёр вышел из матча · соло');
         setTimeout(() => setPresenceHint(null), 1600);
         void juice.miss();
         return;

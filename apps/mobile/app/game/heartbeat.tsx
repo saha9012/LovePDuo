@@ -207,7 +207,7 @@ export default function HeartbeatScreen() {
         partnerLiveRef.current = false;
         setForceSolo(true);
         forceSoloRef.current = true;
-        bumpPeerNote('соло');
+        bumpPeerNote('матч·соло');
         void juice.miss();
         return;
       }

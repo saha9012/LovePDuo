@@ -179,7 +179,7 @@ export default function OrbitCatchScreen() {
           setForceSolo(true);
           forceSoloRef.current = true;
           setPeerSeen(false);
-          bumpPeerNote('соло');
+          bumpPeerNote('матч·соло');
           void juice.miss();
           return;
         }
