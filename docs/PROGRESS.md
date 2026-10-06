@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Sky/HB/Orbit presence «оба на связи» needs WS ≥2  
 - [x] Catalog «Оба на связи» toasts require WS ≥2  
 - [x] Home «Оба на связи» toast requires WS ≥2  
 - [x] Home live chip requires WS room ≥2  

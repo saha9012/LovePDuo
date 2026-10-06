@@ -123,17 +123,23 @@ export default function OrbitCatchScreen() {
       bumpPeerNote('offline');
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      bumpPeerNote(
-        peerNoteRef.current === 'offline' ||
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
+      const racing =
+        duoLive &&
+        (peerNoteRef.current === 'offline' ||
           peerNoteRef.current === 'online' ||
-          peerNoteRef.current === 'оба на связи'
+          peerNoteRef.current === 'оба на связи');
+      bumpPeerNote(
+        racing
           ? 'оба на связи'
-          : 'online',
+          : duoLive
+            ? 'online'
+            : 'presence · ждём WS 2/2',
       );
       void juice.hit();
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, phase]);
+  }, [pair?.partnerPresence, pair?.roomSize, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;

@@ -140,12 +140,17 @@ export default function HeartbeatScreen() {
       peerNoteTimer.current = setTimeout(() => setPeerNote(null), 1200);
       void juice.miss();
     } else if ((prev === 'away' || prev === 'offline') && cur === 'online') {
-      const note =
-        peerNoteRef.current === 'offline' ||
-        peerNoteRef.current === 'online' ||
-        peerNoteRef.current === 'оба на связи'
-          ? 'оба на связи'
-          : 'online';
+      const duoLive = (pair?.roomSize ?? 0) >= 2;
+      const racing =
+        duoLive &&
+        (peerNoteRef.current === 'offline' ||
+          peerNoteRef.current === 'online' ||
+          peerNoteRef.current === 'оба на связи');
+      const note = racing
+        ? 'оба на связи'
+        : duoLive
+          ? 'online'
+          : 'presence · ждём WS 2/2';
       setPeerNote(note);
       peerNoteRef.current = note;
       if (peerNoteTimer.current) clearTimeout(peerNoteTimer.current);
@@ -153,7 +158,7 @@ export default function HeartbeatScreen() {
       void juice.hit();
     }
     prevPresence.current = cur;
-  }, [pair?.partnerPresence, phase]);
+  }, [pair?.partnerPresence, pair?.roomSize, phase]);
 
   useEffect(() => {
     if (!pair || !user) return;
