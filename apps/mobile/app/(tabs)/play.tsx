@@ -313,7 +313,11 @@ export default function PlayScreen() {
             ? ` · пара ${pair.code}${
                 typeof pair.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''
               } · ${
-                pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'
+                typeof pair.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'партнёр online'
+                  : pair.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : 'партнёр offline'
               }`
             : ' · нет пары'}
         </Text>
