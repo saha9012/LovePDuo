@@ -237,12 +237,14 @@ export default function HomeScreen() {
       return () => clearTimeout(t);
     }
     if (prev >= 2 && size === 1) {
+      setPeerLobby(null);
       setRoomToast('Партнёр вышел');
       void juice.miss();
       const t = setTimeout(() => setRoomToast(null), 1800);
       roomSizeSeen.current = size;
       return () => clearTimeout(t);
     }
+    if (size < 2) setPeerLobby(null);
     roomSizeSeen.current = size;
   }, [pair?.roomSize]);
 
@@ -635,18 +637,20 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {(warmthToast || roomToast || peerLobby) && (
+        {(warmthToast ||
+          roomToast ||
+          (peerLobby && (pair?.roomSize ?? 0) >= 2)) && (
           <View style={styles.toastBlock}>
             {warmthToast ? <Text style={styles.warmthToast}>{warmthToast}</Text> : null}
             {roomToast ? <Text style={styles.roomToast}>{roomToast}</Text> : null}
-            {peerLobby ? (
+            {peerLobby && (pair?.roomSize ?? 0) >= 2 ? (
               <Text
                 style={styles.peerLobby}
                 onPress={() =>
                   router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
                 }
               >
-                Партнёр ждёт в {peerLobby.title} — тапни
+                Партнёр в лобби · {peerLobby.title} · WS 2/2 — тапни
               </Text>
             ) : null}
           </View>
@@ -656,9 +660,11 @@ export default function HomeScreen() {
           <View style={styles.ctaRow}>
             <View style={styles.ctaGrow}>
               <LpdButton
-                label={peerLobby ? `К партнёру` : 'Играть'}
+                label={
+                  peerLobby && (pair?.roomSize ?? 0) >= 2 ? `К партнёру` : 'Играть'
+                }
                 onPress={() =>
-                  peerLobby
+                  peerLobby && (pair?.roomSize ?? 0) >= 2
                     ? router.push({ pathname: '/game/lobby', params: { game: peerLobby.game } })
                     : router.push('/(tabs)/play')
                 }

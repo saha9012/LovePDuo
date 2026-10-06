@@ -164,6 +164,12 @@ export default function PlayScreen() {
   }, [filter]);
 
   useEffect(() => {
+    if (typeof pair?.roomSize === 'number' && pair.roomSize < 2) {
+      setPeerLobby(null);
+    }
+  }, [pair?.roomSize]);
+
+  useEffect(() => {
     if (!pair || !user) return;
     const off = pairRealtime.onMessage((msg) => {
       if (msg.type === 'peer_left') {
@@ -350,11 +356,11 @@ export default function PlayScreen() {
         </View>
         {peekToast ? <Text style={styles.peekToast}>{peekToast}</Text> : null}
 
-        {peerLobby ? (
+        {peerLobby && (pair?.roomSize ?? 0) >= 2 ? (
           <Pressable onPress={() => openGame(peerLobby.game)} style={styles.peerLobby}>
-            <Text style={styles.peerLobbyKicker}>Партнёр ждёт</Text>
+            <Text style={styles.peerLobbyKicker}>Партнёр в лобби · WS 2/2</Text>
             <Text style={styles.peerLobbyTitle}>{peerLobby.title}</Text>
-            <Text style={styles.peerLobbySub}>Тапни — в лобби к партнёру</Text>
+            <Text style={styles.peerLobbySub}>Тапни — dual-лобби к партнёру</Text>
           </Pressable>
         ) : null}
 
