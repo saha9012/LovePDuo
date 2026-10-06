@@ -560,6 +560,10 @@ export default function TogetherScreen() {
     [notes],
   );
 
+  /** Same rule as sendGameIfPeerLive — presence alone can lie when room is 1. */
+  const peerInWsRoom =
+    Boolean(pair) && typeof pair?.roomSize === 'number' && pair.roomSize >= 2;
+
   return (
     <LpdBackground mood="warm">
       <ScrollView
@@ -613,10 +617,10 @@ export default function TogetherScreen() {
             </View>
           ))}
         </View>
-        {pair && pair.partnerPresence !== 'online' ? (
+        {pair && !peerInWsRoom ? (
           <Text style={styles.offlineBanner}>
-            Партнёр offline — записки и тепло уйдут по WS, когда он будет online. Пара{' '}
-            {pair.code} сохранена.
+            В WS нет партнёра ({typeof pair.roomSize === 'number' ? `${pair.roomSize}/2` : '—'}) —
+            записки и тепло уйдут, когда комната станет 2/2. Пара {pair.code} сохранена.
           </Text>
         ) : null}
 
@@ -688,23 +692,23 @@ export default function TogetherScreen() {
           />
           <Text style={styles.draftMeta}>{draft.trim().length}/180</Text>
           <LpdButton
-            label={
-              pair?.partnerPresence === 'online'
-                ? 'Отправить заметку'
-                : 'Отправить (дождётся online)'
-            }
+            label={peerInWsRoom ? 'Отправить заметку' : 'Отправить (дождётся online)'}
             onPress={sendNote}
           />
           {notes.length === 0 ? (
             <EmptyState
               title="Пока тихо"
               body={
-                pair?.partnerPresence === 'online'
+                peerInWsRoom
                   ? 'Первая записка уйдёт партнёру по WS — и останется в ленте у обоих.'
-                  : 'Записка сохранится локально и уйдёт по WS, когда партнёр будет online.'
+                  : 'Записка сохранится локально и уйдёт по WS, когда комната станет 2/2.'
               }
               meta={`0 notes · 0 букв · ${
-                pair?.partnerPresence === 'online' ? 'WS ready' : 'партнёр offline'
+                peerInWsRoom
+                  ? 'WS 2/2'
+                  : pair?.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : 'партнёр offline'
               }`}
             />
           ) : (
