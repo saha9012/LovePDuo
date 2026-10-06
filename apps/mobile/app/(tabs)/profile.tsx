@@ -398,9 +398,9 @@ export default function ProfileScreen() {
                 ))}
               </View>
               <Text style={typography.caption}>
-                {premium.isPlus
-                  ? `Статистика пары · streak ${playStats.streakDays}д · last ${playStats.lastPlayDay ?? '—'}`
-                  : `Старты по играм · streak ${playStats.streakDays}д · история 7д в Plus`}
+                {premium.isPlus ? 'Plus · ' : 'Free · '}
+                старты по играм · streak {playStats.streakDays}д · last{' '}
+                {playStats.lastPlayDay ?? '—'}
               </Text>
             </>
           ) : null}

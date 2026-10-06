@@ -39,14 +39,14 @@ export const PREMIUM_FEATURES: PremiumFeature[] = [
   {
     id: 'themes',
     label: 'Настроения',
-    freeValue: '3',
-    plusValue: '3 + pulse skins',
+    freeValue: '3 mood',
+    plusValue: '3 mood (skins позже)',
   },
   {
     id: 'stats',
     label: 'Статистика пары',
-    freeValue: 'базовая',
-    plusValue: 'streaks + история',
+    freeValue: 'локальные старты + streak',
+    plusValue: 'то же · pair sync позже',
   },
 ];
 
