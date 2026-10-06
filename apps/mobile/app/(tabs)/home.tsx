@@ -12,6 +12,7 @@ import { LpdBackground } from '../../src/components/LpdBackground';
 import { BrandMark } from '../../src/components/BrandMark';
 import { PairAvatar } from '../../src/components/PairAvatar';
 import { LpdButton } from '../../src/components/LpdButton';
+import { EmptyState } from '../../src/components/EmptyState';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
 import { typography } from '../../src/theme/typography';
 import { useApp } from '../../src/store/AppStore';
@@ -728,9 +729,17 @@ export default function HomeScreen() {
             </Text>
           </View>
           {recentFeed.length === 0 ? (
-            <Text style={styles.emptyFeed}>
-              Пока пусто — сыграйте раунд, киньте заметку или трек. Цифры сверху оживут.
-            </Text>
+            <EmptyState
+              title="Лента пока пуста"
+              body="Сыграйте раунд, киньте заметку или трек — события пары появятся здесь."
+              meta={`0 событий · ${
+                typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+                  ? 'WS 2/2'
+                  : pair?.partnerPresence === 'online'
+                    ? 'presence ≠ room'
+                    : 'партнёр offline'
+              }`}
+            />
           ) : (
             recentFeed.map((row) => (
               <View key={row.id} style={styles.feedRow}>
@@ -1000,12 +1009,6 @@ const styles = StyleSheet.create({
   sectionMeta: {
     fontFamily: fonts.mono,
     fontSize: 11,
-    color: colors.textMuted,
-  },
-  emptyFeed: {
-    fontFamily: fonts.ui,
-    fontSize: 13,
-    lineHeight: 19,
     color: colors.textMuted,
   },
   feedRow: {
