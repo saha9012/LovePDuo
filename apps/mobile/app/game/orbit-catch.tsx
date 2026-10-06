@@ -576,7 +576,12 @@ export default function OrbitCatchScreen() {
   };
 
   const team = caught + partnerCaught;
-  const line = pickPostMatchLine(caught, partnerCaught || 1, matchSeed);
+  const line = pickPostMatchLine(
+    caught,
+    partnerCaught || 1,
+    matchSeed,
+    params.solo === '1' || forceSolo,
+  );
   const px = CX + Math.cos(angle) * R;
   const py = CY + Math.sin(angle) * R;
   const ox = CX + Math.cos(orbAngle) * (R * 0.72);

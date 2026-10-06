@@ -689,7 +689,12 @@ export default function HeartbeatScreen() {
   };
 
   const total = score + syncBonus;
-  const line = pickPostMatchLine(total, partnerScore, matchSeed + (elapsed || 1));
+  const line = pickPostMatchLine(
+    total,
+    partnerScore,
+    matchSeed + (elapsed || 1),
+    params.solo === '1' || forceSolo,
+  );
   const beatPulse = Math.sin((elapsed / (60000 / heartbeatConfig.bpm)) * Math.PI * 2);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],

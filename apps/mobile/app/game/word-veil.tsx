@@ -545,7 +545,7 @@ export default function WordVeilScreen() {
     resetRound();
   };
 
-  const line = pickPostMatchLine(myScore, theirScore, matchSeed);
+  const line = pickPostMatchLine(myScore, theirScore, matchSeed, params.solo === '1' || forceSolo);
   const matchLabel = useMemo(() => {
     if (myScore >= 5) return 'Одинаковый пульс слов';
     if (myScore >= 3) return 'Почти одно слово';

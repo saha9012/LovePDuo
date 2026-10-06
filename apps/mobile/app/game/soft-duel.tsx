@@ -762,7 +762,7 @@ export default function SoftDuelScreen() {
 
   useEffect(() => () => clearRoundTimers(), []);
 
-  const line = pickPostMatchLine(myScore, partnerScore, matchSeed);
+  const line = pickPostMatchLine(myScore, partnerScore, matchSeed, params.solo === '1' || forceSolo);
   const padStyle = useAnimatedStyle(() => ({
     transform: [{ scale: padScale.value }],
   }));

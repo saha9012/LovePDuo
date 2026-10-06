@@ -1,4 +1,4 @@
-export type PostMatchTone = 'win' | 'lose' | 'draw';
+export type PostMatchTone = 'win' | 'lose' | 'draw' | 'demo';
 
 export type PostMatchLine = {
   id: string;
@@ -40,15 +40,41 @@ export const postMatchLinesRu: PostMatchLine[] = [
   { id: 'w11', tone: 'win', text: 'Ты забрал(а) раунд. Пусть партнёр попросит реванш шёпотом.' },
   { id: 'l11', tone: 'lose', text: 'Сейчас ведёт твой человек. Уговори доказать любовь очками.' },
   { id: 'd11', tone: 'draw', text: 'Паритет. Самое честное начало вечера.' },
+  {
+    id: 's01',
+    tone: 'demo',
+    text: 'Solo demo — счёт партнёра сгенерирован. Настоящий дуэль ждёт WS 2/2.',
+  },
+  {
+    id: 's02',
+    tone: 'demo',
+    text: 'Это тренировка без пары в комнате. Очки demo не считаются победой.',
+  },
+  {
+    id: 's03',
+    tone: 'demo',
+    text: 'Solo прогон. Когда партнёр в WS — реванш уже не против seed.',
+  },
+  {
+    id: 's04',
+    tone: 'demo',
+    text: 'Демо-раунд. Живой пульс пары появится, когда комната станет 2/2.',
+  },
 ];
 
 export function pickPostMatchLine(
   myScore: number,
   theirScore: number,
   seed = Date.now(),
+  demo = false,
 ): PostMatchLine {
-  const tone: PostMatchTone =
-    myScore > theirScore ? 'win' : myScore < theirScore ? 'lose' : 'draw';
+  const tone: PostMatchTone = demo
+    ? 'demo'
+    : myScore > theirScore
+      ? 'win'
+      : myScore < theirScore
+        ? 'lose'
+        : 'draw';
   const pool = postMatchLinesRu.filter((l) => l.tone === tone);
   const idx = Math.abs(seed) % pool.length;
   return pool[idx] ?? pool[0];

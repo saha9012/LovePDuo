@@ -748,7 +748,12 @@ export default function SignalDrawScreen() {
         .reduce((n, s) => n + s.points.length, 0),
     [strokes],
   );
-  const line = pickPostMatchLine(myScore, theirScore, seed);
+  const line = pickPostMatchLine(
+    myScore,
+    theirScore,
+    seed,
+    params.solo === '1' || forceSolo,
+  );
 
   const renderStroke = useCallback(
     (stroke: Stroke) => {
@@ -785,7 +790,7 @@ export default function SignalDrawScreen() {
                 : ' · ждём партнёра'}
           </Text>
           <PostMatchCard
-            title="Общий холст закрыт"
+            title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Общий холст закрыт'}
             gameId="signal-draw"
             winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
             line={line.text}

@@ -721,7 +721,7 @@ export default function SkyClaimScreen() {
     [phase],
   );
 
-  const line = pickPostMatchLine(score, partnerScore, matchSeed);
+  const line = pickPostMatchLine(score, partnerScore, matchSeed, params.solo === '1' || forceSolo);
   const partnerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: partnerScale.value }],
   }));
