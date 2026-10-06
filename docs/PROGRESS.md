@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Play densifies pair≠WS room + partner presence  
 - [x] Profile shows pair-meta outbox pending  
 - [x] Together shows warmth/mutation outbox pending  
 - [x] Music tab shows pending music outbox  

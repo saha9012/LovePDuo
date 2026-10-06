@@ -309,7 +309,13 @@ export default function PlayScreen() {
           {playStats.catalog} в каталоге · memory-игр {playStats.played} · стартов{' '}
           {startStats?.totalStarts ?? 0} · streak {startStats?.streakDays ?? 0}д
           {premium.isPlus ? ' · Plus' : ' · Free'}
-          {pair?.code ? ` · пара ${pair.code}` : ' · нет пары'}
+          {pair?.code
+            ? ` · пара ${pair.code}${
+                typeof pair.roomSize === 'number' ? ` · WS ${pair.roomSize}/2` : ''
+              } · ${
+                pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'
+              }`
+            : ' · нет пары'}
         </Text>
         <View style={styles.statStrip}>
           {(
