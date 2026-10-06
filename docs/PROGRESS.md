@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Catalog rematch ·соло hints after leaveMatch  
 - [x] Word Veil rematch hint ·соло after leaveMatch  
 - [x] ToS rematch toast ·соло when partner leftMatch  
 - [x] Soft rematch flash says ·соло when partner leftMatch  

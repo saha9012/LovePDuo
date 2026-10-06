@@ -490,6 +490,7 @@ export default function SignalDrawScreen() {
     setForceSolo(soloAgain);
     forceSoloRef.current = soloAgain;
     sendGameIfDuo(forceSoloRef.current, 'signal-draw', { rematch: true, seed: next, hello: true });
+    showToast(soloAgain ? 'Ещё раунд · соло' : 'Ещё раунд');
     setTimeout(() => startRef.current(), 0);
   };
 

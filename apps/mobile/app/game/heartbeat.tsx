@@ -471,6 +471,7 @@ export default function HeartbeatScreen() {
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     sendGameIfDuo(forceSoloRef.current, 'heartbeat', { rematch: true, seed: next, hello: true });
+    bumpPeerNote(soloAgain ? 'ещё · соло' : 'ещё раунд', 1200);
     setTimeout(() => startRef.current(), 0);
   };
 

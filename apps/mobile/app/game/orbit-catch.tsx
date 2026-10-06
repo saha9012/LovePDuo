@@ -405,6 +405,7 @@ export default function OrbitCatchScreen() {
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     sendGameIfDuo(forceSoloRef.current, 'orbit-catch', { rematch: true, seed: next, hello: true });
+    bumpPeerNote(soloAgain ? 'ещё · соло' : 'ещё раунд');
     setTimeout(() => startRef.current(), 0);
   };
 
