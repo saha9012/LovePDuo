@@ -19,6 +19,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 const ROUNDS = 8;
 const PROMPTS = ['Жар', 'Тише', 'Ближе', 'Смелей', 'Стоп', 'Ещё', 'Сейчас', 'Вдвоём'];
@@ -547,11 +548,7 @@ export default function SoftDuelScreen() {
     start();
   };
 
-  const syncedStartAt = Number(params.startAt);
-  const waitingSyncedStart =
-    params.solo !== '1' &&
-    Number.isFinite(syncedStartAt) &&
-    syncedStartAt > Date.now() + 200;
+  const waitingSyncedStart = isWaitingSyncedStart(params.solo, params.startAt);
 
   useEffect(() => {
     if (params.solo === '1') return;
@@ -762,7 +759,7 @@ export default function SoftDuelScreen() {
             </Text>
             {waitingSyncedStart ? (
               <Text style={styles.meta}>
-                {flash || `Старт через ${Math.max(1, Math.ceil((syncedStartAt - Date.now()) / 1000))}с`}
+                {syncedStartCountdownLabel(params.startAt, flash)}
               </Text>
             ) : (
               <Pressable onPress={start} style={styles.btn}>

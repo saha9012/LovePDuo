@@ -20,6 +20,7 @@ import { juice } from '../../src/audio/juice';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
+import { sendNoteMutationOrQueue } from '../../src/realtime/noteMutationOutbox';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -466,24 +467,24 @@ export default function TogetherScreen() {
       const ok = await confirmDestructive('Удалить заметку?', note.text.slice(0, 120));
       if (!ok) return;
       removeNote(note.id);
-      pairRealtime.sendGame('tiny-note-remove', {
+      const result = sendNoteMutationOrQueue('tiny-note-remove', {
         id: note.id,
         from: user?.displayName,
         fromId: user?.id,
       });
-      showPeer('Заметку удалили');
+      showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт online');
       void juice.miss();
     })();
   };
 
   const performDeleteNote = (note: TinyNote) => {
     removeNote(note.id);
-    pairRealtime.sendGame('tiny-note-remove', {
+    const result = sendNoteMutationOrQueue('tiny-note-remove', {
       id: note.id,
       from: user?.displayName,
       fromId: user?.id,
     });
-    showPeer('Заметку удалили');
+    showPeer(result === 'sent' ? 'Заметку удалили' : 'Удаление · sync ждёт online');
     void juice.miss();
   };
 
@@ -495,16 +496,20 @@ export default function TogetherScreen() {
       );
       if (!ok) return;
       removeMemory(id);
-      broadcastMemoryRemove(id, user);
-      showPeer(`Memory «${title}» удалена`);
+      const result = broadcastMemoryRemove(id, user);
+      showPeer(
+        result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт online`,
+      );
       void juice.miss();
     })();
   };
 
   const performDeleteMemory = (id: string, title: string) => {
     removeMemory(id);
-    broadcastMemoryRemove(id, user);
-    showPeer(`Memory «${title}» удалена`);
+    const result = broadcastMemoryRemove(id, user);
+    showPeer(
+      result === 'sent' ? `Memory «${title}» удалена` : `Memory «${title}» · sync ждёт online`,
+    );
     void juice.miss();
   };
 
@@ -708,7 +713,14 @@ export default function TogetherScreen() {
           />
         </View>
 
-        <SectionRule label="Скрапбук" right={`${memories.length}`} />
+        <SectionRule
+          label="Скрапбук"
+          right={`${memories.length}${
+            memories.some((m) => m.pendingSync)
+              ? ` · ${memories.filter((m) => m.pendingSync).length} ждут`
+              : ''
+          }`}
+        />
 
         <View style={styles.memories}>
           <Text style={styles.memTitle}>Memories</Text>
@@ -746,6 +758,7 @@ export default function TogetherScreen() {
                   <Text style={styles.memKindTag}>{m.kind}</Text>
                   <Text style={styles.memItem}>
                     {m.title} — {m.detail}
+                    {m.pendingSync ? ' · ждёт' : ''}
                   </Text>
                   <Pressable
                     onPress={() => deleteMemory(m.id, m.title, m.detail)}
@@ -769,7 +782,12 @@ export default function TogetherScreen() {
                   ).then((ok) => {
                     if (!ok) return;
                     clearMemories();
-                    broadcastMemoryClear(user);
+                    const result = broadcastMemoryClear(user);
+                    showPeer(
+                      result === 'sent'
+                        ? 'Memories очищены у обоих'
+                        : 'Очистка · sync ждёт online',
+                    );
                     void juice.miss();
                   });
                 }}

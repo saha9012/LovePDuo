@@ -1,5 +1,6 @@
 import { pairRealtime } from '../realtime/PairRealtime';
 import { getLastRoomSize } from '../realtime/pairPresence';
+import { sendMemoryMutationOrQueue } from '../realtime/memoryMutationOutbox';
 import { markMemorySyncedExternal, type MemoryItem } from '../store/MemoriesStore';
 
 type FromUser = { displayName?: string | null; id?: string | null } | null | undefined;
@@ -25,14 +26,14 @@ export function broadcastMemory(memory: MemoryItem, from?: FromUser) {
 }
 
 export function broadcastMemoryRemove(id: string, from?: FromUser) {
-  pairRealtime.sendGame('memory-remove', {
+  return sendMemoryMutationOrQueue('memory-remove', {
     id,
     ...fromFields(from),
   });
 }
 
 export function broadcastMemoryClear(from?: FromUser) {
-  pairRealtime.sendGame('memory-clear', {
+  return sendMemoryMutationOrQueue('memory-clear', {
     ...fromFields(from),
   });
 }

@@ -6,6 +6,8 @@
 
 ## Latest
 
+- [x] Word Veil synced-start gate · Soft shared helper · memory remove/clear outbox  
+- [x] Synced-start on HB/Orbit/Sky/Draw · stale host re-elect · music rename/create outbox  
 - [x] Music mutation outbox · ToS soloEscape unlock · Soft synced-start gate  
 - [x] Duo Plus pair WS sync · warmth outbox · Word Veil no self-match finish  
 - [x] Global note/memory outbox · Music shelf auto-add · pair-meta host sync  

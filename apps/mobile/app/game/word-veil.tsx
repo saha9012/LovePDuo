@@ -20,6 +20,7 @@ import { juice } from '../../src/audio/juice';
 import { confirmLeaveMatch } from '../../src/utils/confirmLeaveMatch';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { broadcastMemory } from '../../src/memories/broadcastMemory';
+import { isWaitingSyncedStart, syncedStartCountdownLabel } from '../../src/game/syncedStart';
 
 const SEEDS = [
   'ночь',
@@ -525,20 +526,28 @@ export default function WordVeilScreen() {
             <Text style={styles.hero}>Ассоциация вдвоём</Text>
             <Text style={styles.body}>
               Одно слово-якорь. Пишете каждый своё. Сравниваем — и жжём совпадение.
-              {params.solo !== '1' && !presenceHint && pair?.partnerPresence !== 'online'
-                ? ' Ждём партнёра за вуалью…'
-                : ''}
+              {isWaitingSyncedStart(params.solo, params.startAt)
+                ? ' Синхронный старт с лобби — не жми раньше партнёра.'
+                : params.solo !== '1' && !presenceHint && pair?.partnerPresence !== 'online'
+                  ? ' Ждём партнёра за вуалью…'
+                  : ''}
             </Text>
-            <LpdButton
-              label="Старт"
-              onPress={() => {
-                setPhase('playing');
-                if (pair && user && params.solo !== '1') {
-                  pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
-                }
-                void juice.beat();
-              }}
-            />
+            {isWaitingSyncedStart(params.solo, params.startAt) ? (
+              <Text style={styles.meta}>
+                {syncedStartCountdownLabel(params.startAt, presenceHint)}
+              </Text>
+            ) : (
+              <LpdButton
+                label="Старт"
+                onPress={() => {
+                  setPhase('playing');
+                  if (pair && user && params.solo !== '1') {
+                    pairRealtime.sendGame('word-veil', { hello: true, fromId: user.id });
+                  }
+                  void juice.beat();
+                }}
+              />
+            )}
           </View>
         ) : (
           <>
@@ -628,6 +637,7 @@ const styles = StyleSheet.create({
   ready: { flex: 1, justifyContent: 'center', gap: spacing.md },
   hero: { fontFamily: fonts.display, fontSize: 34, color: colors.textPrimary },
   body: { fontFamily: fonts.ui, color: colors.textSecondary, lineHeight: 22 },
+  meta: { fontFamily: fonts.ui, color: colors.textSecondary },
   prompt: {
     marginTop: spacing.xl,
     fontFamily: fonts.display,
