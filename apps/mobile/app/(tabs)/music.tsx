@@ -18,6 +18,7 @@ import { useApp, TrackItem, Playlist } from '../../src/store/AppStore';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
 import { sendMusicOrQueue } from '../../src/realtime/musicOutbox';
 import { getLastRoomSize } from '../../src/realtime/pairPresence';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { juice } from '../../src/audio/juice';
 import { track as trackEvent } from '../../src/analytics/track';
 import { spotifyConfigured, spotifyStatusLabel } from '../../src/music/spotifyConfig';
@@ -151,7 +152,7 @@ export default function MusicScreen() {
         void juice.sync();
         if (user?.id) {
           lastHelloAt.current = Date.now();
-          pairRealtime.sendGame('music-hello', {
+          sendGameIfPeerLive('music-hello', {
             from: user.displayName,
             fromId: user.id,
           });
@@ -474,12 +475,10 @@ export default function MusicScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     lastHelloAt.current = Date.now();
-    if (pairRealtime.connected && getLastRoomSize() >= 2) {
-      pairRealtime.sendGame('music-hello', {
-        from: user.displayName,
-        fromId: user.id,
-      });
-    }
+    sendGameIfPeerLive('music-hello', {
+      from: user.displayName,
+      fromId: user.id,
+    });
   }, [pair?.code, user?.id, user?.displayName]);
 
   const formatMs = (ms: number) => {

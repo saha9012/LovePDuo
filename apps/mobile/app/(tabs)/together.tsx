@@ -22,6 +22,7 @@ import { getLastRoomSize } from '../../src/realtime/pairPresence';
 import { sendWarmthOrQueue } from '../../src/realtime/warmthOutbox';
 import { sendNoteMutationOrQueue } from '../../src/realtime/noteMutationOutbox';
 import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
+import { sendGameIfPeerLive } from '../../src/realtime/sendGameIfPeerLive';
 import { TinyNote, useApp } from '../../src/store/AppStore';
 import { MemoryItem, useMemories } from '../../src/store/MemoriesStore';
 import { usePremium } from '../../src/store/PremiumStore';
@@ -390,12 +391,10 @@ export default function TogetherScreen() {
   useEffect(() => {
     if (!pair || !user) return;
     lastHelloAt.current = Date.now();
-    if (pairRealtime.connected && getLastRoomSize() >= 2) {
-      pairRealtime.sendGame('together-hello', {
-        from: user.displayName,
-        fromId: user.id,
-      });
-    }
+    sendGameIfPeerLive('together-hello', {
+      from: user.displayName,
+      fromId: user.id,
+    });
   }, [pair?.code, user?.id, user?.displayName]);
 
   const startCandle = () => {
