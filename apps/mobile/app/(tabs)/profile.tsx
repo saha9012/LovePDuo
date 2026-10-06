@@ -11,7 +11,7 @@ import { useApp } from '../../src/store/AppStore';
 import { juice } from '../../src/audio/juice';
 import { getWsUrl, hydrateWsUrl, resetWsUrl, setWsUrl } from '../../src/realtime/wsConfig';
 import { pairRealtime } from '../../src/realtime/PairRealtime';
-import { sendPairMetaOrQueue } from '../../src/realtime/pairMetaOutbox';
+import { sendPairMetaOrQueue, pendingPairMetaCount } from '../../src/realtime/pairMetaOutbox';
 import { useMemories } from '../../src/store/MemoriesStore';
 import { copyText, pairInviteMessage } from '../../src/utils/copyText';
 import { confirmDestructive } from '../../src/utils/confirmDestructive';
@@ -36,6 +36,7 @@ export default function ProfileScreen() {
   const [roomSaved, setRoomSaved] = useState(false);
   const [inviteCopied, setInviteCopied] = useState(false);
   const [wsToast, setWsToast] = useState<string | null>(null);
+  const [outboxTick, setOutboxTick] = useState(0);
   const wasOnline = useRef(pairRealtime.connected);
   const wsToastRef = useRef<string | null>(null);
 
@@ -50,6 +51,12 @@ export default function ProfileScreen() {
   useEffect(() => {
     setRoomDraft(pair?.name ?? '');
   }, [pair?.name]);
+
+  useEffect(() => {
+    if (!pair) return;
+    const id = setInterval(() => setOutboxTick((n) => n + 1), 2000);
+    return () => clearInterval(id);
+  }, [pair?.code]);
 
   useEffect(() => {
     void loadPlayStats().then(setPlayStats);
@@ -97,6 +104,12 @@ export default function ProfileScreen() {
             ? `Google${user.email ? ` · ${user.email}` : ''}`
             : 'Локальный профиль · только на этом устройстве'}
           {pair?.code ? ` · код ${pair.code}` : ' · нет пары'}
+          {premium.isPlus ? ' · Plus' : ' · Free'}
+          {(() => {
+            void outboxTick;
+            const pending = pendingPairMetaCount();
+            return pending > 0 ? ` · sync ${pending}` : '';
+          })()}
         </Text>
         <Text style={typography.caption}>
           Пара живёт по коду и WS-комнате. Локальный вход — не облачный аккаунт; Duo Plus
