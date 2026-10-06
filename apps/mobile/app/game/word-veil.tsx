@@ -284,6 +284,9 @@ export default function WordVeilScreen() {
         setPresenceHint('Партнёр вышел из матча · соло');
         setTimeout(() => setPresenceHint(null), 1600);
         void juice.miss();
+        if (phaseRef.current === 'ready') {
+          setPhase('playing');
+        }
         return;
       }
       if (payload?.hello) {
