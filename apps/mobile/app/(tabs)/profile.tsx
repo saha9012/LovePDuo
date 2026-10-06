@@ -351,6 +351,33 @@ export default function ProfileScreen() {
               ? ` · стартов ${playStats.totalStarts} · streak ${playStats.streakDays}д`
               : ''}
           </Text>
+          {playStats ? (
+            <>
+              <View style={styles.statStrip}>
+                {(
+                  [
+                    ['sky-claim', 'Sky'],
+                    ['heartbeat', 'Beat'],
+                    ['truth-or-spark', 'ToS'],
+                    ['signal-draw', 'Draw'],
+                    ['orbit-catch', 'Orbit'],
+                    ['soft-duel', 'Duel'],
+                    ['word-veil', 'Veil'],
+                  ] as const
+                ).map(([id, label]) => (
+                  <View key={id} style={styles.statPill}>
+                    <Text style={styles.statPillNum}>{playStats.byGame[id] ?? 0}</Text>
+                    <Text style={styles.statPillLabel}>{label}</Text>
+                  </View>
+                ))}
+              </View>
+              <Text style={typography.caption}>
+                {premium.isPlus
+                  ? `Статистика пары · streak ${playStats.streakDays}д · last ${playStats.lastPlayDay ?? '—'}`
+                  : `Старты по играм · streak ${playStats.streakDays}д · история 7д в Plus`}
+              </Text>
+            </>
+          ) : null}
           {premium.features.map((f) => (
             <View key={f.id} style={styles.plusRow}>
               <Text style={styles.plusFeat}>{f.label}</Text>
@@ -418,7 +445,7 @@ export default function ProfileScreen() {
             onPress={() => {
               void confirmDestructive(
                 'Отвязать пару?',
-                'Код комнаты сбросится. Memories останутся локально.',
+                'Код пары сбросится. Memories останутся локально.',
               ).then(async (ok) => {
                 if (!ok) return;
                 void juice.miss();

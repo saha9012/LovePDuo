@@ -492,7 +492,7 @@ export default function HomeScreen() {
           </Text>
           <Text style={styles.meta}>
             Код {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
-            {typeof pair?.roomSize === 'number' ? ` · комната ${pair.roomSize}` : ''}
+            {typeof pair?.roomSize === 'number' ? ` · online ${pair.roomSize}` : ''}
           </Text>
         </View>
 

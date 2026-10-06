@@ -62,10 +62,10 @@ export default function JoinPairScreen() {
         <BrandMark size="compact" />
         <View style={styles.block}>
           <Text style={typography.headline}>Код пары</Text>
-          <Text style={typography.body}>Шесть символов — и вы в одной комнате LovePDuo.</Text>
+          <Text style={typography.body}>Шесть символов — и вы в одной паре LovePDuo.</Text>
           {pair?.code ? (
             <Text style={styles.linked}>
-              Уже в паре {pair.code}. Можно сменить код или вернуться в комнату.
+              Уже в паре {pair.code}. Можно сменить код или вернуться в Home.
             </Text>
           ) : null}
           <Text style={styles.label}>Твоё имя</Text>
@@ -84,7 +84,7 @@ export default function JoinPairScreen() {
         <View style={styles.actions}>
           {pair?.code ? (
             <LpdButton
-              label="В комнату"
+              label="В пару"
               onPress={() => {
                 void juice.warmth();
                 router.replace('/(tabs)/home');

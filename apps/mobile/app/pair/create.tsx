@@ -46,11 +46,11 @@ export default function CreatePairScreen() {
         <View style={styles.block}>
           <Text style={typography.headline}>Собери пару</Text>
           <Text style={typography.body}>
-            Создай код. Второй телефон входит по нему — и комната загорается.
+            Создай код пары. Второй телефон входит по нему — и вы на связи вдвоём.
           </Text>
           {pair ? (
             <Text style={styles.linked}>
-              Уже есть пара {pair.code}. Открой комнату или отвяжи в Profile.
+              Уже есть пара {pair.code}. Открой Home или отвяжи в Profile.
             </Text>
           ) : null}
           <Text style={styles.label}>Твоё имя</Text>
@@ -61,7 +61,7 @@ export default function CreatePairScreen() {
             placeholderTextColor={colors.textMuted}
             style={styles.input}
           />
-          <Text style={styles.label}>Имя комнаты</Text>
+          <Text style={styles.label}>Имя пары</Text>
           <TextInput
             value={name}
             onChangeText={setName}
@@ -73,14 +73,14 @@ export default function CreatePairScreen() {
         <View style={styles.actions}>
           {pair ? (
             <LpdButton
-              label="В комнату"
+              label="В пару"
               onPress={() => {
                 void juice.warmth();
                 router.replace('/(tabs)/home');
               }}
             />
           ) : (
-            <LpdButton label="Создать код" loading={loading} onPress={() => void onCreate()} />
+            <LpdButton label="Создать код пары" loading={loading} onPress={() => void onCreate()} />
           )}
           <LpdButton
             label="У меня уже есть код"

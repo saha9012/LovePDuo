@@ -28,7 +28,7 @@ export default function DeepJoinScreen() {
     }
     setLoading(true);
     setError('');
-    setStatus('Входим в комнату…');
+    setStatus('Входим в пару…');
     try {
       if (!user) await signIn('Партнёр');
       await joinPair(clean);
