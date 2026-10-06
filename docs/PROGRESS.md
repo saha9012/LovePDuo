@@ -6,30 +6,20 @@
 
 ## Latest
 
-- [x] Music upload/stub/react outbox · Lobby leave peer cancel · Together candle/spark outbox  
-- [x] Duo Plus / pair-meta announce queues when alone · Profile trial/unlock honesty  
+- [x] Clear sync outboxes + drop pending note/memory on unlink/sign-out  
+- [x] Music upload/stub/react outbox · Now Playing live-only · Lobby leave notify  
+- [x] Together candle/spark outbox · Duo Plus/pair-meta queue when alone  
 - [x] Live synced-start countdown tick · display-name outbox · play-peek only when live  
-- [x] ToS synced-start countdown labels · pair room-name outbox  
-- [x] Host claim on peer_left · lobby stale-host copy · mid-match forceSolo (HB/Orbit/Sky/Draw)  
-- [x] Word Veil synced-start gate · Soft shared helper · memory/note remove outbox  
-- [x] Synced-start on HB/Orbit/Sky/Draw · stale host re-elect · music rename/create outbox  
+- [x] ToS synced-start countdown · Word Veil/Soft synced-start · mid-match forceSolo  
+- [x] Host claim on peer_left · stale host re-elect · Soft/Orbit rematch seed settle  
+- [x] Memory/note remove outbox · scrapbook pending UI  
 - [x] Music mutation outbox · ToS soloEscape unlock · Soft synced-start gate  
 - [x] Duo Plus pair WS sync · warmth outbox · Word Veil no self-match finish  
 - [x] Global note/memory outbox · Music shelf auto-add · pair-meta host sync  
 - [x] Lobby host double-start fix · note outbox · ToS spicy Free gate  
-- [x] Sky/Draw: no fake partner scores in live duo · Home pair≠room copy  
-- [x] Orbit: no fake partner score in live duo · playlist cap Free 6 / Plus 8 wired  
-- [x] Pair create/join/deep-link densify + deep link asks name (no silent «Партнёр»)  
-- [x] Soft/Heartbeat reaction HUDs · Welcome pair stats + session strip  
-- [x] Orbit/Draw accuracy HUDs · Music now-playing index/%/−time  
-- [x] Sky Claim layout-safe hits + accuracy HUD · Lobby meta strip · GameTile plays  
-- [x] Word Veil fair scores · Together scrapbook density · Heartbeat miss batch  
-- [x] Duo Plus scaffold · play streaks · Soft Duel timer cleanup  
-- [x] Pair identity = invite code (`pairIdFromCode`); warmth + gamesStarted persist  
+- [x] Sky/Draw/Orbit/HB: no fake partner scores in live duo · playlist Free6/Plus8  
+- [x] Pair create/join/deep-link densify · Home pair≠room  
 - [x] Match session AsyncStorage + backend `pair_sync` / lastMatch handoff  
-- [x] Home density: scroll + pair stats grid + feed + quick chips (numbers first)  
-- [x] Fix Sky Claim / Orbit Catch timers · Signal Draw hit map · Heartbeat sync throttle  
-- [x] Music/Together/Play/Profile live stats · Word Veil reveal on peer finish  
 
 ## Catalog
 
