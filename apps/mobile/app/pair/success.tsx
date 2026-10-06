@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import QRCode from 'react-native-qrcode-svg';
 import { LpdBackground } from '../../src/components/LpdBackground';
 import { LpdButton } from '../../src/components/LpdButton';
 import { colors, fonts, radii, spacing } from '../../src/theme/tokens';
@@ -146,9 +147,20 @@ export default function PairSuccessScreen() {
           <View style={styles.codeBlock}>
             <Text style={styles.codeLabel}>Код пары (identity)</Text>
             <Text style={typography.code}>{code}</Text>
+            {code !== '------' ? (
+              <View style={styles.qrWrap}>
+                <QRCode
+                  value={deepLink}
+                  size={168}
+                  backgroundColor="transparent"
+                  color={colors.accentAmber}
+                />
+                <Text style={styles.qrCaption}>Скан → {deepLink}</Text>
+              </View>
+            ) : null}
           </View>
           <Text style={styles.hint}>
-            Пара = код {code}. WS online — отдельно. Deep link: {deepLink}
+            Пара = код {code}. WS online — отдельно. QR и deep link ведут на join.
           </Text>
         </Animated.View>
         <View style={styles.actions}>
@@ -269,6 +281,23 @@ const styles = StyleSheet.create({
     fontFamily: fonts.ui,
     color: colors.textMuted,
     fontSize: 13,
+  },
+  qrWrap: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(232,196,122,0.28)',
+    backgroundColor: 'rgba(36,28,49,0.45)',
+  },
+  qrCaption: {
+    fontFamily: fonts.ui,
+    fontSize: 12,
+    color: colors.textMuted,
+    textAlign: 'center',
   },
   hint: {
     marginTop: spacing.lg,
