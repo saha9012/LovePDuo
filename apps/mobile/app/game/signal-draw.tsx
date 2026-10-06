@@ -312,13 +312,15 @@ export default function SignalDrawScreen() {
           setPartnerStrokes(payload.count);
         }
         if (phaseRef.current === 'finished') {
-          const racing =
-            toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише';
-          const dual = racing ? 'Оба на финише' : 'Оба финиш';
-          setFinishDualLabel(dual);
-          setSyncFinish(true);
-          showToast(dual);
-          void juice.perfect();
+          if (params.solo !== '1' && !forceSoloRef.current) {
+            const racing =
+              toastRef.current === 'Оба финиш' || toastRef.current === 'Оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
+            setSyncFinish(true);
+            showToast(dual);
+            void juice.perfect();
+          }
         } else {
           showToast('Партнёр закончил');
           void juice.sync();

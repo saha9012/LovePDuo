@@ -348,13 +348,15 @@ export default function SoftDuelScreen() {
           void juice.sync();
         } else if (payload.phase === 'finished' && phaseRef.current === 'finished') {
           partnerFinishedRef.current = true;
-          const racing =
-            flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
-          const dual = racing ? 'Оба на финише' : 'Оба финиш';
-          setFinishDualLabel(dual);
-          setSyncFinish(true);
-          setFlash(dual);
-          void juice.perfect();
+          if (params.solo !== '1' && !forceSoloRef.current) {
+            const racing =
+              flashRef.current === 'Оба финиш' || flashRef.current === 'Оба на финише';
+            const dual = racing ? 'Оба на финише' : 'Оба финиш';
+            setFinishDualLabel(dual);
+            setSyncFinish(true);
+            setFlash(dual);
+            void juice.perfect();
+          }
         } else if (typeof payload.tap === 'number') {
           const grade =
             payload.tap < 180 ? 'PERFECT' : payload.tap < 420 ? 'GOOD' : 'OK';

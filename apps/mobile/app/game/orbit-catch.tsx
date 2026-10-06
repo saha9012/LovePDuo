@@ -261,13 +261,15 @@ export default function OrbitCatchScreen() {
             setPartnerCaught(payload.caught);
           }
           if (phaseRef.current === 'finished') {
-            const racing =
-              peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
-            const dual = racing ? 'Оба на финише' : 'Оба финиш';
-            setFinishDualLabel(dual);
-            setSyncFinish(true);
-            bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
-            void juice.perfect();
+            if (params.solo !== '1' && !forceSoloRef.current) {
+              const racing =
+                peerNoteRef.current === 'оба финиш' || peerNoteRef.current === 'оба на финише';
+              const dual = racing ? 'Оба на финише' : 'Оба финиш';
+              setFinishDualLabel(dual);
+              setSyncFinish(true);
+              bumpPeerNote(racing ? 'оба на финише' : 'оба финиш');
+              void juice.perfect();
+            }
           } else {
             bumpPeerNote('финиш');
             void juice.sync();
