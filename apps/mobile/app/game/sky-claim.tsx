@@ -802,9 +802,18 @@ export default function SkyClaimScreen() {
               partnerStyle,
             ]}
           >
-            Партнёр {partnerScore}
-            {partnerLive ? ' ·live' : ''}
-            {peerNote ? ` · ${peerNote}` : ''}
+            {params.solo === '1' || forceSolo ? (
+              <>
+                Партнёр · demo
+                {peerNote ? ` · ${peerNote}` : ''}
+              </>
+            ) : (
+              <>
+                Партнёр {partnerScore}
+                {partnerLive ? ' ·live' : ''}
+                {peerNote ? ` · ${peerNote}` : ''}
+              </>
+            )}
           </Animated.Text>
         </View>
         {!layoutReady && phase === 'playing' ? (

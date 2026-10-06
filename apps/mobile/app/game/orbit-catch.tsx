@@ -673,8 +673,17 @@ export default function OrbitCatchScreen() {
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
-                партнёр {partnerCaught}
-                {peerNote ? ` · ${peerNote}` : ''}
+                {params.solo === '1' || forceSolo ? (
+                  <>
+                    партнёр · demo
+                    {peerNote ? ` · ${peerNote}` : ''}
+                  </>
+                ) : (
+                  <>
+                    партнёр {partnerCaught}
+                    {peerNote ? ` · ${peerNote}` : ''}
+                  </>
+                )}
               </Animated.Text>
             </View>
             <Pressable style={styles.stage} onPress={onCatch}>

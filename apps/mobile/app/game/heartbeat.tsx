@@ -790,9 +790,18 @@ export default function HeartbeatScreen() {
               <Animated.Text
                 style={[styles.stat, partnerFlash && styles.partnerHot, partnerStyle]}
               >
-                партнёр {partnerScore}
-                {partnerLive ? ' ·live' : ''}
-                {peerNote ? ` · ${peerNote}` : ''}
+                {params.solo === '1' || forceSolo ? (
+                  <>
+                    партнёр · demo
+                    {peerNote ? ` · ${peerNote}` : ''}
+                  </>
+                ) : (
+                  <>
+                    партнёр {partnerScore}
+                    {partnerLive ? ' ·live' : ''}
+                    {peerNote ? ` · ${peerNote}` : ''}
+                  </>
+                )}
               </Animated.Text>
               <Text style={styles.stat}>
                 {Math.max(0, Math.ceil((heartbeatConfig.durationMs - elapsed) / 1000))}s

@@ -844,9 +844,11 @@ export default function SignalDrawScreen() {
                 ты {myCount.current} · {myInkPts} pts
               </Text>
               <Text style={[styles.stat, peerPulse && styles.peerLive]}>
-                партнёр {partnerStrokes}
-                {peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''}
-                {peerPulse ? ' · live' : ''}
+                {params.solo === '1' || forceSolo
+                  ? `партнёр · demo${peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''}`
+                  : `партнёр ${partnerStrokes}${
+                      peerInkPts > 0 ? ` · ${peerInkPts} pts` : ''
+                    }${peerPulse ? ' · live' : ''}`}
               </Text>
             </View>
             {toast ? <Text style={styles.toast}>{toast}</Text> : null}
