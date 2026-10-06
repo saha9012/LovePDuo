@@ -738,7 +738,13 @@ export default function HeartbeatScreen() {
                     : 'Партнёр чувствует лучше'
             }
             gameId="heartbeat"
-            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
+            winnerLabel={
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : syncFinish
+                  ? finishDualLabel ?? 'Оба финиш'
+                  : undefined
+            }
             line={line.text}
             onRematch={rematch}
             onHome={() => {

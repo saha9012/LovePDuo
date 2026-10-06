@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Catalog finish winnerLabel Solo demo over Оба финиш  
 - [x] ToS/Orbit finish prefer demo over stale ·live  
 - [x] Soft HUD prefers forceSolo demo over stale live  
 - [x] ToS Дальше (обоим) only when peer live  

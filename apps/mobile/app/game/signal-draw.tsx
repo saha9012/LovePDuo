@@ -792,7 +792,13 @@ export default function SignalDrawScreen() {
           <PostMatchCard
             title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Общий холст закрыт'}
             gameId="signal-draw"
-            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
+            winnerLabel={
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : syncFinish
+                  ? finishDualLabel ?? 'Оба финиш'
+                  : undefined
+            }
             line={line.text}
             onRematch={rematch}
             onHome={() => {

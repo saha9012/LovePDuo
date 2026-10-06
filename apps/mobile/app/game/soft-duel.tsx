@@ -810,7 +810,13 @@ export default function SoftDuelScreen() {
                     : 'Партнёр быстрее'
             }
             gameId="soft-duel"
-            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
+            winnerLabel={
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : syncFinish
+                  ? finishDualLabel ?? 'Оба финиш'
+                  : undefined
+            }
             line={line.text}
             onRematch={rematch}
             onHome={() => {

@@ -754,7 +754,11 @@ export default function SkyClaimScreen() {
                       : 'Синхрон'
             }
             winnerLabel={
-              syncFinish ? finishDualLabel ?? 'Оба финиш' : 'Post-match'
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : syncFinish
+                  ? finishDualLabel ?? 'Оба финиш'
+                  : 'Post-match'
             }
             gameId="sky-claim"
             line={line.text}

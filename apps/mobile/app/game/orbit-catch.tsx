@@ -614,7 +614,13 @@ export default function OrbitCatchScreen() {
           <PostMatchCard
             title={params.solo === '1' || forceSolo ? 'Solo demo' : 'Орбита закрыта'}
             gameId="orbit-catch"
-            winnerLabel={syncFinish ? finishDualLabel ?? 'Оба финиш' : undefined}
+            winnerLabel={
+              params.solo === '1' || forceSolo
+                ? 'Solo demo'
+                : syncFinish
+                  ? finishDualLabel ?? 'Оба финиш'
+                  : undefined
+            }
             line={line.text}
             onRematch={rematch}
             onHome={() => {
