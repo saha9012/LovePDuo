@@ -595,10 +595,10 @@ export default function WordVeilScreen() {
             {matchSeed}
           </Text>
           <PostMatchCard
-            title={matchLabel}
+            title={demo ? 'Solo demo' : matchLabel}
             line={line.text}
             gameId="word-veil"
-            winnerLabel="Word Veil"
+            winnerLabel={demo ? 'Solo demo' : 'Word Veil'}
             onRematch={rematch}
             onHome={() => {
               announceLeaveMatch('word-veil', user, seedRef.current);
