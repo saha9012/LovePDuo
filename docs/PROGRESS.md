@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home hero gates live copy on WS room ≥2  
 - [x] Warmth pulse does not fake partnerPresence  
 - [x] joinPair starts offline until WS confirms peer  
 - [x] Lobby Solo hint gates on WS room ≥2  

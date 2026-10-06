@@ -523,9 +523,11 @@ export default function HomeScreen() {
             </View>
           </View>
           <Text style={typography.body}>
-            {pair?.partnerPresence === 'online'
-              ? 'Партнёр рядом. LPD online. Ваш ход.'
-              : 'Ждём пульс партнёра. Можно греть пару заранее.'}
+            {typeof pair?.roomSize === 'number' && pair.roomSize >= 2
+              ? 'Партнёр в комнате. LPD live. Ваш ход.'
+              : pair?.partnerPresence === 'online'
+                ? 'Presence ≠ room — ждём WS 2/2. Можно греть пару.'
+                : 'Ждём пульс партнёра. Можно греть пару заранее.'}
           </Text>
           <Text style={styles.meta}>
             Пара {pair?.code ?? '—'} · {wsOnline ? 'WS online' : 'WS…'}
