@@ -161,7 +161,10 @@ export default function HomeScreen() {
     const prev = presenceSeen.current;
     if (prev !== cur) {
       if (prev === 'offline' && cur === 'online') {
-        setRoomToast('Партнёр online');
+        const duoLive = (pair?.roomSize ?? 0) >= 2;
+        setRoomToast(
+          duoLive ? 'Партнёр online' : 'Партнёр presence · ждём WS 2/2',
+        );
         void juice.sync();
         const t = setTimeout(() => setRoomToast(null), 1600);
         presenceSeen.current = cur;

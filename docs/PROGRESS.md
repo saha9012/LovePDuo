@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home offline→online toast gates on WS ≥2  
 - [x] Lobby host copy dual only when WS ≥2  
 - [x] Lobby/success partner pill gates on WS ≥2  
 - [x] Home partner avatar gates green on WS ≥2  
