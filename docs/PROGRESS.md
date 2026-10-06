@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Global note/memory outbox · Music shelf auto-add · pair-meta host sync  
 - [x] Lobby host double-start fix · note outbox · ToS spicy Free gate  
 - [x] Sky/Draw: no fake partner scores in live duo · Home pair≠room copy  
 - [x] Orbit: no fake partner score in live duo · playlist cap Free 6 / Plus 8 wired  

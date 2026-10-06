@@ -236,35 +236,27 @@ export default function MusicScreen() {
           from?: string;
         } | undefined;
         if (!payload?.playlistId || !payload.title) return;
+        // Shelf mutation applied in MusicRealtimeSync (auto-adds missing track).
         const match = tracks.find(
           (t) =>
             t.title === payload.title &&
             (payload.artist ? t.artist === payload.artist : true),
         );
-        if (match) {
-          const pl = playlists.find((p) => p.id === payload.playlistId);
-          const alreadyIn = Boolean(pl?.trackIds.includes(match.id));
-          if (!alreadyIn) addTrackToPlaylist(payload.playlistId, match.id);
-          const plName = pl?.name;
-          const racing =
-            alreadyIn &&
-            (noteRef.current.startsWith('Оба на полке') ||
-              noteRef.current.startsWith('Оба в полке'));
-          showNote(
-            racing
-              ? `Оба в полке «${payload.title}»`
-              : alreadyIn
-                ? `Оба на полке «${payload.title}»`
-                : `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
-          );
-          void (alreadyIn ? juice.perfect() : juice.hit());
-        } else {
-          showNote(
-            `${payload.from ?? 'Партнёр'} положил «${payload.title}» — добавь тот же трек`,
-            2400,
-          );
-          void juice.miss();
-        }
+        const pl = playlists.find((p) => p.id === payload.playlistId);
+        const alreadyIn = Boolean(match && pl?.trackIds.includes(match.id));
+        const plName = pl?.name;
+        const racing =
+          alreadyIn &&
+          (noteRef.current.startsWith('Оба на полке') ||
+            noteRef.current.startsWith('Оба в полке'));
+        showNote(
+          racing
+            ? `Оба в полке «${payload.title}»`
+            : alreadyIn
+              ? `Оба на полке «${payload.title}»`
+              : `${payload.from ?? 'Партнёр'} положил «${payload.title}»${plName ? ` в «${plName}»` : ''}`,
+        );
+        void (alreadyIn ? juice.perfect() : juice.hit());
       }
       if (msg.type === 'game' && msg.gameId === 'track-react') {
         const payload = msg.payload as {
@@ -1088,11 +1080,20 @@ export default function MusicScreen() {
                         return;
                       }
                       addTrackToPlaylist(active.id, t.id);
+                      pairRealtime.sendGame('track-meta', {
+                        title: t.title,
+                        artist: t.artist,
+                        sourceType: t.sourceType,
+                        from: user?.displayName,
+                        fromId: user?.id,
+                      });
                       pairRealtime.sendGame('playlist-add', {
                         playlistId: active.id,
                         title: t.title,
                         artist: t.artist,
+                        sourceType: t.sourceType,
                         from: user?.displayName,
+                        fromId: user?.id,
                       });
                       showNote(`В «${active.name}» — полка у обоих.`);
                       void juice.hit();

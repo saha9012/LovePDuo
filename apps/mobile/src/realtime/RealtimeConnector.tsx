@@ -7,6 +7,37 @@ import { juice } from '../audio/juice';
 
 const PING_MS = 18000;
 
+function flushNoteOutbox(
+  pendingNotes: () => TinyNote[],
+  markNoteSynced: (id: string) => void,
+) {
+  const outbox = pendingNotes();
+  for (const n of outbox) {
+    const { pendingSync: _p, ...payload } = n;
+    pairRealtime.sendGame('tiny-note', payload);
+    markNoteSynced(n.id);
+  }
+  return outbox.length;
+}
+
+function flushMemoryOutbox(
+  pendingMemories: () => MemoryItem[],
+  markMemorySynced: (id: string) => void,
+  from?: { displayName?: string; id?: string },
+) {
+  const outbox = pendingMemories();
+  for (const m of outbox) {
+    const { pendingSync: _p, ...payload } = m;
+    pairRealtime.sendGame('memory-add', {
+      ...payload,
+      from: from?.displayName,
+      fromId: from?.id,
+    });
+    markMemorySynced(m.id);
+  }
+  return outbox.length;
+}
+
 /** Держит WS-сессию пары на всём приложении (не рвём при уходе с Home). */
 export function RealtimeConnector() {
   const {
@@ -14,12 +45,21 @@ export function RealtimeConnector() {
     pair,
     sendWarmth,
     setPartnerInfo,
+    setHostUserId,
     setRoomSize,
     setPairName,
     receiveNote,
     removeNote,
+    pendingNotes,
+    markNoteSynced,
   } = useApp();
-  const { receiveMemory, removeMemory, clearMemories } = useMemories();
+  const {
+    receiveMemory,
+    removeMemory,
+    clearMemories,
+    pendingMemories,
+    markMemorySynced,
+  } = useMemories();
 
   useEffect(() => {
     void juice.hydrateMuted();
@@ -27,7 +67,20 @@ export function RealtimeConnector() {
 
   useEffect(() => {
     if (!user || !pair) return;
+
+    const announceHost = () => {
+      if (pair.hostUserId && pair.hostUserId === user.id) {
+        pairRealtime.sendGame('pair-meta', {
+          hostUserId: user.id,
+          pairName: pair.name,
+          fromId: user.id,
+        });
+      }
+    };
+
     pairRealtime.connect(pair.code, user.id, user.displayName);
+    announceHost();
+
     const off = pairRealtime.onMessage((msg) => {
       if (typeof msg.size === 'number') {
         setRoomSize(msg.size);
@@ -43,6 +96,26 @@ export function RealtimeConnector() {
               ? msg.name
               : pair.partnerName || 'Партнёр';
           setPartnerInfo(name, status);
+        }
+      }
+      if (msg.type === 'game' && msg.gameId === 'pair-meta') {
+        const payload = msg.payload as {
+          hostUserId?: string;
+          pairName?: string;
+          fromId?: string;
+        } | undefined;
+        if (payload?.fromId === user.id) return;
+        if (
+          typeof payload?.hostUserId === 'string' &&
+          payload.hostUserId &&
+          payload.hostUserId !== user.id
+        ) {
+          setHostUserId(payload.hostUserId);
+        }
+        if (typeof payload?.pairName === 'string' && payload.pairName.trim()) {
+          if (pair.name !== payload.pairName.trim()) {
+            setPairName(payload.pairName.trim());
+          }
         }
       }
       if (msg.type === 'game' && msg.gameId === 'room-name') {
@@ -108,6 +181,12 @@ export function RealtimeConnector() {
         if (peer?.name) {
           setPartnerInfo(peer.name, 'online');
         }
+        announceHost();
+        flushNoteOutbox(pendingNotes, markNoteSynced);
+        flushMemoryOutbox(pendingMemories, markMemorySynced, {
+          displayName: user.displayName,
+          id: user.id,
+        });
       }
       if (msg.type === 'pair_sync') {
         const payload = msg as {
@@ -145,6 +224,12 @@ export function RealtimeConnector() {
         if (typeof msg.name === 'string' && msg.name) {
           setPartnerInfo(msg.name, 'online');
         }
+        announceHost();
+        flushNoteOutbox(pendingNotes, markNoteSynced);
+        flushMemoryOutbox(pendingMemories, markMemorySynced, {
+          displayName: user.displayName,
+          id: user.id,
+        });
       }
       if (msg.type === 'peer_left') {
         setPartnerInfo(pair.partnerName || 'Партнёр', 'away');
@@ -173,8 +258,12 @@ export function RealtimeConnector() {
     user?.id,
     pair?.code,
     pair?.partnerName,
+    pair?.hostUserId,
+    pair?.name,
+    pair?.id,
     sendWarmth,
     setPartnerInfo,
+    setHostUserId,
     setRoomSize,
     setPairName,
     user?.displayName,
@@ -183,6 +272,10 @@ export function RealtimeConnector() {
     receiveMemory,
     removeMemory,
     clearMemories,
+    pendingNotes,
+    markNoteSynced,
+    pendingMemories,
+    markMemorySynced,
   ]);
 
   return null;

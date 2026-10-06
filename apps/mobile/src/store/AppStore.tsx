@@ -113,13 +113,14 @@ type AppState = {
   unlinkPair: () => Promise<void>;
   setMood: (mood: PairState['mood']) => void;
   setPairName: (name: string) => void;
+  setHostUserId: (hostUserId: string) => void;
   setRoomSize: (size: number) => void;
   setPartnerInfo: (name: string, presence?: Presence) => void;
   bumpGamesStarted: () => void;
   touchPairActive: () => void;
   sendWarmth: () => void;
   warmthPulse: number;
-  addTrack: (track: Omit<TrackItem, 'id'>) => void;
+  addTrack: (track: Omit<TrackItem, 'id'>) => TrackItem;
   removeTrack: (id: string) => void;
   removeTrackMeta: (title: string, artist?: string) => boolean;
   clearTracks: () => void;
@@ -351,6 +352,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setPair((prev) => (prev ? { ...prev, name: clean } : prev));
   }, []);
 
+  const setHostUserId = useCallback((hostUserId: string) => {
+    const clean = hostUserId.trim();
+    if (!clean) return;
+    setPair((prev) => {
+      if (!prev || prev.hostUserId === clean) return prev;
+      return { ...prev, hostUserId: clean };
+    });
+  }, []);
+
   const setRoomSize = useCallback((size: number) => {
     setPair((prev) => (prev ? { ...prev, roomSize: size } : prev));
   }, []);
@@ -391,7 +401,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addTrack = useCallback((track: Omit<TrackItem, 'id'>) => {
-    setTracks((prev) => [{ ...track, id: makeId('trk') }, ...prev]);
+    const created: TrackItem = { ...track, id: makeId('trk') };
+    setTracks((prev) => [created, ...prev]);
+    return created;
   }, []);
 
   const removeTrack = useCallback((id: string) => {
@@ -618,6 +630,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlinkPair,
       setMood,
       setPairName,
+      setHostUserId,
       setRoomSize,
       setPartnerInfo,
       bumpGamesStarted,
@@ -663,6 +676,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       unlinkPair,
       setMood,
       setPairName,
+      setHostUserId,
       setRoomSize,
       setPartnerInfo,
       bumpGamesStarted,

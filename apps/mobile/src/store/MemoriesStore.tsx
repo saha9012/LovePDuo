@@ -14,6 +14,8 @@ export type MemoryItem = {
   title: string;
   detail: string;
   at: number;
+  /** True until partner receives / we flush on peer_joined */
+  pendingSync?: boolean;
 };
 
 type MemoriesApi = {
@@ -22,6 +24,8 @@ type MemoriesApi = {
   receiveMemory: (item: MemoryItem) => void;
   removeMemory: (id: string) => void;
   clearMemories: () => void;
+  markMemorySynced: (id: string) => void;
+  pendingMemories: () => MemoryItem[];
 };
 
 const KEY = 'lovepduo.memories.v1';
@@ -66,6 +70,7 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
       ...item,
       id: makeId(),
       at: Date.now(),
+      pendingSync: true,
     };
     setItems((prev) => [created, ...prev].slice(0, memoryCap));
     return created;
@@ -73,9 +78,16 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
 
   const receiveMemory = useCallback((item: MemoryItem) => {
     if (!item?.id || !item.title) return;
+    const clean: MemoryItem = {
+      id: item.id,
+      kind: item.kind,
+      title: item.title,
+      detail: item.detail ?? '',
+      at: typeof item.at === 'number' ? item.at : Date.now(),
+    };
     setItems((prev) => {
-      if (prev.some((m) => m.id === item.id)) return prev;
-      return [item, ...prev].slice(0, memoryCap);
+      if (prev.some((m) => m.id === clean.id)) return prev;
+      return [clean, ...prev].slice(0, memoryCap);
     });
   }, []);
 
@@ -87,9 +99,36 @@ export function MemoriesProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   }, []);
 
+  const markMemorySynced = useCallback((id: string) => {
+    setItems((prev) =>
+      prev.map((m) => (m.id === id && m.pendingSync ? { ...m, pendingSync: false } : m)),
+    );
+  }, []);
+
+  const pendingMemories = useCallback(
+    () => items.filter((m) => m.pendingSync),
+    [items],
+  );
+
   const value = useMemo(
-    () => ({ items, addMemory, receiveMemory, removeMemory, clearMemories }),
-    [items, addMemory, receiveMemory, removeMemory, clearMemories],
+    () => ({
+      items,
+      addMemory,
+      receiveMemory,
+      removeMemory,
+      clearMemories,
+      markMemorySynced,
+      pendingMemories,
+    }),
+    [
+      items,
+      addMemory,
+      receiveMemory,
+      removeMemory,
+      clearMemories,
+      markMemorySynced,
+      pendingMemories,
+    ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

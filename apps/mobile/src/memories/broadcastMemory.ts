@@ -12,8 +12,9 @@ function fromFields(from: FromUser) {
 
 /** Push a local memory to the partner over the existing game relay. */
 export function broadcastMemory(memory: MemoryItem, from?: FromUser) {
+  const { pendingSync: _p, ...payload } = memory;
   pairRealtime.sendGame('memory-add', {
-    ...memory,
+    ...payload,
     ...fromFields(from),
   });
 }

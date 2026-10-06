@@ -86,14 +86,25 @@ export function MusicRealtimeSync() {
           playlistId?: string;
           title?: string;
           artist?: string;
+          sourceType?: TrackItem['sourceType'];
+          from?: string;
         };
         if (!payload?.playlistId || !payload.title) return;
-        const match = tracksRef.current.find(
+        let match = tracksRef.current.find(
           (t) =>
             t.title === payload.title &&
             (payload.artist ? t.artist === payload.artist : true),
         );
-        if (!match) return;
+        if (!match) {
+          match = addTrack({
+            title: payload.title,
+            artist: payload.artist ?? 'Партнёр',
+            sourceType: payload.sourceType ?? 'link',
+            playbackMode: payload.sourceType === 'spotify' ? 'spotify' : 'link',
+            addedBy: payload.from ?? 'Партнёр',
+          });
+          tracksRef.current = [match, ...tracksRef.current];
+        }
         const pl = playlistsRef.current.find((p) => p.id === payload.playlistId);
         if (pl?.trackIds.includes(match.id)) return;
         addTrackToPlaylist(payload.playlistId, match.id);
