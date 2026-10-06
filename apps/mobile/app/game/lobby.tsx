@@ -463,6 +463,7 @@ export default function GameLobbyScreen() {
   };
 
   const solo = () => {
+    clearMatchSession(pair?.code);
     const seed = Math.floor(Math.random() * 100000);
     bumpGamesStarted();
     void recordGameStart(gameId);

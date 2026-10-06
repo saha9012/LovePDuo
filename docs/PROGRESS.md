@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Home feed shows pending note/memory sync · solo lobby clears session  
 - [x] Lobby cancel/unready/leave clears match session  
 - [x] Auth honesty: local ≠ cloud · pair = code+WS (Welcome/Profile)  
 - [x] Entering a match consumes session (Home resume disappears)  

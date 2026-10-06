@@ -414,6 +414,7 @@ export default function HomeScreen() {
       title: m.title,
       detail: m.detail,
       at: m.at,
+      pending: Boolean(m.pendingSync),
     }));
     const noteRows = notes.slice(0, 6).map((n) => ({
       id: `n_${n.id}`,
@@ -421,9 +422,11 @@ export default function HomeScreen() {
       title: n.from,
       detail: n.text,
       at: n.at,
+      pending: Boolean(n.pendingSync),
     }));
     return [...memRows, ...noteRows].sort((a, b) => b.at - a.at).slice(0, 10);
   }, [memories, notes]);
+  const feedPending = recentFeed.filter((r) => r.pending).length;
 
   const pickMood = (m: 'night' | 'warm' | 'rain') => {
     const same = pair?.mood === m;
@@ -669,7 +672,10 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHead}>
             <Text style={styles.sectionTitle}>Лента пары</Text>
-            <Text style={styles.sectionMeta}>{recentFeed.length} событий</Text>
+            <Text style={styles.sectionMeta}>
+              {recentFeed.length} событий
+              {feedPending > 0 ? ` · ${feedPending} ждут online` : ''}
+            </Text>
           </View>
           {recentFeed.length === 0 ? (
             <Text style={styles.emptyFeed}>
@@ -682,16 +688,19 @@ export default function HomeScreen() {
                 <View style={styles.feedBody}>
                   <Text style={styles.feedTitle} numberOfLines={1}>
                     {row.title}
+                    {row.pending ? ' · ждёт' : ''}
                   </Text>
                   <Text style={styles.feedDetail} numberOfLines={2}>
                     {row.detail}
                   </Text>
                 </View>
                 <Text style={styles.feedWhen}>
-                  {new Date(row.at).toLocaleTimeString('ru-RU', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {row.pending
+                    ? 'sync'
+                    : new Date(row.at).toLocaleTimeString('ru-RU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                 </Text>
               </View>
             ))
