@@ -579,7 +579,11 @@ export default function TogetherScreen() {
           {` · ${sparkFilter}`}
           {lit ? ` · свеча ${mins}:${secs.toString().padStart(2, '0')}` : ''}
           {pair
-            ? ` · ${pair.partnerPresence === 'online' ? 'партнёр online' : 'партнёр offline'}`
+            ? peerInWsRoom
+              ? ' · партнёр online'
+              : pair.partnerPresence === 'online'
+                ? ' · presence ≠ room'
+                : ' · партнёр offline'
             : ' · нет пары'}
           {isPlus ? ' · Plus' : ' · Free'}
           {(() => {

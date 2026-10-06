@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Together header gates partner online on WS ≥2  
 - [x] Inbound hello keeps intentional Solo (catalog)  
 - [x] peer_joined keeps intentional Solo (catalog)  
 - [x] Sky/HB/Orbit presence «оба на связи» needs WS ≥2  
