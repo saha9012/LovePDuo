@@ -237,14 +237,17 @@ export default function GameLobbyScreen() {
           setReadyPeer(payload.ready);
           if (payload.ready) {
             const both = readyMeRef.current;
-            void (both ? juice.perfect() : juice.sync());
+            const duoNow = pairRealtime.connected && (pair?.roomSize ?? 0) >= 2;
+            void (both && duoNow ? juice.perfect() : juice.sync());
             showCancelToast(
-              both
+              both && duoNow
                 ? cancelToastRef.current === 'Оба READY' ||
                   cancelToastRef.current === 'Оба готовы'
                   ? 'Оба готовы'
                   : 'Оба READY'
-                : 'Партнёр READY',
+                : both
+                  ? 'Партнёр READY · ждём WS 2/2'
+                  : 'Партнёр READY',
             );
           } else {
             const wasCounting = countdownRef.current != null;
