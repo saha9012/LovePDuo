@@ -196,7 +196,13 @@ export default function WelcomeScreen() {
         </Animated.View>
 
         <Animated.View style={[styles.hero, contentStyle]}>
-          <Text style={styles.kicker}>{pair ? 'Пара на связи' : 'LPD online'}</Text>
+          <Text style={styles.kicker}>
+            {pair
+              ? typeof pair.roomSize === 'number' && pair.roomSize >= 2
+                ? 'Пара на связи'
+                : 'Пара · ждём WS'
+              : 'LPD online'}
+          </Text>
           <BrandMark size="hero" showTagline />
           <Text style={[typography.body, styles.sub]}>
             Тёмная игровая зона для двоих. Янтарь, пыльная роза и раунды с двух телефонов.

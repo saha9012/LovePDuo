@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Welcome kicker gates «на связи» on WS ≥2  
 - [x] Inbound dual-finish flash gated after forceSolo  
 - [x] Dual-finish flash skipped after forceSolo  
 - [x] Memory detail Solo demo over partnerFinished-before-forceSolo
