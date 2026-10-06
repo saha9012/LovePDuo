@@ -133,6 +133,12 @@ export default function MusicScreen() {
     void juice.card();
   }, [partnerNowPlaying, peerPulse]);
 
+  useEffect(() => {
+    if (typeof pair?.roomSize === 'number' && pair.roomSize < 2 && partnerNowPlaying) {
+      setPartnerNowPlaying(null);
+    }
+  }, [pair?.roomSize, partnerNowPlaying, setPartnerNowPlaying]);
+
   const peerStyle = useAnimatedStyle(() => ({
     transform: [{ scale: peerPulse.value }],
     opacity: 0.85 + (peerPulse.value - 1) * 2,
@@ -863,14 +869,18 @@ export default function MusicScreen() {
       return;
     }
     setActivePlaylist(pl.id);
-    sendMusicOrQueue('playlist-create', {
+    const created = sendMusicOrQueue('playlist-create', {
       ...pl,
       from: user?.displayName,
       fromId: user?.id,
     });
     sendMusicOrQueue('playlist', { playlistId: pl.id, mood: pl.mood, fromId: user?.id });
     beginRename(pl.id, pl.name);
-    showNote('Новая полка — переименуй и пиши.');
+    showNote(
+      created === 'sent'
+        ? 'Новая полка у обоих — переименуй и пиши.'
+        : 'Новая полка локально · sync ждёт 2/2 — переименуй.',
+    );
     void juice.hit();
   };
 
@@ -994,9 +1004,9 @@ export default function MusicScreen() {
           </Pressable>
         ) : null}
 
-        {partnerNowPlaying ? (
+        {partnerNowPlaying && peerInWsRoom ? (
           <Animated.Text style={[styles.nowPlaying, peerStyle]}>
-            ♪ {partnerNowPlaying}
+            ♪ партнёр · {partnerNowPlaying}
           </Animated.Text>
         ) : null}
         {active && active.trackIds.length === 0 && tracks.length > 0 ? (

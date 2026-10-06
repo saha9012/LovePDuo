@@ -44,10 +44,15 @@ export default function ProfileScreen() {
   const [outboxTick, setOutboxTick] = useState(0);
   const wasOnline = useRef(pairRealtime.connected);
   const wsToastRef = useRef<string | null>(null);
+  const roomSizeRef = useRef(pair?.roomSize ?? 0);
 
   useEffect(() => {
     wsToastRef.current = wsToast;
   }, [wsToast]);
+
+  useEffect(() => {
+    roomSizeRef.current = pair?.roomSize ?? 0;
+  }, [pair?.roomSize]);
 
   useEffect(() => {
     setNameDraft(user?.displayName ?? '');
@@ -74,12 +79,19 @@ export default function ProfileScreen() {
     return pairRealtime.onStatus((online) => {
       setWsOnline(online);
       if (online && !wasOnline.current) {
-        const toast =
+        const duoLive = roomSizeRef.current >= 2;
+        const bothToast = 'Оба на realtime';
+        const soloToast = 'Realtime online · ждём WS 2/2';
+        const racing =
           wsToastRef.current === 'Realtime offline — переподключение…' ||
           wsToastRef.current === 'Realtime online' ||
-          wsToastRef.current === 'Оба на realtime'
-            ? 'Оба на realtime'
-            : 'Realtime online';
+          wsToastRef.current === bothToast ||
+          wsToastRef.current === soloToast;
+        const toast = duoLive
+          ? racing
+            ? bothToast
+            : 'Realtime online'
+          : soloToast;
         wsToastRef.current = toast;
         setWsToast(toast);
         void juice.sync();
@@ -154,7 +166,12 @@ export default function ProfileScreen() {
             <Text style={typography.caption}>Код: {pair?.code ?? '—'}</Text>
             <Text style={typography.caption}>{pair?.name}</Text>
             <Text style={[styles.wsBadge, wsOnline ? styles.wsOn : styles.wsOff]}>
-              WS {wsOnline ? 'online' : 'переподключение…'}
+              WS {wsOnline ? 'online' : '…'}
+              {typeof pair?.roomSize === 'number' ? ` · ${pair.roomSize}/2` : ''}
+              {pair?.partnerPresence === 'online' &&
+              !(typeof pair?.roomSize === 'number' && pair.roomSize >= 2)
+                ? ' · presence ≠ room'
+                : ''}
             </Text>
             {wsToast ? <Text style={styles.wsToast}>{wsToast}</Text> : null}
           </View>
