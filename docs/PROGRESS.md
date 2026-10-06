@@ -6,6 +6,7 @@
 
 ## Latest
 
+- [x] Soft rematch flash says ·соло when partner leftMatch  
 - [x] Solo rematch does not spray rematch into WS room  
 - [x] Rematch duo only if peer did not leaveMatch (Home ≠ match)  
 - [x] Outbox flush marks synced only on live send  

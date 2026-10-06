@@ -610,15 +610,18 @@ export default function SoftDuelScreen() {
     forceSoloRef.current = soloAgain;
     lastRematchAt.current = Date.now();
     const racing =
-      flashRef.current === 'Оба: ещё раунд' ||
-      flashRef.current === 'Оба снова' ||
-      flashRef.current === 'Партнёр: ещё раунд';
+      !soloAgain &&
+      (flashRef.current === 'Оба: ещё раунд' ||
+        flashRef.current === 'Оба снова' ||
+        flashRef.current === 'Партнёр: ещё раунд');
     setFlash(
-      flashRef.current === 'Оба: ещё раунд' || flashRef.current === 'Оба снова'
-        ? 'Оба снова'
-        : racing
-          ? 'Оба: ещё раунд'
-          : 'Ещё раунд',
+      soloAgain
+        ? 'Ещё раунд · соло'
+        : flashRef.current === 'Оба: ещё раунд' || flashRef.current === 'Оба снова'
+          ? 'Оба снова'
+          : racing
+            ? 'Оба: ещё раунд'
+            : 'Ещё раунд',
     );
     void (racing ? juice.perfect() : juice.sync());
     sendGameIfDuo(forceSoloRef.current, 'soft-duel', { rematch: true, seed: next, hello: true });
