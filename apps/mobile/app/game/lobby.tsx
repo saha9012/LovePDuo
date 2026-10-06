@@ -74,6 +74,9 @@ export default function GameLobbyScreen() {
       (isHost ||
         ((!pair?.hostUserId || hostStale) && peerUserId && user.id < peerUserId)),
   );
+  /** Presence≠room: peer READY only counts in a live WS duo. */
+  const duoLive = wsOnline && (pair?.roomSize ?? 0) >= 2;
+  const peerReadyLive = readyPeer && duoLive;
 
   const peerReadyScale = useSharedValue(1);
   const cancelToastRef = useRef<string | null>(null);
@@ -361,8 +364,8 @@ export default function GameLobbyScreen() {
   }, [countdown, gameId, router, matchSeed, startAtMs, countScale, countOpacity]);
 
   useEffect(() => {
-    if (!readyMe || !readyPeer || countdown !== null || startSent.current) {
-      if (!readyMe || !readyPeer) bothReadyNoted.current = false;
+    if (!readyMe || !peerReadyLive || countdown !== null || startSent.current) {
+      if (!readyMe || !peerReadyLive) bothReadyNoted.current = false;
       return;
     }
     if (!canStart) {
@@ -406,7 +409,7 @@ export default function GameLobbyScreen() {
     track('game_started', { game: gameId });
   }, [
     readyMe,
-    readyPeer,
+    peerReadyLive,
     countdown,
     gameId,
     canStart,
@@ -416,6 +419,8 @@ export default function GameLobbyScreen() {
     pair?.name,
     pair?.code,
     pair?.id,
+    pair?.roomSize,
+    wsOnline,
     bumpGamesStarted,
     touchPairActive,
     setHostUserId,
@@ -434,7 +439,7 @@ export default function GameLobbyScreen() {
     setReadyMe(true);
     juice.hit();
     sendGameIfPeerLive(gameId, { ready: true, userId: user.id });
-    if (readyPeer) {
+    if (peerReadyLive) {
       showCancelToast(
         cancelToastRef.current === 'Оба READY' ||
           cancelToastRef.current === 'Оба готовы'
@@ -442,6 +447,9 @@ export default function GameLobbyScreen() {
           : 'Оба READY',
       );
       void juice.perfect();
+    } else if (readyPeer && !duoLive) {
+      showCancelToast('READY · ждём WS 2/2');
+      void juice.sync();
     }
   };
 
@@ -518,7 +526,7 @@ export default function GameLobbyScreen() {
         'orbit-catch': 'Orbit Catch',
       } as Record<string, string>
     )[gameId] ?? gameId;
-  const readyCount = (readyMe ? 1 : 0) + (readyPeer ? 1 : 0);
+  const readyCount = (readyMe ? 1 : 0) + (peerReadyLive ? 1 : 0);
 
   return (
     <LpdBackground mood="warm">
@@ -585,8 +593,12 @@ export default function GameLobbyScreen() {
           <Text style={[styles.pill, readyMe && styles.pillReady]}>
             {readyMe ? 'Ты: READY' : 'Ты: …'}
           </Text>
-          <Animated.Text style={[styles.pill, readyPeer && styles.pillReady, peerReadyStyle]}>
-            {readyPeer ? 'Партнёр: READY' : 'Партнёр: …'}
+          <Animated.Text style={[styles.pill, peerReadyLive && styles.pillReady, peerReadyStyle]}>
+            {peerReadyLive
+              ? 'Партнёр: READY'
+              : readyPeer && !duoLive
+                ? 'Партнёр: READY · ждём WS'
+                : 'Партнёр: …'}
           </Animated.Text>
         </View>
 
